@@ -28,7 +28,7 @@ exports.handler = async (event) => {
 
     const referer = event.headers.referer || event.headers.referrer || "";
     if (
-      !referer.includes("your-app-domain.com") &&
+      !referer.includes("https://digital-learning-vault.netlify.app") &&
       !referer.includes("localhost")
     ) {
       return { statusCode: 403, body: "Unauthorized Source" };
