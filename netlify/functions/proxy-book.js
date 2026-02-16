@@ -4,8 +4,14 @@ const admin = require("firebase-admin");
 // 1. IMPROVED FIREBASE ADMIN INITIALIZATION
 if (!admin.apps.length) {
   try {
-    // This regex replaces literal "\n" strings with actual newlines
-    // and strips accidental quotes added by the .env loader
+    // ADD THE DEBUG LOG HERE - BEFORE initialization
+    console.log("🔑 Private Key Check:", {
+      exists: !!process.env.FIREBASE_PRIVATE_KEY,
+      startsCorrectly:
+        process.env.FIREBASE_PRIVATE_KEY?.startsWith("-----BEGIN"),
+      length: process.env.FIREBASE_PRIVATE_KEY?.length,
+    });
+
     const cleanKey = process.env.FIREBASE_PRIVATE_KEY
       ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n").replace(/"/g, "")
       : undefined;
