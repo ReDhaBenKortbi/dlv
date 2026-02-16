@@ -33,11 +33,12 @@ exports.handler = async (event) => {
   try {
     const { id, token } = event.queryStringParameters || {};
 
-    // 2. SECURITY: Referer Check
+    // 2. SECURITY: Referer Check - USE ENVIRONMENT VARIABLE
+    const SITE_URL = process.env.VITE_API_URL;
     const referer = event.headers.referer || event.headers.referrer || "";
     const isLocal =
       referer.includes("localhost") || referer.includes("127.0.0.1");
-    const isProd = referer.includes("https://dlvdz.netlify.app");
+    const isProd = referer.includes(SITE_URL);
 
     if (!isLocal && !isProd) {
       console.log("Blocked Referer:", referer);
@@ -76,10 +77,10 @@ exports.handler = async (event) => {
     // 6. INJECTION: Base tag and Security Scripts
     const baseTag = `<base href="${baseUrl}">`;
     const protectionScript = `
-      <script>
+     <script>
         // Prevent framing outside of your site
         if (window.self === window.top) { 
-          window.location.href = "https://dlvdz.netlify.app"; 
+          window.location.href = "${SITE_URL}"; 
         }
         // Basic Right-Click Protection
         document.addEventListener('contextmenu', e => e.preventDefault());
