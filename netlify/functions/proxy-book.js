@@ -37,7 +37,7 @@ exports.handler = async (event) => {
     const referer = event.headers.referer || event.headers.referrer || "";
     const isLocal =
       referer.includes("localhost") || referer.includes("127.0.0.1");
-    const isProd = referer.includes("digital-learning-vault.netlify.app");
+    const isProd = referer.includes("https://dlvdz.netlify.app");
 
     if (!isLocal && !isProd) {
       console.log("Blocked Referer:", referer);
@@ -79,7 +79,7 @@ exports.handler = async (event) => {
       <script>
         // Prevent framing outside of your site
         if (window.self === window.top) { 
-          window.location.href = "https://digital-learning-vault.netlify.app"; 
+          window.location.href = "https://dlvdz.netlify.app"; 
         }
         // Basic Right-Click Protection
         document.addEventListener('contextmenu', e => e.preventDefault());
