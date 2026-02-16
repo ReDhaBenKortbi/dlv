@@ -4,7 +4,6 @@ const admin = require("firebase-admin");
 // 1. IMPROVED FIREBASE ADMIN INITIALIZATION
 if (!admin.apps.length) {
   try {
-    // ADD THE DEBUG LOG HERE - BEFORE initialization
     console.log("🔑 Private Key Check:", {
       exists: !!process.env.FIREBASE_PRIVATE_KEY,
       startsCorrectly:
@@ -34,8 +33,16 @@ exports.handler = async (event) => {
     const { id, token } = event.queryStringParameters || {};
 
     // 2. SECURITY: Referer Check - USE ENVIRONMENT VARIABLE
-    const SITE_URL = process.env.VITE_API_URL;
+    const SITE_URL = process.env.VITE_API_URL || "https://dlvdz.netlify.app";
     const referer = event.headers.referer || event.headers.referrer || "";
+
+    // DEBUG LOG
+    console.log("🌐 Referer Check:", {
+      SITE_URL: SITE_URL,
+      referer: referer,
+      includes: referer.includes(SITE_URL),
+    });
+
     const isLocal =
       referer.includes("localhost") || referer.includes("127.0.0.1");
     const isProd = referer.includes(SITE_URL);
@@ -77,7 +84,7 @@ exports.handler = async (event) => {
     // 6. INJECTION: Base tag and Security Scripts
     const baseTag = `<base href="${baseUrl}">`;
     const protectionScript = `
-     <script>
+      <script>
         // Prevent framing outside of your site
         if (window.self === window.top) { 
           window.location.href = "${SITE_URL}"; 
@@ -96,7 +103,7 @@ exports.handler = async (event) => {
       statusCode: 200,
       headers: {
         "Content-Type": "text/html; charset=utf-8",
-        "Access-Control-Allow-Origin": "*", // Allows the iframe to load the content
+        "Access-Control-Allow-Origin": "*",
       },
       body: html,
     };
