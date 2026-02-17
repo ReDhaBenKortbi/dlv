@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { loginUser } from "../../services/authService";
 import { Link } from "react-router-dom";
+import logo from "../../assets/logo/logo.svg";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -28,9 +29,7 @@ const Login = () => {
           <div className="card-body space-y-6">
             {/* ICON */}
             <div className="flex justify-center">
-              <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center text-2xl">
-                🔐
-              </div>
+              <img src={logo} alt="DLV Logo" className="h-34 md:h-36 w-auto" />
             </div>
 
             {/* HEADER */}

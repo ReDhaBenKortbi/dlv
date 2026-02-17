@@ -1,6 +1,6 @@
 // lucid icons
 import { Search, User, LogOut, Crown } from "lucide-react";
-
+import logo from "../../assets/logo/logo.svg";
 // search context
 import { useSearch } from "../../context/SearchContext";
 
@@ -28,11 +28,14 @@ const Navbar = () => {
     <div className="sticky top-0 z-50 bg-base-100/80 backdrop-blur-md border-b border-base-200 transition-colors shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-10 h-14 flex items-center justify-between">
         {/* Left - Logo */}
-        <Link
-          to="/"
-          className="text-lg md:text-xl font-semibold tracking-tight text-primary"
-        >
-          Digital Learning Vault
+        <Link to="/" className="flex items-center gap-1">
+          {/* Logo */}
+          <img src={logo} alt="DLV Logo" className="h-16 w-auto" />
+
+          {/* Acronym only on desktop */}
+          <span className="font-semibold tracking-wide text-primary">
+            Digital Learning Vault
+          </span>
         </Link>
         {/* Right Controls */}
         <div className="flex items-center gap-2 md:gap-3">

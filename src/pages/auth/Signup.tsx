@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { registerUser } from "../../services/authService";
 import { useNavigate, Link } from "react-router-dom";
+import logo from "../../assets/logo/logo.svg";
 
 const Signup = () => {
   const [fullName, setFullName] = useState("");
@@ -36,9 +37,7 @@ const Signup = () => {
         <div className="card bg-base-100 shadow-2xl rounded-2xl border border-base-200">
           <div className="card-body space-y-6">
             <div className="flex justify-center">
-              <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center text-2xl">
-                📚
-              </div>
+              <img src={logo} alt="DLV Logo" className="h-34 md:h-36 w-auto" />
             </div>
 
             <div className="text-center space-y-1">
