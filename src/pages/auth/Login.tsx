@@ -29,7 +29,11 @@ const Login = () => {
           <div className="card-body space-y-6">
             {/* ICON */}
             <div className="flex justify-center">
-              <img src={logo} alt="DLV Logo" className="h-34 md:h-36 w-auto" />
+              <img
+                src={logo}
+                alt="DLV Logo"
+                className="h-32 md:h-34 w-auto bg-white rounded-full"
+              />
             </div>
 
             {/* HEADER */}

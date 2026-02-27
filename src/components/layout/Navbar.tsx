@@ -30,10 +30,14 @@ const Navbar = () => {
         {/* Left - Logo */}
         <Link to="/" className="flex items-center gap-1">
           {/* Logo */}
-          <img src={logo} alt="DLV Logo" className="h-16 w-auto" />
+          <img
+            src={logo}
+            alt="DLV Logo"
+            className="h-10 w-auto bg-white rounded-full"
+          />
 
           {/* Acronym only on desktop */}
-          <span className="font-semibold tracking-wide text-primary">
+          <span className="font-semibold tracking-wide text-primary ml-2">
             Digital Learning Vault
           </span>
         </Link>
