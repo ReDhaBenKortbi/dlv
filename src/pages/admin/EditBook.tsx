@@ -3,13 +3,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import LoadingScreen from "../../components/common/LoadingScreen";
 import { useBooks } from "../../hooks/books/useBooks"; // Reader
 import { useBookMutations } from "../../hooks/books/useBookMutations"; // Writer
-import { uploadImageToCloudinary } from "../../services/cloudinaryService";
 
 import {
   TARGET_LANGUAGES,
   FOCUS_SKILLS,
   PROFICIENCY_LEVELS,
 } from "../../constants/bookOptions";
+import { storageService } from "../../services/storage/storageFactory";
 
 const EditBook = () => {
   const { bookId } = useParams();
@@ -71,7 +71,8 @@ const EditBook = () => {
       // Step A: Handle Image Upload if necessary
       if (newCoverFile) {
         setIsUploadingImage(true);
-        finalCoverURL = await uploadImageToCloudinary(newCoverFile);
+        const path = `book_covers/${Date.now()}`;
+        finalCoverURL = await storageService.uploadFile(newCoverFile, path);
       }
 
       // Step B: Call edit with two separate arguments

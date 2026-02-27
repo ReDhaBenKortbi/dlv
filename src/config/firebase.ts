@@ -5,6 +5,7 @@ import {
   setPersistence,
 } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -20,6 +21,7 @@ const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const storage = getStorage(app);
 
 // Persistence helps keep users logged in on Netlify redirects
 setPersistence(auth, browserLocalPersistence);
@@ -31,6 +33,11 @@ if (
 ) {
   const { connectAuthEmulator } = await import("firebase/auth");
   const { connectFirestoreEmulator } = await import("firebase/firestore");
+  const { connectStorageEmulator } = await import("firebase/storage");
+
   connectAuthEmulator(auth, "http://localhost:9099");
   connectFirestoreEmulator(db, "localhost", 8080);
+  connectStorageEmulator(storage, "localhost", 9199);
+
+  console.log("Connected to Firbase Emulator Services🔥");
 }

@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { uploadImageToCloudinary } from "../../services/cloudinaryService";
 import { BookPreview } from "../../components/admin/BookPreview";
 import { useBookMutations } from "../../hooks/books/useBookMutations";
 // New Pillars
@@ -16,6 +15,7 @@ import type {
   ProficiencyLevelCode,
 } from "../../constants/bookOptions";
 import { toast } from "sonner";
+import { storageService } from "../../services/storage/storageFactory";
 
 const AddBook = () => {
   const navigate = useNavigate();
@@ -67,7 +67,8 @@ const AddBook = () => {
 
     try {
       // Step A: Upload to Cloudinary
-      const coverURL = await uploadImageToCloudinary(coverFile);
+      const path = `book_covers/${Date.now()}`;
+      const coverURL = await storageService.uploadFile(coverFile, path);
 
       // Step B: Use our mutation hook (which now handles the loading/success toasts)
       // Step B: Use our mutation hook

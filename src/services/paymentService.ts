@@ -11,9 +11,10 @@ import {
   Timestamp,
   serverTimestamp,
 } from "firebase/firestore";
-import { uploadImageToCloudinary } from "./cloudinaryService";
+
+import { storageService } from "./storage/storageFactory";
 import type { PaymentRequest } from "../types/paymentRequest";
-// 1. Existing: Submit a new request (User Side)
+
 export const uploadReceiptAndSubmit = async (
   userId: string,
   email: string,
@@ -21,11 +22,14 @@ export const uploadReceiptAndSubmit = async (
   file: File,
   amount: string,
 ) => {
-  const receiptURL = await uploadImageToCloudinary(file);
+  // 2. USE THE FACTORY:
+  // We pass the file and a dynamic path.
+  const filePath = `receipts/${userId}_${Date.now()}`;
+  const receiptURL = await storageService.uploadFile(file, filePath);
 
   await addDoc(collection(db, "paymentRequests"), {
     userId,
-    userEmail: email, // Changed to match your manager's naming
+    userEmail: email,
     fullName: userName,
     receiptURL,
     amount,
@@ -51,7 +55,7 @@ export const getPendingPayments = async (): Promise<PaymentRequest[]> => {
   })) as PaymentRequest[];
 };
 
-// 3. NEW: Process Payment (The Business Logic)
+// 3. Process Payment (The Business Logic)
 export const processPayment = async (
   request: PaymentRequest,
   newStatus: "approved" | "rejected",
@@ -84,7 +88,7 @@ export const processPayment = async (
     // If rejected, reset user status so they can try again
     const userRef = doc(db, "users", request.userId);
     batch.update(userRef, {
-      subscriptionStatus: "none", // Or whatever your default is
+      subscriptionStatus: "none",
       isSubscribed: false,
     });
   }
