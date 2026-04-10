@@ -11,14 +11,15 @@ export const SUBSCRIPTION_DURATION_DAYS = 30;
  * Returns true when the subscription has expired relative to `now`.
  * Exact equality (end === now) is treated as expired.
  */
-export function isSubscriptionExpired(_endDate: Date, _now: Date): boolean {
-  return false; // stub — tests will be RED
+export function isSubscriptionExpired(endDate: Date, now: Date): boolean {
+  return endDate <= now;
 }
 
 /**
  * Computes the subscription end date by adding SUBSCRIPTION_DURATION_DAYS
  * to the given start date without mutating it.
  */
-export function computeSubscriptionEndDate(_startDate: Date): Date {
-  return new Date(0); // stub — tests will be RED
+export function computeSubscriptionEndDate(startDate: Date): Date {
+  const durationMs = SUBSCRIPTION_DURATION_DAYS * 24 * 60 * 60 * 1000;
+  return new Date(startDate.getTime() + durationMs);
 }

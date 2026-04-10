@@ -10,11 +10,12 @@
  * Safe when prevTotal is 0 (first review).
  */
 export function computeNewAverageRating(
-  _prevAvg: number,
-  _prevTotal: number,
-  _newRating: number,
+  prevAvg: number,
+  prevTotal: number,
+  newRating: number,
 ): number {
-  return 0; // stub — tests will be RED
+  if (prevTotal === 0) return newRating;
+  return (prevAvg * prevTotal + newRating) / (prevTotal + 1);
 }
 
 /**
@@ -23,9 +24,10 @@ export function computeNewAverageRating(
  * Never returns a negative value.
  */
 export function computeRatingAfterDeletion(
-  _prevAvg: number,
-  _prevTotal: number,
-  _removedRating: number,
+  prevAvg: number,
+  prevTotal: number,
+  removedRating: number,
 ): number {
-  return 0; // stub — tests will be RED
+  if (prevTotal <= 1) return 0;
+  return Math.max(0, (prevAvg * prevTotal - removedRating) / (prevTotal - 1));
 }
