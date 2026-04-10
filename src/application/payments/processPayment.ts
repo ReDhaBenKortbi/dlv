@@ -1,6 +1,7 @@
 import type { PaymentRepo, PaymentStatus } from "../ports/PaymentRepo";
 import type { UserRepo } from "../ports/UserRepo";
 import type { Clock } from "../ports/Clock";
+import { computeSubscriptionEndDate } from "../../domain/subscription/policy";
 
 interface ProcessPaymentDeps {
   paymentRepo: PaymentRepo;
@@ -14,16 +15,29 @@ interface ProcessPaymentInput {
   action: "approve" | "reject";
 }
 
-/**
- * Approve or reject a subscription payment request.
- * Phase 0: stub — tests will be RED.
- * Phase 3: replace with real implementation using computeSubscriptionEndDate from domain.
- */
-export function makeProcessPayment(_deps: ProcessPaymentDeps) {
-  return async function processPayment(
-    _input: ProcessPaymentInput,
-  ): Promise<void> {
-    // stub
+export function makeProcessPayment(deps: ProcessPaymentDeps) {
+  return async function processPayment(input: ProcessPaymentInput): Promise<void> {
+    const { paymentRepo, userRepo, clock } = deps;
+    const { requestId, userId, action } = input;
+    const now = clock.now();
+
+    if (action === "approve") {
+      await paymentRepo.updateStatus(requestId, "approved", now);
+      await userRepo.updateSubscription(userId, {
+        isSubscribed: true,
+        status: "approved",
+        startDate: now,
+        endDate: computeSubscriptionEndDate(now),
+      });
+    } else {
+      await paymentRepo.updateStatus(requestId, "rejected", now);
+      await userRepo.updateSubscription(userId, {
+        isSubscribed: false,
+        status: "none",
+        startDate: null,
+        endDate: null,
+      });
+    }
   };
 }
 

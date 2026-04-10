@@ -1,6 +1,8 @@
 import type { ReviewRepo, CreateReviewInput } from "../ports/ReviewRepo";
 import type { BookRepo } from "../ports/BookRepo";
 import type { Clock } from "../ports/Clock";
+import { AlreadyReviewedError, BookNotFoundError } from "../../domain/shared/errors";
+import { computeNewAverageRating } from "../../domain/review/rating";
 
 interface AddReviewDeps {
   reviewRepo: ReviewRepo;
@@ -16,14 +18,33 @@ interface AddReviewInput {
   comment: string;
 }
 
-/**
- * Add a review for a book and update the book's aggregate rating.
- * Phase 0: stub — use cases are not yet implemented; tests will be RED.
- * Phase 3: replace with real implementation.
- */
-export function makeAddReview(_deps: AddReviewDeps) {
-  return async function addReview(_input: AddReviewInput): Promise<string> {
-    return ""; // stub
+export function makeAddReview(deps: AddReviewDeps) {
+  return async function addReview(input: AddReviewInput): Promise<string> {
+    const { bookRepo, reviewRepo, clock } = deps;
+    const { bookId, userId, userName, rating, comment } = input;
+
+    const book = await bookRepo.findById(bookId);
+    if (!book) throw new BookNotFoundError(bookId);
+
+    const existing = await reviewRepo.findByUserAndBook(bookId, userId);
+    if (existing) throw new AlreadyReviewedError();
+
+    const reviewId = await reviewRepo.create({
+      bookId,
+      userId,
+      userName,
+      rating,
+      comment,
+      createdAt: clock.now(),
+    });
+
+    const newAvg = computeNewAverageRating(book.averageRating, book.totalReviews, rating);
+    await bookRepo.update(bookId, {
+      averageRating: newAvg,
+      totalReviews: book.totalReviews + 1,
+    });
+
+    return reviewId;
   };
 }
 
