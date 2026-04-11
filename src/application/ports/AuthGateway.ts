@@ -33,4 +33,11 @@ export interface AuthGateway {
 
   /** Get the current user's Firebase ID token (for server-verified calls). */
   getIdToken(forceRefresh?: boolean): Promise<string>;
+
+  /**
+   * Returns true if the currently signed-in user has the `admin` custom claim
+   * set on their auth token.  Forces a token refresh so the result reflects
+   * the server-side state immediately after a claim is granted/revoked.
+   */
+  isCurrentUserAdmin(): Promise<boolean>;
 }

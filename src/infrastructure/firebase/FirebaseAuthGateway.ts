@@ -59,5 +59,13 @@ export function makeFirebaseAuthGateway(): AuthGateway {
       if (!u) throw new Error("No authenticated user");
       return u.getIdToken(forceRefresh);
     },
+
+    async isCurrentUserAdmin(): Promise<boolean> {
+      const u = auth.currentUser;
+      if (!u) return false;
+      // Force-refresh so we always reflect the latest server-side claim.
+      const result = await u.getIdTokenResult(true);
+      return result.claims["admin"] === true;
+    },
   };
 }
