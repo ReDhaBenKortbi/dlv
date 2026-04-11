@@ -12,7 +12,11 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "rules:deploy:dev": "firebase deploy --only firestore:rules --project ebook-staging-16b0a --account redhaservice@gmail.com",
-    "rules:deploy:prod": "firebase deploy --only firestore:rules --project digitallearningvault-5912c --account ridhabenkortbi@gmail.com"
+    "rules:deploy:prod": "firebase deploy --only firestore:rules --project digitallearningvault-5912c --account ridhabenkortbi@gmail.com",
+    "claims:grant:dev": "node scripts/set-admin-claim.mjs --env dev",
+    "claims:grant:prod": "node scripts/set-admin-claim.mjs --env prod",
+    "claims:revoke:dev": "node scripts/set-admin-claim.mjs --env dev --revoke",
+    "claims:revoke:prod": "node scripts/set-admin-claim.mjs --env prod --revoke"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
@@ -21,7 +25,6 @@
     "@types/react-router-dom": "^5.3.3",
     "daisyui": "^5.5.18",
     "firebase": "^12.9.0",
-    "firebase-admin": "^13.6.1",
     "lucide-react": "^0.563.0",
     "node-fetch": "^2.7.0",
     "react": "^19.2.0",
@@ -32,6 +35,7 @@
     "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
+    "firebase-admin": "^13.6.1",
     "@eslint/js": "^9.39.1",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",

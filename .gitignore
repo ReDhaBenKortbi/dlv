@@ -33,3 +33,9 @@ dist/
 
 
 .claude
+
+# Firebase service-account keys (never commit — store outside repo)
+*.json.key
+.secrets/
+firebase-key*.json
+service-account*.json
