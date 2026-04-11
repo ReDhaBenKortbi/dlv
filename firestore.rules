@@ -12,7 +12,7 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isSignedIn() && request.auth.token.email == 'digitallearningvault.dz@gmail.com';
+      return isSignedIn() && request.auth.token.admin == true;
     }
 
     function isOwner(userId) {
@@ -49,7 +49,8 @@ service cloud.firestore {
     match /users/{userId} {
       allow create: if isSignedIn() && request.auth.uid == userId;
 
-      allow read: if isOwner(userId) || isAdmin();
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
 
       allow update: if isAdmin()
         // General self-update: any fields except subscription/role fields
@@ -144,13 +145,9 @@ service cloud.firestore {
 
     // ---------------------------------------------------------------------------
     // 6. ADMIN COLLECTION ACCESS
-    //    Explicit list access for each collection (replaces broad wildcard).
-    //    Admin needs to list users, paymentRequests, tickets for dashboard queries.
+    //    Explicit list access for collections where the main match block
+    //    does not already include allow list for admin.
     // ---------------------------------------------------------------------------
-    match /users/{id} {
-      allow list: if isAdmin();
-    }
-
     match /paymentRequests/{id} {
       allow list: if isAdmin();
     }
