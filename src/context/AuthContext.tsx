@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useUseCases } from "../presentation/providers/UseCasesContext";
 import type { DomainAuthUser } from "../application/ports/AuthGateway";
-import { ADMIN_EMAIL } from "../utils/constants";
 
 interface AuthContextType {
   user: DomainAuthUser | null;
@@ -26,6 +25,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     "none" | "pending" | "approved" | "rejected"
   >("none");
   const [subscriptionEndDate, setSubscriptionEndDate] = useState<Date | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Prevents triggering expiry reset more than once per subscription period
@@ -40,8 +40,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const getToken = (forceRefresh?: boolean) => authGateway.getIdToken(forceRefresh);
-
-  const isAdmin = user?.email === ADMIN_EMAIL;
 
   // Auto-expire effect: runs whenever subscription state changes.
   // Only reports state through the snapshot listener; side effect is isolated here.
@@ -84,6 +82,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const freshUser = authGateway.getCurrentUser();
           setUser(freshUser);
 
+          const adminClaim = await authGateway.isCurrentUserAdmin().catch(() => false);
+          setIsAdmin(adminClaim);
+
           unsubscribeUserDoc = userRepo.subscribeToUser(authUser.uid, (domainUser) => {
             if (domainUser) {
               setIsSubscribed(domainUser.isSubscribed);
@@ -109,6 +110,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setIsSubscribed(false);
         setSubscriptionStatus("none");
         setSubscriptionEndDate(null);
+        setIsAdmin(false);
         setLoading(false);
       }
     });
