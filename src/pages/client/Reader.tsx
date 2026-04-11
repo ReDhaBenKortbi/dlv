@@ -25,7 +25,7 @@ const Reader = () => {
         setProxyUrl(
           `/.netlify/functions/proxy-book?id=${id}&token=${encodedToken}`,
         );
-      } catch (error) {
+      } catch (_error) {
         toast.error("Failed to load book. Please try again.");
       }
     },
@@ -33,6 +33,7 @@ const Reader = () => {
   );
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     updateProxyUrl();
   }, [updateProxyUrl]);
 

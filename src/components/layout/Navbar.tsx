@@ -19,7 +19,7 @@ const Navbar = () => {
     try {
       await logout();
       navigate("/signup");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to log out. Please try again.");
     }
   };
