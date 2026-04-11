@@ -68,7 +68,15 @@ service cloud.firestore {
             && request.resource.data.diff(resource.data).affectedKeys()
                 .hasOnly(['isSubscribed', 'subscriptionStatus', 'subscriptionStartDate', 'subscriptionEndDate'])
             && request.resource.data.isSubscribed == false
-            && request.resource.data.subscriptionStatus == 'none');
+            && request.resource.data.subscriptionStatus == 'none')
+        // Payment submission: user may mark their own sub as pending (no dates, not subscribed)
+        || (isOwner(userId)
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['isSubscribed', 'subscriptionStatus', 'subscriptionStartDate', 'subscriptionEndDate'])
+            && request.resource.data.isSubscribed == false
+            && request.resource.data.subscriptionStatus == 'pending'
+            && request.resource.data.subscriptionStartDate == null
+            && request.resource.data.subscriptionEndDate == null);
 
       allow delete: if isAdmin();
     }
@@ -87,9 +95,10 @@ service cloud.firestore {
         || (isSignedIn()
             && request.resource.data.diff(resource.data).affectedKeys()
                .hasOnly(['averageRating', 'totalReviews'])
-            && request.resource.data.averageRating is float
-            && request.resource.data.averageRating >= 0.0
-            && request.resource.data.averageRating <= 5.0
+            && (request.resource.data.averageRating is float
+                || request.resource.data.averageRating is int)
+            && request.resource.data.averageRating >= 0
+            && request.resource.data.averageRating <= 5
             && request.resource.data.totalReviews is int
             && request.resource.data.totalReviews >= 0
             && request.resource.data.totalReviews <= resource.data.totalReviews + 1);

@@ -1,6 +1,7 @@
 import type { ReviewRepo } from "../ports/ReviewRepo";
 import type { BookRepo } from "../ports/BookRepo";
 import { BookNotFoundError, ReviewNotFoundError } from "../../domain/shared/errors";
+import { computeRatingAfterDeletion } from "../../domain/review/rating";
 
 interface DeleteReviewDeps {
   reviewRepo: ReviewRepo;
@@ -28,14 +29,10 @@ export function makeDeleteReview(deps: DeleteReviewDeps) {
     const prevTotal = book.totalReviews ?? 0;
     const prevAvg = book.averageRating ?? 0;
     const newTotal = Math.max(0, prevTotal - 1);
-    const newAvg =
-      newTotal > 0 ? (prevAvg * prevTotal - review.rating) / newTotal : 0;
+    const newAvg = computeRatingAfterDeletion(prevAvg, prevTotal, review.rating);
 
     await reviewRepo.delete(reviewId);
-    await bookRepo.update(bookId, {
-      averageRating: newAvg,
-      totalReviews: newTotal,
-    });
+    await bookRepo.updateRating(bookId, newAvg, newTotal);
   };
 }
 
