@@ -101,7 +101,7 @@ service cloud.firestore {
             && request.resource.data.averageRating <= 5
             && request.resource.data.totalReviews is int
             && request.resource.data.totalReviews >= 0
-            && request.resource.data.totalReviews <= resource.data.totalReviews + 1);
+            && request.resource.data.totalReviews <= resource.data.get('totalReviews', 0) + 1);
 
       allow create, delete: if isAdmin();
     }

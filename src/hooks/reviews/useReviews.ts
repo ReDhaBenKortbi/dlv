@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUseCases } from "../../presentation/providers/UseCasesContext";
 import { useAuth } from "../../context/AuthContext";
+import { notify } from "../../utils/toast";
 import type { AddReviewInput } from "../../application/reviews/addReview";
 
 export const useReviews = (bookId: string) => {
@@ -25,14 +26,21 @@ export const useReviews = (bookId: string) => {
     queryClient.invalidateQueries({ queryKey: ["books", bookId] });
   };
 
+  const onMutationError = (err: unknown) => {
+    const msg = err instanceof Error ? err.message : "Something went wrong";
+    notify.error(msg);
+  };
+
   const addMutation = useMutation({
     mutationFn: (input: AddReviewInput) => addReview(input),
     onSuccess: invalidateReviews,
+    onError: onMutationError,
   });
 
   const deleteMutation = useMutation({
     mutationFn: (reviewId: string) => deleteReview({ reviewId, bookId }),
     onSuccess: invalidateReviews,
+    onError: onMutationError,
   });
 
   return {

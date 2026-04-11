@@ -57,6 +57,8 @@ export function makeFirebaseBookRepo(): BookRepo {
       const col = collection(db, COL);
       const ref = await addDoc(col, {
         ...input,
+        averageRating: 0,
+        totalReviews: 0,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
