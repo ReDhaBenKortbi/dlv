@@ -85,6 +85,7 @@ export function CompositionRoot({ children }: CompositionRootProps) {
       clock,
 
       // Shared infrastructure
+      uploadFile: (file: File) => fileUploader.upload(file),
       logger: consoleLogger,
     };
   }, []);

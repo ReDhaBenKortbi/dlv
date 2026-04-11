@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { uploadImageToCloudinary } from "../../services/cloudinaryService";
 import { useBookMutations } from "./useBookMutations";
 import { useUseCases } from "../../presentation/providers/UseCasesContext";
 import type { BookFormValues } from "../../components/admin/BookFormFields";
@@ -22,7 +21,7 @@ const INITIAL_FIELDS: BookFormValues = {
 
 export function useAddBookPage() {
   const navigate = useNavigate();
-  const { logger } = useUseCases();
+  const { logger, uploadFile } = useUseCases();
   const { add, isProcessing } = useBookMutations();
 
   const [fields, setFields] = useState<BookFormValues>(INITIAL_FIELDS);
@@ -56,7 +55,7 @@ export function useAddBookPage() {
 
     setIsUploadingImage(true);
     try {
-      const coverURL = await uploadImageToCloudinary(coverFile);
+      const coverURL = await uploadFile(coverFile);
       const success = await add({
         title: fields.title.trim(),
         author: fields.author.trim(),

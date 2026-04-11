@@ -6,7 +6,12 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "../../config/firebase";
-import type { DashboardStats } from "../../services/adminService";
+
+export interface DashboardStats {
+  users: number;
+  books: number;
+  pendingPayments: number;
+}
 
 // Fetch stats from Firestore
 const fetchDashboardMetrics = async (): Promise<DashboardStats> => {

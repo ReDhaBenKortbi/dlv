@@ -45,6 +45,7 @@ export interface UseCasesContextType {
   clock: Clock;
 
   // Shared infrastructure
+  uploadFile: (file: File) => Promise<string>;
   logger: Logger;
 }
 

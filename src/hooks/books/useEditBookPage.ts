@@ -1,10 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { uploadImageToCloudinary } from "../../services/cloudinaryService";
 import { useBooks } from "./useBooks";
 import { useBookMutations } from "./useBookMutations";
 import { useUseCases } from "../../presentation/providers/UseCasesContext";
 import type { BookFormValues } from "../../components/admin/BookFormFields";
+import type {
+  TargetLanguageCode,
+  FocusSkillCode,
+  ProficiencyLevelCode,
+} from "../../constants/bookOptions";
 
 const INITIAL_FIELDS: BookFormValues = {
   title: "",
@@ -18,7 +22,7 @@ const INITIAL_FIELDS: BookFormValues = {
 export function useEditBookPage() {
   const { bookId } = useParams<{ bookId: string }>();
   const navigate = useNavigate();
-  const { logger } = useUseCases();
+  const { logger, uploadFile } = useUseCases();
   const { book, isLoading: fetching } = useBooks(bookId);
   const { edit, isProcessing } = useBookMutations();
 
@@ -62,11 +66,16 @@ export function useEditBookPage() {
     try {
       if (newCoverFile) {
         setIsUploadingImage(true);
-        finalCoverURL = await uploadImageToCloudinary(newCoverFile);
+        finalCoverURL = await uploadFile(newCoverFile);
       }
 
       const success = await edit(bookId, {
-        ...fields,
+        title: fields.title,
+        author: fields.author,
+        description: fields.description,
+        targetLanguage: fields.targetLanguage as TargetLanguageCode || undefined,
+        focusSkill: fields.focusSkill as FocusSkillCode || undefined,
+        proficiencyLevel: fields.proficiencyLevel as ProficiencyLevelCode || undefined,
         coverURL: finalCoverURL,
         isPremium,
       });

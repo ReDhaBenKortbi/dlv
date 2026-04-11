@@ -8,8 +8,8 @@ import {
   query,
   orderBy,
 } from "firebase/firestore";
-import { db } from "../config/firebase";
-import { notify } from "../utils/toast";
+import { db } from "../../config/firebase";
+import { notify } from "../../utils/toast";
 
 export const useTicketService = () => {
   const queryClient = useQueryClient();
