@@ -26,6 +26,7 @@ const makeFakeBookRepo = (book = stubBook): BookRepo => ({
   findById: vi.fn().mockResolvedValue(book),
   create: vi.fn().mockResolvedValue("new-id"),
   update: vi.fn().mockResolvedValue(undefined),
+  updateRating: vi.fn().mockResolvedValue(undefined),
   delete: vi.fn().mockResolvedValue(undefined),
 });
 
@@ -118,13 +119,7 @@ describe("addReview use case", () => {
       comment: "meh",
     });
 
-    expect(bookRepo.update).toHaveBeenCalledWith(
-      "book-1",
-      expect.objectContaining({
-        averageRating: 3,
-        totalReviews: 2,
-      }),
-    );
+    expect(bookRepo.updateRating).toHaveBeenCalledWith("book-1", 3, 2);
   });
 
   it("throws BookNotFoundError (code BOOK_NOT_FOUND) when book does not exist", async () => {
