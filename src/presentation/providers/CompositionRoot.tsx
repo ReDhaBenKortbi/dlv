@@ -52,8 +52,6 @@ export function CompositionRoot({ children }: CompositionRootProps) {
     const authGateway = makeFirebaseAuthGateway();
     const fileUploader = makeCloudinaryFileUploader();
     const clock = systemClock;
-    void consoleLogger; // available for use cases that inject a logger
-
     return {
       // Books
       listBooks: makeListBooks(bookRepo),
@@ -85,6 +83,9 @@ export function CompositionRoot({ children }: CompositionRootProps) {
       authGateway,
       userRepo,
       clock,
+
+      // Shared infrastructure
+      logger: consoleLogger,
     };
   }, []);
 

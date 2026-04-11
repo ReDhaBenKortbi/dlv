@@ -10,6 +10,7 @@ import type { SubmitPaymentReceiptInput } from "../../application/payments/submi
 import type { AuthGateway } from "../../application/ports/AuthGateway";
 import type { UserRepo } from "../../application/ports/UserRepo";
 import type { Clock } from "../../application/ports/Clock";
+import type { Logger } from "../../application/ports/Logger";
 
 export interface UseCasesContextType {
   // Books
@@ -42,6 +43,9 @@ export interface UseCasesContextType {
   authGateway: AuthGateway;
   userRepo: UserRepo;
   clock: Clock;
+
+  // Shared infrastructure
+  logger: Logger;
 }
 
 export const UseCasesContext = createContext<UseCasesContextType | null>(null);
