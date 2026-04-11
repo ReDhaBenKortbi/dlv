@@ -9,7 +9,7 @@ import { toast } from "sonner";
 const Reader = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isSubscribed, isAdmin, user } = useAuth();
+  const { isSubscribed, isAdmin, user, getToken } = useAuth();
   const { book, isLoading, isError } = useBooks(id);
 
   const [proxyUrl, setProxyUrl] = useState<string>("");
@@ -19,7 +19,7 @@ const Reader = () => {
     async (forceRefresh = false) => {
       if (!id || !user) return;
       try {
-        const idToken = await user.getIdToken(forceRefresh);
+        const idToken = await getToken(forceRefresh);
         const encodedToken = encodeURIComponent(idToken);
 
         setProxyUrl(
@@ -29,7 +29,7 @@ const Reader = () => {
         toast.error("Failed to load book. Please try again.");
       }
     },
-    [id, user],
+    [id, user, getToken],
   );
 
   useEffect(() => {

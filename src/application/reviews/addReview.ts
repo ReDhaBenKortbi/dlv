@@ -20,7 +20,7 @@ interface AddReviewInput {
 
 export function makeAddReview(deps: AddReviewDeps) {
   return async function addReview(input: AddReviewInput): Promise<string> {
-    const { bookRepo, reviewRepo, clock } = deps;
+    const { bookRepo, reviewRepo } = deps;
     const { bookId, userId, userName, rating, comment } = input;
 
     const book = await bookRepo.findById(bookId);
@@ -35,13 +35,13 @@ export function makeAddReview(deps: AddReviewDeps) {
       userName,
       rating,
       comment,
-      createdAt: clock.now(),
     });
 
-    const newAvg = computeNewAverageRating(book.averageRating, book.totalReviews, rating);
+    const prevTotal = book.totalReviews ?? 0;
+    const newAvg = computeNewAverageRating(book.averageRating ?? 0, prevTotal, rating);
     await bookRepo.update(bookId, {
       averageRating: newAvg,
-      totalReviews: book.totalReviews + 1,
+      totalReviews: prevTotal + 1,
     });
 
     return reviewId;

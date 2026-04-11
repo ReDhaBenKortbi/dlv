@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { registerUser } from "../../services/authService";
+import { useUseCases } from "../../presentation/providers/UseCasesContext";
 import { useNavigate, Link } from "react-router-dom";
 import logo from "../../assets/logo/logo.svg";
 
@@ -8,9 +8,9 @@ const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  // 1. Add loading state
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { registerUser } = useUseCases();
 
   const handleSignup = async (e: React.SubmitEvent) => {
     e.preventDefault();
@@ -20,11 +20,14 @@ const Signup = () => {
     try {
       await registerUser(email, password, fullName);
       navigate("/");
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const code = (err as { code?: string }).code;
       const message =
-        err.code === "auth/email-already-in-use"
+        code === "auth/email-already-in-use"
           ? "This email is already registered."
-          : err.message;
+          : err instanceof Error
+            ? err.message
+            : "Sign up failed.";
       setError(message);
     } finally {
       setIsLoading(false);
@@ -70,7 +73,7 @@ const Signup = () => {
                   className="input input-bordered focus:input-primary w-full"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  disabled={isLoading} // 4. Disable inputs while loading
+                  disabled={isLoading}
                   required
                 />
               </div>
@@ -88,9 +91,9 @@ const Signup = () => {
                     viewBox="0 0 24 24"
                   >
                     <g
-                      stroke-linejoin="round"
-                      stroke-linecap="round"
-                      stroke-width="2.5"
+                      strokeLinejoin="round"
+                      strokeLinecap="round"
+                      strokeWidth="2.5"
                       fill="none"
                       stroke="currentColor"
                     >
@@ -125,9 +128,9 @@ const Signup = () => {
                     viewBox="0 0 24 24"
                   >
                     <g
-                      stroke-linejoin="round"
-                      stroke-linecap="round"
-                      stroke-width="2.5"
+                      strokeLinejoin="round"
+                      strokeLinecap="round"
+                      strokeWidth="2.5"
                       fill="none"
                       stroke="currentColor"
                     >
@@ -161,7 +164,6 @@ const Signup = () => {
                 </p>
               </div>
 
-              {/* 5. LOADING BUTTON LOGIC */}
               <button
                 type="submit"
                 disabled={isLoading}

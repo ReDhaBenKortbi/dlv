@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { loginUser } from "../../services/authService";
+import { useUseCases } from "../../presentation/providers/UseCasesContext";
 import { Link } from "react-router-dom";
 import logo from "../../assets/logo/logo.svg";
 
@@ -8,6 +8,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { loginUser } = useUseCases();
 
   const handleLogin = async (e: React.SubmitEvent) => {
     e.preventDefault();
@@ -16,7 +17,7 @@ const Login = () => {
 
     try {
       await loginUser(email, password);
-    } catch (err: any) {
+    } catch {
       setError("Invalid email or password.");
       setLoading(false);
     }
@@ -27,7 +28,6 @@ const Login = () => {
       <div className="w-full max-w-md">
         <div className="card bg-base-100 shadow-2xl rounded-2xl border border-base-200">
           <div className="card-body space-y-6">
-            {/* ICON */}
             <div className="flex justify-center">
               <img
                 src={logo}
@@ -36,7 +36,6 @@ const Login = () => {
               />
             </div>
 
-            {/* HEADER */}
             <div className="text-center space-y-1">
               <h2 className="text-2xl font-bold">Welcome Back</h2>
               <p className="text-sm opacity-60">
@@ -44,16 +43,13 @@ const Login = () => {
               </p>
             </div>
 
-            {/* ERROR */}
             {error && (
               <div className="alert alert-error text-sm">
                 <span>{error}</span>
               </div>
             )}
 
-            {/* FORM */}
             <form onSubmit={handleLogin} className="space-y-5">
-              {/* EMAIL */}
               <div className="form-control">
                 <label className="label">
                   <span className="label-text text-xs uppercase tracking-wide opacity-70 font-semibold">
@@ -67,9 +63,9 @@ const Login = () => {
                     viewBox="0 0 24 24"
                   >
                     <g
-                      stroke-linejoin="round"
-                      stroke-linecap="round"
-                      stroke-width="2.5"
+                      strokeLinejoin="round"
+                      strokeLinecap="round"
+                      strokeWidth="2.5"
                       fill="none"
                       stroke="currentColor"
                     >
@@ -91,7 +87,6 @@ const Login = () => {
                 </div>
               </div>
 
-              {/* PASSWORD */}
               <div className="form-control">
                 <label className="label">
                   <span className="label-text text-xs uppercase tracking-wide opacity-70 font-semibold">
@@ -108,7 +103,6 @@ const Login = () => {
                 />
               </div>
 
-              {/* BUTTON */}
               <button
                 type="submit"
                 className={`btn btn-primary w-full font-semibold ${loading ? "loading" : ""}`}
@@ -118,7 +112,6 @@ const Login = () => {
               </button>
             </form>
 
-            {/* FOOTER */}
             <div className="text-center text-sm pt-2">
               Don't have an account?
               <Link

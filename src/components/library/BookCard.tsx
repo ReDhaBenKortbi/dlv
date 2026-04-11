@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { Star, Crown, Languages } from "lucide-react";
-import type { Book } from "../../types/book";
+import type { DomainBook } from "../../application/ports/BookRepo";
 import { FOCUS_SKILLS } from "../../constants/bookOptions"; // Import to get colors
 
 interface BookCardProps {
-  book: Book;
+  book: DomainBook;
   isSubscribed?: boolean;
 }
 

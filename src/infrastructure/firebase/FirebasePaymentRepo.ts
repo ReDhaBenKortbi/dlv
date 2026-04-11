@@ -8,8 +8,8 @@ import {
   where,
   serverTimestamp,
   Timestamp,
-  DocumentData,
 } from "firebase/firestore";
+import type { DocumentData } from "firebase/firestore";
 import { db } from "./client";
 import type {
   PaymentRepo,

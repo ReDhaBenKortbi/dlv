@@ -16,9 +16,12 @@ const makeFakePaymentRepo = (): PaymentRepo => ({
 
 const makeFakeUserRepo = (): UserRepo => ({
   findById: vi.fn().mockResolvedValue(null),
+  findAll: vi.fn().mockResolvedValue([]),
   create: vi.fn().mockResolvedValue(undefined),
   updateSubscription: vi.fn().mockResolvedValue(undefined),
   resetSubscriptionStatus: vi.fn().mockResolvedValue(undefined),
+  setSubscribed: vi.fn().mockResolvedValue(undefined),
+  subscribeToUser: vi.fn().mockReturnValue(() => {}),
 });
 
 const FIXED_NOW = new Date("2026-04-11T00:00:00.000Z");

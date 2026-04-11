@@ -8,8 +8,8 @@ import {
   addDoc,
   deleteDoc,
   limit,
-  DocumentData,
 } from "firebase/firestore";
+import type { DocumentData } from "firebase/firestore";
 import { db } from "./client";
 import type { ReviewRepo, DomainReview, CreateReviewInput } from "../../application/ports/ReviewRepo";
 import { tsToDate } from "./mappers";

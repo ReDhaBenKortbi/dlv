@@ -1,12 +1,15 @@
 import {
+  collection,
   doc,
   getDoc,
+  getDocs,
+  onSnapshot,
   setDoc,
   updateDoc,
   serverTimestamp,
   Timestamp,
-  DocumentData,
 } from "firebase/firestore";
+import type { DocumentData } from "firebase/firestore";
 import { db } from "./client";
 import type {
   UserRepo,
@@ -41,6 +44,11 @@ export function makeFirebaseUserRepo(): UserRepo {
       return toUser(snap.id, snap.data());
     },
 
+    async findAll(): Promise<DomainUser[]> {
+      const snapshot = await getDocs(collection(db, COL));
+      return snapshot.docs.map((d) => toUser(d.id, d.data()));
+    },
+
     async create(id: string, input: CreateUserInput): Promise<void> {
       await setDoc(doc(db, COL, id), {
         ...input,
@@ -69,6 +77,24 @@ export function makeFirebaseUserRepo(): UserRepo {
         subscriptionStatus: "none" satisfies SubscriptionStatus,
         subscriptionStartDate: null,
         subscriptionEndDate: null,
+      });
+    },
+
+    async setSubscribed(userId: string, isSubscribed: boolean): Promise<void> {
+      await updateDoc(doc(db, COL, userId), { isSubscribed });
+    },
+
+    subscribeToUser(
+      userId: string,
+      callback: (user: DomainUser | null) => void,
+    ): () => void {
+      const ref = doc(db, COL, userId);
+      return onSnapshot(ref, (snap) => {
+        if (!snap.exists()) {
+          callback(null);
+          return;
+        }
+        callback(toUser(snap.id, snap.data()));
       });
     },
   };

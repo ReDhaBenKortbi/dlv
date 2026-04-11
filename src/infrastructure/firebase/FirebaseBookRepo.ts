@@ -9,8 +9,8 @@ import {
   updateDoc,
   doc,
   getDoc,
-  DocumentData,
 } from "firebase/firestore";
+import type { DocumentData } from "firebase/firestore";
 import { db } from "./client";
 import type { BookRepo, DomainBook, CreateBookInput } from "../../application/ports/BookRepo";
 import { tsToDate, tsToDateOpt } from "./mappers";
