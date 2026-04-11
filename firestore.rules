@@ -1,0 +1,162 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------------------------------------------------------------------------
+    // Helper Functions
+    // ---------------------------------------------------------------------------
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.email == 'digitallearningvault.dz@gmail.com';
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // ---------------------------------------------------------------------------
+    // 1. PAYMENT REQUESTS
+    //    - Users create their own requests with required fields and status=pending
+    //    - Users read only their own; admin reads all
+    //    - Only admin can update or delete
+    // ---------------------------------------------------------------------------
+    match /paymentRequests/{id} {
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.keys().hasAll(['userId', 'userEmail', 'fullName', 'amount', 'receiptURL', 'status'])
+        && request.resource.data.receiptURL is string
+        && request.resource.data.receiptURL.size() > 0;
+
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.userId == request.auth.uid);
+
+      allow update, delete: if isAdmin();
+    }
+
+    // ---------------------------------------------------------------------------
+    // 2. USERS
+    //    - Users create only their own document
+    //    - Users can update their own doc but NOT subscription/role fields
+    //      (those are admin-only to prevent free-subscription bypass)
+    //    - Admin can update/delete any user
+    // ---------------------------------------------------------------------------
+    match /users/{userId} {
+      allow create: if isSignedIn() && request.auth.uid == userId;
+
+      allow read: if isOwner(userId) || isAdmin();
+
+      allow update: if isAdmin()
+        // General self-update: any fields except subscription/role fields
+        || (isOwner(userId)
+            && !request.resource.data.diff(resource.data).affectedKeys()
+                .hasAny([
+                  'isSubscribed',
+                  'subscriptionStatus',
+                  'subscriptionStartDate',
+                  'subscriptionEndDate',
+                  'role'
+                ]))
+        // Auto-expiry reset (AuthContext): only allowed to reset to the inactive state
+        || (isOwner(userId)
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['isSubscribed', 'subscriptionStatus', 'subscriptionStartDate', 'subscriptionEndDate'])
+            && request.resource.data.isSubscribed == false
+            && request.resource.data.subscriptionStatus == 'none');
+
+      allow delete: if isAdmin();
+    }
+
+    // ---------------------------------------------------------------------------
+    // 3. BOOKS
+    //    - Public read (catalog is open)
+    //    - Non-admin signed-in users may ONLY update averageRating and totalReviews
+    //      (triggered by review submission); values are range-constrained
+    //    - Create/delete restricted to admin
+    // ---------------------------------------------------------------------------
+    match /books/{bookId} {
+      allow read: if true;
+
+      allow update: if isAdmin()
+        || (isSignedIn()
+            && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['averageRating', 'totalReviews'])
+            && request.resource.data.averageRating is float
+            && request.resource.data.averageRating >= 0.0
+            && request.resource.data.averageRating <= 5.0
+            && request.resource.data.totalReviews is int
+            && request.resource.data.totalReviews >= 0
+            && request.resource.data.totalReviews <= resource.data.totalReviews + 1);
+
+      allow create, delete: if isAdmin();
+    }
+
+    // ---------------------------------------------------------------------------
+    // 4. TICKETS
+    //    - Any signed-in user can create — userId must match their own uid,
+    //      required fields enforced, status must be 'new' on creation
+    //    - Owner can read and update non-status fields (e.g. add context)
+    //    - Only admin can change status or delete tickets
+    // ---------------------------------------------------------------------------
+    match /tickets/{ticketId} {
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasAll(['userId', 'userEmail', 'subject', 'message', 'status'])
+        && request.resource.data.status == 'new';
+
+      allow read: if isAdmin()
+        || (isSignedIn() && resource.data.userId == request.auth.uid);
+
+      allow update: if isAdmin()
+        || (isSignedIn()
+            && resource.data.userId == request.auth.uid
+            && !request.resource.data.diff(resource.data).affectedKeys()
+               .hasAny(['status', 'userId', 'userEmail']));
+
+      allow delete: if isAdmin();
+    }
+
+    // ---------------------------------------------------------------------------
+    // 5. REVIEWS
+    //    - Public read
+    //    - Signed-in users create their own review with required fields
+    //    - Owner can delete; update is intentionally not allowed
+    //      (prevents bookId/userId re-attribution and rating manipulation)
+    // ---------------------------------------------------------------------------
+    match /reviews/{reviewId} {
+      allow read: if true;
+
+      allow create: if isSignedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasAll(['bookId', 'userId', 'userName', 'rating', 'comment'])
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5;
+
+      allow delete: if isSignedIn()
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // ---------------------------------------------------------------------------
+    // 6. ADMIN COLLECTION ACCESS
+    //    Explicit list access for each collection (replaces broad wildcard).
+    //    Admin needs to list users, paymentRequests, tickets for dashboard queries.
+    // ---------------------------------------------------------------------------
+    match /users/{id} {
+      allow list: if isAdmin();
+    }
+
+    match /paymentRequests/{id} {
+      allow list: if isAdmin();
+    }
+
+    match /tickets/{id} {
+      allow list: if isAdmin();
+    }
+  }
+}

@@ -30,5 +30,6 @@ export interface BookRepo {
   findById(id: string): Promise<DomainBook | null>;
   create(input: CreateBookInput): Promise<string>;
   update(id: string, updates: Partial<Omit<DomainBook, "id">>): Promise<void>;
+  updateRating(bookId: string, averageRating: number, totalReviews: number): Promise<void>;
   delete(id: string): Promise<void>;
 }

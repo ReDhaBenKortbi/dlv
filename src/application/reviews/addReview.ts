@@ -39,10 +39,7 @@ export function makeAddReview(deps: AddReviewDeps) {
 
     const prevTotal = book.totalReviews ?? 0;
     const newAvg = computeNewAverageRating(book.averageRating ?? 0, prevTotal, rating);
-    await bookRepo.update(bookId, {
-      averageRating: newAvg,
-      totalReviews: prevTotal + 1,
-    });
+    await bookRepo.updateRating(bookId, newAvg, prevTotal + 1);
 
     return reviewId;
   };

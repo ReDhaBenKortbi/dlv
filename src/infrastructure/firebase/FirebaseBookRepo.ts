@@ -71,6 +71,10 @@ export function makeFirebaseBookRepo(): BookRepo {
       });
     },
 
+    async updateRating(bookId: string, averageRating: number, totalReviews: number): Promise<void> {
+      await updateDoc(doc(db, COL, bookId), { averageRating, totalReviews });
+    },
+
     async delete(id: string): Promise<void> {
       await deleteDoc(doc(db, COL, id));
     },
