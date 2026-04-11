@@ -24,7 +24,7 @@ const Sidebar = () => {
     try {
       await logout();
       navigate("/login");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to log out. Please try again.");
     }
   };

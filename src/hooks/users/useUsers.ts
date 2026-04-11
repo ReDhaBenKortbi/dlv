@@ -1,9 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getUsers, updateUserSubscription } from "../../services/userService";
-import { notify } from "../../utils/toast"; // Import our adapter
+import { useUseCases } from "../../presentation/providers/UseCasesContext";
+import { notify } from "../../utils/toast";
 
 export const useUsers = () => {
   const queryClient = useQueryClient();
+  const { getUsers, toggleUserSubscription } = useUseCases();
 
   const query = useQuery({
     queryKey: ["users"],
@@ -11,23 +12,20 @@ export const useUsers = () => {
   });
 
   const mutation = useMutation({
-    mutationFn: updateUserSubscription,
+    mutationFn: ({ userId, isSubscribed }: { userId: string; isSubscribed: boolean }) =>
+      toggleUserSubscription(userId, isSubscribed),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
 
-  // Wrapped logic with Toast support
-  const toggleSubscription = async (userId: string, currentStatus: boolean) => {
+  const toggle = async (userId: string, currentStatus: boolean) => {
     const newStatus = !currentStatus;
-
-    return await notify.promise(
+    return notify.promise(
       mutation.mutateAsync({ userId, isSubscribed: newStatus }),
       {
         loading: "Updating user permissions...",
-        success: newStatus
-          ? "Premium access granted! ✨"
-          : "Access revoked successfully.",
+        success: newStatus ? "Premium access granted!" : "Access revoked successfully.",
         error: "Failed to update user status.",
       },
     );
@@ -37,6 +35,6 @@ export const useUsers = () => {
     users: query.data ?? [],
     isLoading: query.isLoading,
     isUpdating: mutation.isPending,
-    toggleSubscription, // Now returns a promise with a toast
+    toggleSubscription: toggle,
   };
 };

@@ -1,9 +1,9 @@
 import { Star, Trash2, User } from "lucide-react";
-import type { Review } from "../../types/Review";
+import type { DomainReview } from "../../application/ports/ReviewRepo";
 import { useAuth } from "../../context/AuthContext";
 
 interface ItemProps {
-  review: Review;
+  review: DomainReview;
   onDelete?: (id: string) => void;
   isDeleting?: boolean;
 }
@@ -12,12 +12,7 @@ const ReviewItem = ({ review, onDelete, isDeleting }: ItemProps) => {
   const { user } = useAuth();
   const isOwner = user?.uid === review.userId;
 
-  // Format date safely
-  const dateString =
-    review.createdAt instanceof Date
-      ? review.createdAt.toLocaleDateString()
-      : (review.createdAt as any)?.toDate?.().toLocaleDateString() ||
-        "Recently";
+  const dateString = review.createdAt.toLocaleDateString();
 
   return (
     <div className="group relative bg-base-100 dark:bg-base-200/50 border border-base-300 dark:border-base-400/10 p-5 rounded-2xl transition-all hover:shadow-md mb-4">

@@ -1,70 +1,62 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  getPendingPayments,
-  processPayment,
-} from "../../services/paymentService";
-import type { PaymentRequest } from "../../types/paymentRequest";
-import { notify } from "../../utils/toast"; // Import your adapter
+import { useUseCases } from "../../presentation/providers/UseCasesContext";
+import type { DomainPaymentRequest } from "../../application/ports/PaymentRepo";
+import { notify } from "../../utils/toast";
 
 export const usePayments = () => {
   const queryClient = useQueryClient();
+  const { getPendingPayments, processPayment } = useUseCases();
 
-  // 1. Fetching Logic
   const {
     data: requests = [],
     isLoading,
     isError,
-  } = useQuery<PaymentRequest[]>({
+  } = useQuery<DomainPaymentRequest[]>({
     queryKey: ["pendingPayments"],
     queryFn: getPendingPayments,
   });
 
-  // 2. Mutation Logic
   const mutation = useMutation({
     mutationFn: ({
       request,
       status,
     }: {
-      request: PaymentRequest;
+      request: DomainPaymentRequest;
       status: "approved" | "rejected";
-    }) => processPayment(request, status),
-
+    }) =>
+      processPayment({
+        requestId: request.id,
+        userId: request.userId,
+        action: status === "approved" ? "approve" : "reject",
+      }),
     onSuccess: () => {
-      // Refresh the list immediately
       queryClient.invalidateQueries({ queryKey: ["pendingPayments"] });
     },
-    // We handle the Error UI inside the handleAction promise wrapper below
   });
+
+  const handleAction = async (
+    request: DomainPaymentRequest,
+    status: "approved" | "rejected",
+  ) => {
+    const actionText = status === "approved" ? "approving" : "rejecting";
+    const successText =
+      status === "approved" ? "Subscription activated!" : "Request rejected.";
+
+    await notify.promise(mutation.mutateAsync({ request, status }), {
+      loading: `Processing payment: ${actionText}...`,
+      success: `${request.userEmail}: ${successText}`,
+      error: (err: unknown) => {
+        const message = err instanceof Error ? err.message : "Unknown error";
+        return `Action failed: ${message}`;
+      },
+    });
+  };
 
   return {
     requests,
     isLoading,
     isError,
-
-    /**
-     * PRO IMPLEMENTATION:
-     * We wrap the mutation in our notify.promise.
-     * This handles the Loading, Success, and Error toasts in one go.
-     */
-    handleAction: async (
-      request: PaymentRequest,
-      status: "approved" | "rejected",
-    ) => {
-      const actionText = status === "approved" ? "approving" : "rejecting";
-      const successText =
-        status === "approved" ? "Subscription activated!" : "Request rejected.";
-
-      await notify.promise(
-        mutation.mutateAsync({ request, status }), // Use mutateAsync to return the promise
-        {
-          loading: `Processing payment: ${actionText}...`,
-          success: `${request.userEmail}: ${successText}`,
-          error: (err: any) =>
-            `Action failed: ${err.message || "Unknown error"}`,
-        },
-      );
-    },
-
+    handleAction,
     isProcessing: mutation.isPending,
   };
 };

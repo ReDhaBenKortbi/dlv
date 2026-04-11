@@ -2,11 +2,12 @@ import { EmptyState } from "../../components/common/EmptyState";
 import LoadingScreen from "../../components/common/LoadingScreen";
 import { usePayments } from "../../hooks/payments/usePayments";
 import { FileText, Clock, Check, X, ExternalLink } from "lucide-react";
+import type { DomainPaymentRequest } from "../../presentation/providers/UseCasesContext";
 
 const PaymentManager = () => {
   const { requests, isLoading, handleAction, isProcessing } = usePayments();
 
-  const onProcessClick = (request: any, status: "approved" | "rejected") => {
+  const onProcessClick = (request: DomainPaymentRequest, status: "approved" | "rejected") => {
     const message =
       status === "approved"
         ? `Unlock Premium for ${request.userEmail}?`

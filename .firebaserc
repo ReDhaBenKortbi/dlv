@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "default": "ebook-staging-16b0a",
+    "dev": "ebook-staging-16b0a",
+    "prod": "digitallearningvault-5912c"
+  }
+}

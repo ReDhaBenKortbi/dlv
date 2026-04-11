@@ -3,10 +3,10 @@ import { toast as sonnerToast } from "sonner";
 import type { ExternalToast } from "sonner";
 
 // Define a flexible type for the messages
-type PromiseMessages<T = any> = {
+type PromiseMessages<T = unknown> = {
   loading: string | React.ReactNode;
   success: string | React.ReactNode | ((data: T) => React.ReactNode);
-  error: string | React.ReactNode | ((error: any) => React.ReactNode);
+  error: string | React.ReactNode | ((error: unknown) => React.ReactNode);
 };
 
 export const notify = {
@@ -36,7 +36,7 @@ export const notify = {
       });
       // If it reaches here, it succeeded! We return true.
       return true;
-    } catch (error) {
+    } catch (_error) {
       // If it crashed, we return false.
       return false;
     }

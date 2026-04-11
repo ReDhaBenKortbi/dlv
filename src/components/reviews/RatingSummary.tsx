@@ -1,8 +1,8 @@
 import { Star } from "lucide-react";
-import type { Review } from "../../types/Review";
+import type { DomainReview } from "../../domain/review/schema";
 
 interface Props {
-  reviews: Review[];
+  reviews: DomainReview[];
 }
 
 const RatingSummary = ({ reviews }: Props) => {

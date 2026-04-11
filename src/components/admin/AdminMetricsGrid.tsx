@@ -1,6 +1,6 @@
 import { Users, BookOpen, CreditCard } from "lucide-react";
 import MetricDisplayCard from "./MetricDisplayCard";
-import type { DashboardStats } from "../../services/adminService";
+import type { DashboardStats } from "../../hooks/admin_dashboard/useDashboardMetrics";
 
 interface Props {
   stats: DashboardStats;

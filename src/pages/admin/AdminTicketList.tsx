@@ -1,6 +1,6 @@
 import { CheckCircle, Clock, Trash2 } from "lucide-react";
 import LoadingScreen from "../../components/common/LoadingScreen";
-import { useTicketService } from "../../services/useTicketService";
+import { useTicketService } from "../../hooks/admin_dashboard/useTicketService";
 
 // This tells TypeScript what a Ticket looks like
 interface Ticket {

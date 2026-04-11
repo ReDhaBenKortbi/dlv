@@ -11,7 +11,7 @@ npm run lint       # ESLint
 npm run preview    # Preview production build locally
 ```
 
-No test suite is currently configured.
+Vitest is configured. Domain-layer unit tests live in `src/domain/**/*.test.ts` and `src/application/**/*.test.ts`. Run with `npx vitest run`.
 
 ## Environment Variables
 
@@ -40,16 +40,45 @@ Three route guards in `src/routes/`:
 
 Admin identity is determined purely by email match against `VITE_ADMIN_EMAIL`.
 
-### Data Layer
+### Clean Architecture
 
-Services in `src/services/` call Firestore directly (no backend). TanStack Query wraps them in hooks under `src/hooks/`.
+The codebase follows a four-layer clean architecture. Dependencies only flow inward (presentation → application → domain; infrastructure implements ports).
 
-- `bookService.ts` — CRUD for the `books` Firestore collection
-- `authService.ts` — Firebase Auth registration/login/logout
-- `cloudinaryService.ts` — image/PDF uploads to Cloudinary
-- `paymentService.ts`, `reviewService.ts`, `userService.ts`, `adminService.ts` — domain-specific Firestore ops
+```
+src/
+├── domain/           # Pure TypeScript — no Firebase, no React
+│   ├── book/         # DomainBook, CreateBookInput, vocabulary codes
+│   ├── review/       # DomainReview, CreateReviewInput, rating helpers
+│   ├── payment/      # DomainPaymentRequest, PaymentStatus
+│   ├── subscription/ # isSubscriptionActive policy
+│   └── support/      # DomainTicket, TicketStatus
+│
+├── application/      # Use-case functions — depend only on ports
+│   ├── ports/        # AuthGateway, BookRepo, ReviewRepo, PaymentRepo,
+│   │                 #   UserRepo, FileUploader, Clock, Logger interfaces
+│   ├── books/        # listBooks, getBook, createBook, updateBook, deleteBook
+│   ├── reviews/      # addReview, deleteReview, getReviews, getUserReview
+│   ├── payments/     # getPendingPayments, submitPaymentReceipt, processPayment
+│   ├── users/        # getUsers, toggleUserSubscription
+│   └── auth/         # registerUser, loginUser
+│
+├── infrastructure/   # Adapter implementations of ports
+│   ├── firebase/     # FirebaseBookRepo, FirebaseReviewRepo, FirebasePaymentRepo,
+│   │                 #   FirebaseUserRepo, FirebaseAuthGateway, mappers, client
+│   ├── cloudinary/   # CloudinaryFileUploader
+│   └── logger/       # consoleLogger
+│
+└── presentation/     # React — providers, pages, hooks, components
+    └── providers/
+        ├── CompositionRoot.tsx   # Wires all adapters + use cases; single source of truth
+        └── UseCasesContext.tsx   # React context + useUseCases() hook
+```
 
-Hook pattern: hooks in `src/hooks/<domain>/` wrap service calls with `useQuery`/`useMutation`. Query cache is configured with 5-minute stale time and 30-minute GC.
+**Composition root:** `CompositionRoot.tsx` instantiates all adapters once and exposes every use case (and `uploadFile`, `logger`) through `UseCasesContext`. Pages and hooks consume the context via `useUseCases()` — they never import from `infrastructure/` directly.
+
+**Hook pattern:** hooks in `src/hooks/<domain>/` call use cases from context and wrap them with `useQuery`/`useMutation`. Query cache is configured with 5-minute stale time and 30-minute GC.
+
+**Shared components:** `src/components/admin/BookFormFields.tsx` is used by both AddBook and EditBook pages. Page hooks (`useAddBookPage`, `useEditBookPage`) own all state and handlers; page components are pure JSX.
 
 ### Routing Structure
 

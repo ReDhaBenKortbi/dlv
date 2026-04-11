@@ -19,7 +19,7 @@ const Profile = () => {
     try {
       await logout();
       navigate("/login");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Failed to log out. Please try again.");
     }
   };
@@ -28,8 +28,7 @@ const Profile = () => {
   const daysLeft = useMemo(() => {
     if (!subscriptionEndDate || !isSubscribed) return null;
     const now = new Date();
-    const end = subscriptionEndDate.toDate();
-    const diffTime = end.getTime() - now.getTime();
+    const diffTime = subscriptionEndDate.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays > 0 ? diffDays : 0;
   }, [subscriptionEndDate, isSubscribed]);
@@ -117,7 +116,7 @@ const Profile = () => {
                     <p className="text-sm mt-1">
                       Valid until{" "}
                       <span className="font-semibold">
-                        {subscriptionEndDate?.toDate().toLocaleDateString()}
+                        {subscriptionEndDate?.toLocaleDateString()}
                       </span>
                     </p>
                   </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useUseCases } from "../../presentation/providers/UseCasesContext";
 import { db } from "../../config/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { notify } from "../../utils/toast";
@@ -8,6 +9,7 @@ import { BackButton } from "../../components/common/BackButton";
 
 const SupportPage = () => {
   const { user } = useAuth();
+  const { logger } = useUseCases();
 
   // Form States
   const [subject, setSubject] = useState("");
@@ -60,8 +62,8 @@ const SupportPage = () => {
 
       setIsSubmitted(true);
       notify.success("Support ticket sent!");
-    } catch (error) {
-      console.error("Support submission error:", error);
+    } catch (error: unknown) {
+      logger.error("Support submission error", error);
       notify.error("Failed to send message. Please try again.");
     } finally {
       setIsSubmitting(false);

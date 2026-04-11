@@ -1,102 +1,106 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import type { User } from "firebase/auth";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, onSnapshot, Timestamp, updateDoc } from "firebase/firestore";
-import { auth, db } from "../config/firebase";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { useUseCases } from "../presentation/providers/UseCasesContext";
+import type { DomainAuthUser } from "../application/ports/AuthGateway";
 import { ADMIN_EMAIL } from "../utils/constants";
 
 interface AuthContextType {
-  user: User | null;
+  user: DomainAuthUser | null;
   isSubscribed: boolean;
   subscriptionStatus: "none" | "pending" | "approved" | "rejected";
-  subscriptionEndDate: Timestamp | null;
+  subscriptionEndDate: Date | null;
   isAdmin: boolean;
   loading: boolean;
   logout: () => Promise<void>;
+  /** Get a Firebase ID token for server-verified API calls. */
+  getToken: (forceRefresh?: boolean) => Promise<string>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const { authGateway, userRepo, clock } = useUseCases();
+
+  const [user, setUser] = useState<DomainAuthUser | null>(null);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState<
     "none" | "pending" | "approved" | "rejected"
   >("none");
-  const [subscriptionEndDate, setSubscriptionEndDate] =
-    useState<Timestamp | null>(null);
+  const [subscriptionEndDate, setSubscriptionEndDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Prevents triggering expiry reset more than once per subscription period
+  const expiryHandledRef = useRef(false);
 
   const logout = async () => {
     try {
-      await signOut(auth);
+      await authGateway.logout();
     } catch (err) {
       console.error("Logout Error:", err);
     }
   };
 
+  const getToken = (forceRefresh?: boolean) => authGateway.getIdToken(forceRefresh);
+
   const isAdmin = user?.email === ADMIN_EMAIL;
 
+  // Auto-expire effect: runs whenever subscription state changes.
+  // Only reports state through the snapshot listener; side effect is isolated here.
   useEffect(() => {
-    let unsubscribeDoc: (() => void) | undefined;
+    if (!user || !subscriptionEndDate || !isSubscribed) {
+      expiryHandledRef.current = false;
+      return;
+    }
 
-    const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
-      // Cleanup previous listener immediately if auth state changes
-      if (unsubscribeDoc) {
-        unsubscribeDoc();
-        unsubscribeDoc = undefined;
+    const isExpired = clock.now() > subscriptionEndDate;
+    if (!isExpired || expiryHandledRef.current) return;
+
+    expiryHandledRef.current = true;
+    setIsSubscribed(false);
+    setSubscriptionStatus("none");
+    setSubscriptionEndDate(null);
+
+    userRepo.resetSubscriptionStatus(user.uid).catch((err: unknown) => {
+      console.error("Failed to reset expired subscription:", err);
+      expiryHandledRef.current = false;
+    });
+  }, [user, subscriptionEndDate, isSubscribed, clock, userRepo]);
+
+  useEffect(() => {
+    let unsubscribeUserDoc: (() => void) | undefined;
+
+    const unsubscribeAuth = authGateway.onAuthStateChanged(async (authUser) => {
+      // Clean up previous user-doc listener immediately on auth state change
+      if (unsubscribeUserDoc) {
+        unsubscribeUserDoc();
+        unsubscribeUserDoc = undefined;
       }
 
-      if (currentUser) {
+      if (authUser) {
         try {
-          // PRO TIP: reload() can throw if network is down.
-          // We wrap it but continue anyway if it's just a network error.
-          await currentUser
-            .reload()
-            .catch((err) =>
-              console.warn("Network: Could not refresh session token.", err),
-            );
-          setUser(auth.currentUser);
+          await authGateway.reloadCurrentUser().catch((err: unknown) => {
+            console.warn("Network: Could not refresh session token.", err);
+          });
 
-          const userDocRef = doc(db, "users", currentUser.uid);
+          const freshUser = authGateway.getCurrentUser();
+          setUser(freshUser);
 
-          unsubscribeDoc = onSnapshot(
-            userDocRef,
-            (docSnap) => {
-              if (docSnap.exists()) {
-                const data = docSnap.data();
-                const endDate = data.subscriptionEndDate?.toDate();
-                const now = new Date();
-                const isExpired = endDate && now > endDate;
-
-                if (isExpired && data.isSubscribed) {
-                  // Handle expiration
-                  setIsSubscribed(false);
-                  setSubscriptionStatus("none");
-                  updateDoc(userDocRef, {
-                    isSubscribed: false,
-                    subscriptionStatus: "none",
-                  });
-                } else {
-                  setIsSubscribed(data.isSubscribed || false);
-                  setSubscriptionStatus(data.subscriptionStatus || "none");
-                  setSubscriptionEndDate(data.subscriptionEndDate || null);
-                }
-              } else {
-                // Handle case where User is in Auth but not in Firestore yet
-                setIsSubscribed(false);
-                setSubscriptionStatus("none");
-              }
-              setLoading(false);
-            },
-            (err) => {
-              console.error("User Doc Listener Error:", err);
-              setLoading(false);
-            },
-          );
-        } catch (error: any) {
-          if (error.code === "auth/user-not-found") {
-            logout();
+          unsubscribeUserDoc = userRepo.subscribeToUser(authUser.uid, (domainUser) => {
+            if (domainUser) {
+              setIsSubscribed(domainUser.isSubscribed);
+              setSubscriptionStatus(domainUser.subscriptionStatus);
+              setSubscriptionEndDate(domainUser.subscriptionEndDate ?? null);
+            } else {
+              // User doc missing (shouldn't happen but handle gracefully)
+              setIsSubscribed(false);
+              setSubscriptionStatus("none");
+              setSubscriptionEndDate(null);
+            }
+            setLoading(false);
+          });
+        } catch (error: unknown) {
+          const code = (error as { code?: string }).code;
+          if (code === "auth/user-not-found") {
+            void logout();
           }
           setLoading(false);
         }
@@ -111,9 +115,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     return () => {
       unsubscribeAuth();
-      if (unsubscribeDoc) unsubscribeDoc();
+      if (unsubscribeUserDoc) unsubscribeUserDoc();
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authGateway, userRepo]);
 
   return (
     <AuthContext.Provider
@@ -125,6 +130,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         isAdmin,
         loading,
         logout,
+        getToken,
       }}
     >
       {children}
@@ -132,6 +138,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error("useAuth must be used within an AuthProvider");
