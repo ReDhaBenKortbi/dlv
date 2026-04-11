@@ -20,7 +20,6 @@ Copy `.env.example` to `.env` and fill in values. All vars are prefixed with `VI
 | Variable | Purpose |
 |---|---|
 | `VITE_FIREBASE_*` | Firebase project config (6 vars) |
-| `VITE_ADMIN_EMAIL` | Email that gets admin privileges |
 | `VITE_CLOUDINARY_UPLOAD_PRESET` | Cloudinary unsigned upload preset |
 | `VITE_CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name |
 | `VITE_USE_FIREBASE_EMULATOR` | Set `"true"` to use local Firebase emulators |
@@ -36,9 +35,10 @@ Auth state lives in `src/context/AuthContext.tsx`. It wraps `onAuthStateChanged`
 Three route guards in `src/routes/`:
 - `PublicRoute` — redirects authenticated users away from login/signup
 - `ProtectedRoute` — requires authenticated user
-- `AdminRoute` — requires `user.email === ADMIN_EMAIL`
+- `AdminRoute` — requires `isAdmin === true` (derived from Firebase custom claim)
 
-Admin identity is determined purely by email match against `VITE_ADMIN_EMAIL`.
+Admin identity is determined by the `admin: true` custom claim on the Firebase Auth token.
+Use `npm run claims:grant:dev` / `claims:grant:prod` to grant the claim to an account.
 
 ### Clean Architecture
 

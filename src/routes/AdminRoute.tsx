@@ -8,7 +8,7 @@ const AdminRoute = () => {
   // 1. Wait for Firebase to check if the user is logged in
   if (loading) return <LoadingScreen />;
 
-  // 2. If no user OR email doesn't match, send them to home (/)
+  // 2. If no user OR admin claim not present, send them to home (/)
   if (!isAdmin) {
     return <Navigate to="/" replace />;
   }

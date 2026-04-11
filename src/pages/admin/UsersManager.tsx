@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { ADMIN_EMAIL } from "../../utils/constants";
 import { useUsers } from "../../hooks/users/useUsers";
 import LoadingScreen from "../../components/common/LoadingScreen";
 
@@ -12,7 +11,7 @@ const UsersManager = () => {
     const matchesSearch =
       u.email.toLowerCase().includes(term) ||
       (u.fullName && u.fullName.toLowerCase().includes(term));
-    return matchesSearch && u.email !== ADMIN_EMAIL;
+    return matchesSearch;
   });
 
   if (isLoading) return <LoadingScreen />;
