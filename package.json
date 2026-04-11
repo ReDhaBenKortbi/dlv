@@ -11,8 +11,8 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "rules:deploy:dev": "firebase use dev && firebase deploy --only firestore:rules --account redhaservice@gmail.com",
-    "rules:deploy:prod": "firebase use prod && firebase deploy --only firestore:rules --account ridhabenkortbi@gmail.com"
+    "rules:deploy:dev": "firebase deploy --only firestore:rules --project ebook-staging-16b0a --account redhaservice@gmail.com",
+    "rules:deploy:prod": "firebase deploy --only firestore:rules --project digitallearningvault-5912c --account ridhabenkortbi@gmail.com"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
