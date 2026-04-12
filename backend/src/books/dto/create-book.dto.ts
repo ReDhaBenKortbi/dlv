@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, IsUrl, MinLength } from 'class-validator';
 
 export class CreateBookDto {
   @IsString()
@@ -12,6 +12,13 @@ export class CreateBookDto {
 
   @IsString()
   description: string;
+
+  @IsUrl()
+  coverURL: string;
+
+  @IsString()
+  @MinLength(1)
+  indexURL: string;
 
   @IsOptional()
   @IsBoolean()

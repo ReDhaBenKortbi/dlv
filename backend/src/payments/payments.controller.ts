@@ -5,11 +5,8 @@ import {
   Param,
   Patch,
   Post,
-  UploadedFile,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { Role } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -32,13 +29,11 @@ export class PaymentsController {
   }
 
   @Post('submit')
-  @UseInterceptors(FileInterceptor('receipt'))
   submit(
     @CurrentUser() user: JwtPayload,
     @Body() dto: SubmitPaymentDto,
-    @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.paymentsService.submit(user.sub, user.email, dto, file);
+    return this.paymentsService.submit(user.sub, user.email, dto);
   }
 
   @Patch(':id/process')

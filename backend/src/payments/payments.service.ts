@@ -1,10 +1,8 @@
 import {
-  BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PaymentStatus, SubscriptionStatus } from '@prisma/client';
-import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { PaymentAction, ProcessPaymentDto } from './dto/process-payment.dto';
 import { SubmitPaymentDto } from './dto/submit-payment.dto';
@@ -12,10 +10,7 @@ import { computeSubscriptionEndDate } from './subscription.utils';
 
 @Injectable()
 export class PaymentsService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly cloudinary: CloudinaryService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   getPending() {
     return this.prisma.paymentRequest.findMany({
@@ -24,16 +19,8 @@ export class PaymentsService {
     });
   }
 
-  async submit(
-    userId: string,
-    userEmail: string,
-    dto: SubmitPaymentDto,
-    file: Express.Multer.File | undefined,
-  ) {
-    if (!file) throw new BadRequestException('Receipt file is required');
-
+  async submit(userId: string, userEmail: string, dto: SubmitPaymentDto) {
     const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
-    const receiptURL = await this.cloudinary.upload(file);
 
     const payment = await this.prisma.paymentRequest.create({
       data: {
@@ -41,7 +28,7 @@ export class PaymentsService {
         userEmail,
         fullName: user.fullName,
         amount: dto.amount,
-        receiptURL,
+        receiptURL: dto.receiptURL,
       },
     });
 

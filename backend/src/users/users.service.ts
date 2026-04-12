@@ -22,13 +22,12 @@ export class UsersService {
     });
   }
 
-  async toggleSubscription(userId: string) {
-    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
+  setSubscription(userId: string, isSubscribed: boolean) {
     return this.prisma.user.update({
       where: { id: userId },
       data: {
-        isSubscribed: !user.isSubscribed,
-        subscriptionStatus: !user.isSubscribed
+        isSubscribed,
+        subscriptionStatus: isSubscribed
           ? SubscriptionStatus.APPROVED
           : SubscriptionStatus.NONE,
       },

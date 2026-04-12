@@ -1,24 +1,14 @@
 import {
-  BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 
-interface BookFiles {
-  cover?: Express.Multer.File[];
-  index?: Express.Multer.File[];
-}
-
 @Injectable()
 export class BooksService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly cloudinary: CloudinaryService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   findAll() {
     return this.prisma.book.findMany({ orderBy: { createdAt: 'desc' } });
@@ -30,33 +20,26 @@ export class BooksService {
     return book;
   }
 
-  async create(dto: CreateBookDto, files: BookFiles) {
-    const coverFile = files.cover?.[0];
-    const indexFile = files.index?.[0];
-    if (!coverFile) throw new BadRequestException('Cover file is required');
-    if (!indexFile) throw new BadRequestException('Index file is required');
-
-    const [coverURL, indexURL] = await Promise.all([
-      this.cloudinary.upload(coverFile),
-      this.cloudinary.upload(indexFile),
-    ]);
-
-    return this.prisma.book.create({ data: { ...dto, coverURL, indexURL } });
+  create(dto: CreateBookDto) {
+    return this.prisma.book.create({
+      data: {
+        title: dto.title,
+        author: dto.author,
+        description: dto.description,
+        coverURL: dto.coverURL,
+        indexURL: dto.indexURL,
+        isPremium: dto.isPremium ?? false,
+        category: dto.category,
+        targetLanguage: dto.targetLanguage,
+        focusSkill: dto.focusSkill,
+        proficiencyLevel: dto.proficiencyLevel,
+      },
+    });
   }
 
-  async update(id: string, dto: UpdateBookDto, files: BookFiles) {
+  async update(id: string, dto: UpdateBookDto) {
     await this.findOne(id);
-
-    const updates: Record<string, unknown> = { ...dto };
-
-    if (files.cover?.[0]) {
-      updates.coverURL = await this.cloudinary.upload(files.cover[0]);
-    }
-    if (files.index?.[0]) {
-      updates.indexURL = await this.cloudinary.upload(files.index[0]);
-    }
-
-    return this.prisma.book.update({ where: { id }, data: updates });
+    return this.prisma.book.update({ where: { id }, data: { ...dto } });
   }
 
   async remove(id: string) {

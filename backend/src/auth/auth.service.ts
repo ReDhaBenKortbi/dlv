@@ -4,7 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Role } from '@prisma/client';
+import { Role, SubscriptionStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
@@ -18,7 +18,9 @@ export interface AuthUser {
   role: Role;
   isSubscribed: boolean;
   subscriptionStatus: string;
+  subscriptionStartDate: Date | null;
   subscriptionEndDate: Date | null;
+  createdAt: Date;
 }
 
 @Injectable()
@@ -55,10 +57,36 @@ export class AuthService {
   }
 
   async me(userId: string) {
-    const user = await this.prisma.user.findUniqueOrThrow({
+    let user = await this.prisma.user.findUniqueOrThrow({
       where: { id: userId },
     });
+
+    // Auto-expire subscription when past end date
+    if (user.isSubscribed && user.subscriptionEndDate && user.subscriptionEndDate < new Date()) {
+      user = await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          isSubscribed: false,
+          subscriptionStatus: SubscriptionStatus.NONE,
+          subscriptionStartDate: null,
+          subscriptionEndDate: null,
+        },
+      });
+    }
+
     return this.toAuthUser(user);
+  }
+
+  async resetSubscription(userId: string) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        isSubscribed: false,
+        subscriptionStatus: SubscriptionStatus.NONE,
+        subscriptionStartDate: null,
+        subscriptionEndDate: null,
+      },
+    });
   }
 
   private buildResponse(user: {
@@ -68,12 +96,15 @@ export class AuthService {
     role: Role;
     isSubscribed: boolean;
     subscriptionStatus: string;
+    subscriptionStartDate: Date | null;
     subscriptionEndDate: Date | null;
+    createdAt: Date;
   }) {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
       role: user.role,
+      fullName: user.fullName,
     };
     return {
       accessToken: this.jwt.sign(payload),
@@ -88,7 +119,9 @@ export class AuthService {
     role: Role;
     isSubscribed: boolean;
     subscriptionStatus: string;
+    subscriptionStartDate: Date | null;
     subscriptionEndDate: Date | null;
+    createdAt: Date;
   }): AuthUser {
     return {
       id: user.id,
@@ -97,7 +130,9 @@ export class AuthService {
       role: user.role,
       isSubscribed: user.isSubscribed,
       subscriptionStatus: user.subscriptionStatus,
+      subscriptionStartDate: user.subscriptionStartDate,
       subscriptionEndDate: user.subscriptionEndDate,
+      createdAt: user.createdAt,
     };
   }
 }

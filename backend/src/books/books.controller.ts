@@ -7,11 +7,8 @@ import {
   Param,
   Patch,
   Post,
-  UploadedFiles,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { Role } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -37,35 +34,14 @@ export class BooksController {
 
   @Post()
   @Roles(Role.ADMIN)
-  @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'cover', maxCount: 1 },
-      { name: 'index', maxCount: 1 },
-    ]),
-  )
-  create(
-    @Body() dto: CreateBookDto,
-    @UploadedFiles()
-    files: { cover?: Express.Multer.File[]; index?: Express.Multer.File[] },
-  ) {
-    return this.booksService.create(dto, files);
+  create(@Body() dto: CreateBookDto) {
+    return this.booksService.create(dto);
   }
 
   @Patch(':id')
   @Roles(Role.ADMIN)
-  @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'cover', maxCount: 1 },
-      { name: 'index', maxCount: 1 },
-    ]),
-  )
-  update(
-    @Param('id') id: string,
-    @Body() dto: UpdateBookDto,
-    @UploadedFiles()
-    files: { cover?: Express.Multer.File[]; index?: Express.Multer.File[] },
-  ) {
-    return this.booksService.update(id, dto, files ?? {});
+  update(@Param('id') id: string, @Body() dto: UpdateBookDto) {
+    return this.booksService.update(id, dto);
   }
 
   @Delete(':id')

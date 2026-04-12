@@ -2,13 +2,16 @@ import { useMemo } from "react";
 import { UseCasesContext } from "./UseCasesContext";
 import type { UseCasesContextType } from "./UseCasesContext";
 
-// Infrastructure
-import { makeFirebaseBookRepo } from "../../infrastructure/firebase/FirebaseBookRepo";
-import { makeFirebaseReviewRepo } from "../../infrastructure/firebase/FirebaseReviewRepo";
-import { makeFirebasePaymentRepo } from "../../infrastructure/firebase/FirebasePaymentRepo";
-import { makeFirebaseUserRepo } from "../../infrastructure/firebase/FirebaseUserRepo";
-import { makeFirebaseAuthGateway } from "../../infrastructure/firebase/FirebaseAuthGateway";
+// API infrastructure adapters
+import { makeApiAuthGateway } from "../../infrastructure/api/ApiAuthGateway";
+import { makeApiBookRepo } from "../../infrastructure/api/ApiBookRepo";
+import { makeApiReviewRepo } from "../../infrastructure/api/ApiReviewRepo";
+import { makeApiPaymentRepo } from "../../infrastructure/api/ApiPaymentRepo";
+import { makeApiUserRepo } from "../../infrastructure/api/ApiUserRepo";
+
+// File upload still goes directly to Cloudinary from the frontend.
 import { makeCloudinaryFileUploader } from "../../infrastructure/cloudinary/CloudinaryFileUploader";
+
 import { consoleLogger } from "../../infrastructure/logger/consoleLogger";
 import { systemClock } from "../../application/ports/Clock";
 
@@ -44,14 +47,14 @@ interface CompositionRootProps {
 
 export function CompositionRoot({ children }: CompositionRootProps) {
   const value = useMemo<UseCasesContextType>(() => {
-    // Instantiate adapters once
-    const bookRepo = makeFirebaseBookRepo();
-    const reviewRepo = makeFirebaseReviewRepo();
-    const paymentRepo = makeFirebasePaymentRepo();
-    const userRepo = makeFirebaseUserRepo();
-    const authGateway = makeFirebaseAuthGateway();
+    const authGateway = makeApiAuthGateway();
+    const bookRepo = makeApiBookRepo();
+    const reviewRepo = makeApiReviewRepo();
+    const paymentRepo = makeApiPaymentRepo();
+    const userRepo = makeApiUserRepo();
     const fileUploader = makeCloudinaryFileUploader();
     const clock = systemClock;
+
     return {
       // Books
       listBooks: makeListBooks(bookRepo),

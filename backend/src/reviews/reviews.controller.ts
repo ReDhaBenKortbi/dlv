@@ -38,7 +38,7 @@ export class ReviewsController {
     @CurrentUser() user: JwtPayload,
     @Body() dto: CreateReviewDto,
   ) {
-    return this.reviewsService.create(bookId, user.sub, user.email, dto);
+    return this.reviewsService.create(bookId, user.sub, user.fullName, dto);
   }
 }
 

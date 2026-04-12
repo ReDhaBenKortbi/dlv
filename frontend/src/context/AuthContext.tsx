@@ -10,7 +10,7 @@ interface AuthContextType {
   isAdmin: boolean;
   loading: boolean;
   logout: () => Promise<void>;
-  /** Get a Firebase ID token for server-verified API calls. */
+  /** Get the current JWT for authenticated API calls. */
   getToken: (forceRefresh?: boolean) => Promise<string>;
 }
 
@@ -28,21 +28,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Prevents triggering expiry reset more than once per subscription period
   const expiryHandledRef = useRef(false);
 
   const logout = async () => {
-    try {
-      await authGateway.logout();
-    } catch (err) {
-      console.error("Logout Error:", err);
-    }
+    await authGateway.logout();
   };
 
-  const getToken = (forceRefresh?: boolean) => authGateway.getIdToken(forceRefresh);
+  const getToken = (_forceRefresh?: boolean) => authGateway.getIdToken();
 
-  // Auto-expire effect: runs whenever subscription state changes.
-  // Only reports state through the snapshot listener; side effect is isolated here.
+  // Auto-expire effect: detects client-side subscription expiry and
+  // notifies the backend so persistent state stays consistent.
   useEffect(() => {
     if (!user || !subscriptionEndDate || !isSubscribed) {
       expiryHandledRef.current = false;
@@ -57,8 +52,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setSubscriptionStatus("none");
     setSubscriptionEndDate(null);
 
-    userRepo.resetSubscriptionStatus(user.uid).catch((err: unknown) => {
-      console.error("Failed to reset expired subscription:", err);
+    userRepo.resetSubscriptionStatus(user.uid).catch(() => {
       expiryHandledRef.current = false;
     });
   }, [user, subscriptionEndDate, isSubscribed, clock, userRepo]);
@@ -67,44 +61,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     let unsubscribeUserDoc: (() => void) | undefined;
 
     const unsubscribeAuth = authGateway.onAuthStateChanged(async (authUser) => {
-      // Clean up previous user-doc listener immediately on auth state change
       if (unsubscribeUserDoc) {
         unsubscribeUserDoc();
         unsubscribeUserDoc = undefined;
       }
 
       if (authUser) {
-        try {
-          await authGateway.reloadCurrentUser().catch((err: unknown) => {
-            console.warn("Network: Could not refresh session token.", err);
-          });
+        setUser(authUser);
 
-          const freshUser = authGateway.getCurrentUser();
-          setUser(freshUser);
+        const adminFlag = await authGateway.isCurrentUserAdmin().catch(() => false);
+        setIsAdmin(adminFlag);
 
-          const adminClaim = await authGateway.isCurrentUserAdmin().catch(() => false);
-          setIsAdmin(adminClaim);
-
-          unsubscribeUserDoc = userRepo.subscribeToUser(authUser.uid, (domainUser) => {
-            if (domainUser) {
-              setIsSubscribed(domainUser.isSubscribed);
-              setSubscriptionStatus(domainUser.subscriptionStatus);
-              setSubscriptionEndDate(domainUser.subscriptionEndDate ?? null);
-            } else {
-              // User doc missing (shouldn't happen but handle gracefully)
-              setIsSubscribed(false);
-              setSubscriptionStatus("none");
-              setSubscriptionEndDate(null);
-            }
-            setLoading(false);
-          });
-        } catch (error: unknown) {
-          const code = (error as { code?: string }).code;
-          if (code === "auth/user-not-found") {
-            void logout();
+        unsubscribeUserDoc = userRepo.subscribeToUser(authUser.uid, (domainUser) => {
+          if (domainUser) {
+            setIsSubscribed(domainUser.isSubscribed);
+            setSubscriptionStatus(domainUser.subscriptionStatus);
+            setSubscriptionEndDate(domainUser.subscriptionEndDate ?? null);
+          } else {
+            setIsSubscribed(false);
+            setSubscriptionStatus("none");
+            setSubscriptionEndDate(null);
           }
           setLoading(false);
-        }
+        });
       } else {
         setUser(null);
         setIsSubscribed(false);
