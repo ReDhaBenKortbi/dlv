@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ebook_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ebook_platform
+      POSTGRES_USER: ebook_user
+      POSTGRES_PASSWORD: ebook_pass
+    ports:
+      - "5433:5432"
+    volumes:
+      - ebook_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  ebook_postgres_data:
