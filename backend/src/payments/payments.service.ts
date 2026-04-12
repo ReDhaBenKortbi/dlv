@@ -6,7 +6,7 @@ import {
 import { PaymentStatus, SubscriptionStatus } from '@prisma/client';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { ProcessPaymentDto } from './dto/process-payment.dto';
+import { PaymentAction, ProcessPaymentDto } from './dto/process-payment.dto';
 import { SubmitPaymentDto } from './dto/submit-payment.dto';
 import { computeSubscriptionEndDate } from './subscription.utils';
 
@@ -61,7 +61,7 @@ export class PaymentsService {
 
     const now = new Date();
 
-    if (dto.action === PaymentStatus.APPROVED) {
+    if (dto.action === PaymentAction.APPROVED) {
       const subscriptionEndDate = computeSubscriptionEndDate(now);
       await this.prisma.$transaction([
         this.prisma.paymentRequest.update({

@@ -1,7 +1,11 @@
 import { IsEnum } from 'class-validator';
-import { PaymentStatus } from '@prisma/client';
+
+export enum PaymentAction {
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+}
 
 export class ProcessPaymentDto {
-  @IsEnum([PaymentStatus.APPROVED, PaymentStatus.REJECTED])
-  action: PaymentStatus.APPROVED | PaymentStatus.REJECTED;
+  @IsEnum(PaymentAction)
+  action: PaymentAction;
 }
