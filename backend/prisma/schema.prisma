@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CLIENT
+  ADMIN
+}
+
+enum SubscriptionStatus {
+  NONE
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum TicketStatus {
+  NEW
+  READ
+  RESOLVED
+}
+
+model User {
+  id                    String             @id @default(uuid())
+  email                 String             @unique
+  fullName              String
+  passwordHash          String
+  role                  Role               @default(CLIENT)
+  isSubscribed          Boolean            @default(false)
+  subscriptionStatus    SubscriptionStatus @default(NONE)
+  subscriptionStartDate DateTime?
+  subscriptionEndDate   DateTime?
+  createdAt             DateTime           @default(now())
+
+  reviews         Review[]
+  paymentRequests PaymentRequest[]
+  tickets         Ticket[]
+}
+
+model Book {
+  id               String   @id @default(uuid())
+  title            String
+  author           String
+  description      String
+  coverURL         String
+  indexURL         String
+  isPremium        Boolean  @default(false)
+  category         String?
+  targetLanguage   String?
+  focusSkill       String?
+  proficiencyLevel String?
+  averageRating    Float    @default(0)
+  totalReviews     Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  reviews Review[]
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  bookId    String
+  userId    String
+  userName  String
+  rating    Int
+  comment   String
+  createdAt DateTime @default(now())
+
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([bookId, userId])
+}
+
+model PaymentRequest {
+  id          String        @id @default(uuid())
+  userId      String
+  userEmail   String
+  fullName    String
+  amount      String
+  receiptURL  String
+  status      PaymentStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  processedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Ticket {
+  id        String       @id @default(uuid())
+  userId    String
+  userEmail String
+  subject   String
+  message   String
+  status    TicketStatus @default(NEW)
+  createdAt DateTime     @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
