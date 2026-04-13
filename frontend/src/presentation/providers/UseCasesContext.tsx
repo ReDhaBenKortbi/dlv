@@ -11,6 +11,8 @@ import type { AuthGateway } from "../../application/ports/AuthGateway";
 import type { UserRepo } from "../../application/ports/UserRepo";
 import type { Clock } from "../../application/ports/Clock";
 import type { Logger } from "../../application/ports/Logger";
+import type { DashboardStats } from "../../application/ports/DashboardRepo";
+import type { DomainTicket } from "../../application/ports/TicketRepo";
 
 export interface UseCasesContextType {
   // Books
@@ -39,6 +41,14 @@ export interface UseCasesContextType {
   registerUser: (email: string, password: string, fullName: string) => Promise<void>;
   loginUser: (email: string, password: string) => Promise<void>;
 
+  // Dashboard
+  getDashboardMetrics: () => Promise<DashboardStats>;
+
+  // Tickets
+  getTickets: () => Promise<DomainTicket[]>;
+  resolveTicket: (id: string) => Promise<void>;
+  removeTicket: (id: string) => Promise<void>;
+
   // Raw ports needed by AuthContext
   authGateway: AuthGateway;
   userRepo: UserRepo;
@@ -65,4 +75,6 @@ export type {
   CreateReviewInput,
   DomainPaymentRequest,
   DomainUser,
+  DashboardStats,
+  DomainTicket,
 };

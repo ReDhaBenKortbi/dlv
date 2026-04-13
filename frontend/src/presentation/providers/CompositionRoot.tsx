@@ -8,6 +8,8 @@ import { makeApiBookRepo } from "../../infrastructure/api/ApiBookRepo";
 import { makeApiReviewRepo } from "../../infrastructure/api/ApiReviewRepo";
 import { makeApiPaymentRepo } from "../../infrastructure/api/ApiPaymentRepo";
 import { makeApiUserRepo } from "../../infrastructure/api/ApiUserRepo";
+import { makeApiDashboardRepo } from "../../infrastructure/api/ApiDashboardRepo";
+import { makeApiTicketRepo } from "../../infrastructure/api/ApiTicketRepo";
 
 // File upload still goes directly to Cloudinary from the frontend.
 import { makeCloudinaryFileUploader } from "../../infrastructure/cloudinary/CloudinaryFileUploader";
@@ -52,6 +54,8 @@ export function CompositionRoot({ children }: CompositionRootProps) {
     const reviewRepo = makeApiReviewRepo();
     const paymentRepo = makeApiPaymentRepo();
     const userRepo = makeApiUserRepo();
+    const dashboardRepo = makeApiDashboardRepo();
+    const ticketRepo = makeApiTicketRepo();
     const fileUploader = makeCloudinaryFileUploader();
     const clock = systemClock;
 
@@ -77,6 +81,14 @@ export function CompositionRoot({ children }: CompositionRootProps) {
       // Users
       getUsers: makeGetUsers(userRepo),
       toggleUserSubscription: makeToggleUserSubscription(userRepo),
+
+      // Dashboard
+      getDashboardMetrics: () => dashboardRepo.getMetrics(),
+
+      // Tickets
+      getTickets: () => ticketRepo.getAll(),
+      resolveTicket: (id: string) => ticketRepo.resolve(id),
+      removeTicket: (id: string) => ticketRepo.remove(id),
 
       // Auth use cases
       registerUser: makeRegisterUser({ authGateway, userRepo }),

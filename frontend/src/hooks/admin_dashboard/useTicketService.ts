@@ -1,34 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  collection,
-  getDocs,
-  doc,
-  updateDoc,
-  deleteDoc,
-  query,
-  orderBy,
-} from "firebase/firestore";
-import { db } from "../../config/firebase";
+import { useUseCases } from "../../presentation/providers/UseCasesContext";
 import { notify } from "../../utils/toast";
 
 export const useTicketService = () => {
   const queryClient = useQueryClient();
+  const { getTickets, resolveTicket, removeTicket } = useUseCases();
 
   // 1. Fetch Tickets
   const { data: tickets = [], isLoading } = useQuery({
     queryKey: ["tickets"],
-    queryFn: async () => {
-      const q = query(collection(db, "tickets"), orderBy("createdAt", "desc"));
-      const snapshot = await getDocs(q);
-      return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-    },
+    queryFn: getTickets,
   });
 
   // 2. Resolve Mutation
   const resolveMutation = useMutation({
-    mutationFn: async (id: string) => {
-      await updateDoc(doc(db, "tickets", id), { status: "resolved" });
-    },
+    mutationFn: resolveTicket,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tickets"] });
     },
@@ -36,9 +22,7 @@ export const useTicketService = () => {
 
   // 3. Delete Mutation
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      await deleteDoc(doc(db, "tickets", id));
-    },
+    mutationFn: removeTicket,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tickets"] });
     },
