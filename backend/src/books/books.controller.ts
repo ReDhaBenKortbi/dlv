@@ -16,6 +16,12 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { BooksService } from './books.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
+import { SignContentDto } from './dto/sign-content.dto';
+import { SignContentBatchDto } from './dto/sign-content-batch.dto';
+import { SignPartsDto } from './dto/sign-parts.dto';
+import { CompleteMultipartDto } from './dto/complete-multipart.dto';
+import { AbortMultipartDto } from './dto/abort-multipart.dto';
+import { SetContentDto } from './dto/set-content.dto';
 
 @Controller('books')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -49,5 +55,49 @@ export class BooksController {
   @HttpCode(204)
   remove(@Param('id') id: string) {
     return this.booksService.remove(id);
+  }
+
+  @Post(':id/content/sign')
+  @Roles(Role.ADMIN)
+  signContentUrl(@Param('id') id: string, @Body() dto: SignContentDto) {
+    return this.booksService.signContentUrl(id, dto);
+  }
+
+  @Post(':id/content/sign-batch')
+  @Roles(Role.ADMIN)
+  signContentUrlBatch(@Param('id') id: string, @Body() dto: SignContentBatchDto) {
+    return this.booksService.signContentUrlBatch(id, dto);
+  }
+
+  @Post(':id/content/multipart/initiate')
+  @Roles(Role.ADMIN)
+  initiateContentUpload(@Param('id') id: string, @Body() dto: SignContentDto) {
+    return this.booksService.initiateContentUpload(id, dto);
+  }
+
+  @Post(':id/content/multipart/sign-parts')
+  @Roles(Role.ADMIN)
+  signContentParts(@Param('id') id: string, @Body() dto: SignPartsDto) {
+    return this.booksService.signContentParts(id, dto);
+  }
+
+  @Post(':id/content/multipart/complete')
+  @Roles(Role.ADMIN)
+  @HttpCode(204)
+  completeContentUpload(@Param('id') id: string, @Body() dto: CompleteMultipartDto) {
+    return this.booksService.completeContentUpload(id, dto);
+  }
+
+  @Delete(':id/content/multipart/abort')
+  @Roles(Role.ADMIN)
+  @HttpCode(204)
+  abortContentUpload(@Param('id') id: string, @Body() dto: AbortMultipartDto) {
+    return this.booksService.abortContentUpload(id, dto);
+  }
+
+  @Patch(':id/content')
+  @Roles(Role.ADMIN)
+  setContentIndex(@Param('id') id: string, @Body() dto: SetContentDto) {
+    return this.booksService.setContentIndex(id, dto);
   }
 }

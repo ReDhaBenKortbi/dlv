@@ -1,5 +1,5 @@
 import { apiClient } from './ApiClient';
-import type { DomainTicket, TicketRepo, TicketStatus } from '../../application/ports/TicketRepo';
+import type { CreateTicketInput, DomainTicket, TicketRepo, TicketStatus } from '../../application/ports/TicketRepo';
 
 interface ApiTicket {
   id: string;
@@ -28,6 +28,10 @@ export function makeApiTicketRepo(): TicketRepo {
     async getAll(): Promise<DomainTicket[]> {
       const tickets = await apiClient.get<ApiTicket[]>('/tickets');
       return tickets.map(toTicket);
+    },
+
+    async create(input: CreateTicketInput): Promise<void> {
+      await apiClient.post('/tickets', input);
     },
 
     async resolve(id: string): Promise<void> {

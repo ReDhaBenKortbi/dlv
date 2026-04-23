@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { BooksModule } from './books/books.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { StorageModule } from './storage/storage.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { PaymentsModule } from './payments/payments.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -15,6 +16,7 @@ import { UsersModule } from './users/users.module';
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
     CloudinaryModule,
+    StorageModule,
     AuthModule,
     BooksModule,
     ReviewsModule,

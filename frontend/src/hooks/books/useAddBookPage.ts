@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useBookMutations } from "./useBookMutations";
 import { useUseCases } from "../../presentation/providers/UseCasesContext";
 import type { BookFormValues } from "../../components/admin/BookFormFields";
 import type {
@@ -21,15 +20,15 @@ const INITIAL_FIELDS: BookFormValues = {
 
 export function useAddBookPage() {
   const navigate = useNavigate();
-  const { logger, uploadFile } = useUseCases();
-  const { add, isProcessing } = useBookMutations();
+  const { logger, uploadFile, uploadBookContent, createBook, deleteBook } = useUseCases();
 
   const [fields, setFields] = useState<BookFormValues>(INITIAL_FIELDS);
   const [isPremium, setIsPremium] = useState(false);
-  const [flipbookURL, setFlipbookURL] = useState("");
   const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [folderFiles, setFolderFiles] = useState<File[]>([]);
   const [imagePreview, setImagePreview] = useState("");
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ bytesDone: number; bytesTotal: number } | null>(null);
 
   useEffect(() => {
     if (!coverFile) {
@@ -45,37 +44,73 @@ export function useAddBookPage() {
     setFields((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleFolderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = Array.from(e.target.files ?? []);
+    setFolderFiles(selected);
+  };
+
+  const validatePublishInputs = (): boolean => {
+    if (!coverFile) {
+      toast.error("Please provide a cover image.");
+      return false;
+    }
+    if (folderFiles.length === 0) {
+      toast.error("Please select the book folder.");
+      return false;
+    }
+    const hasIndex = folderFiles.some((f) =>
+      ((f as File & { webkitRelativePath?: string }).webkitRelativePath ?? f.name).endsWith("index.html"),
+    );
+    if (!hasIndex) {
+      toast.error("The selected folder must contain an index.html file.");
+      return false;
+    }
+    return true;
+  };
+
+  const createBookRecord = async (coverURL: string): Promise<string | null> =>
+    createBook({
+      title: fields.title.trim(),
+      author: fields.author.trim(),
+      description: fields.description.trim(),
+      coverURL,
+      isPremium,
+      targetLanguage: fields.targetLanguage as TargetLanguageCode,
+      focusSkill: fields.focusSkill as FocusSkillCode,
+      proficiencyLevel: fields.proficiencyLevel as ProficiencyLevelCode,
+      category: "Academic",
+    });
+
   const handlePublish = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validatePublishInputs() || !coverFile) return;
 
-    if (!coverFile || !flipbookURL) {
-      toast.error("Please provide both a cover image and the Netlify URL.");
-      return;
-    }
-
-    setIsUploadingImage(true);
+    setIsUploading(true);
+    let createdBookId: string | null = null;
     try {
       const coverURL = await uploadFile(coverFile);
-      const success = await add({
-        title: fields.title.trim(),
-        author: fields.author.trim(),
-        description: fields.description.trim(),
-        indexURL: flipbookURL.trim(),
-        coverURL,
-        isPremium,
-        targetLanguage: fields.targetLanguage as TargetLanguageCode,
-        focusSkill: fields.focusSkill as FocusSkillCode,
-        proficiencyLevel: fields.proficiencyLevel as ProficiencyLevelCode,
-        category: "Academic",
+      createdBookId = await createBookRecord(coverURL);
+      if (!createdBookId) return;
+
+      await uploadBookContent(createdBookId, folderFiles, (bytesDone, bytesTotal) => {
+        setUploadProgress({ bytesDone, bytesTotal });
       });
 
-      if (success) {
-        navigate("/admin/manage-books");
-      }
+      toast.success("Book published successfully!");
+      navigate("/admin/manage-books");
     } catch (error: unknown) {
       logger.error("Publishing failed", error);
+      if (createdBookId) {
+        try {
+          await deleteBook(createdBookId);
+        } catch (cleanupError: unknown) {
+          logger.error("Orphan cleanup failed", cleanupError);
+        }
+      }
+      toast.error("Publishing failed. Please try again.");
     } finally {
-      setIsUploadingImage(false);
+      setIsUploading(false);
+      setUploadProgress(null);
     }
   };
 
@@ -84,13 +119,13 @@ export function useAddBookPage() {
     handleFieldChange,
     isPremium,
     setIsPremium,
-    flipbookURL,
-    setFlipbookURL,
     coverFile,
     setCoverFile,
+    folderFiles,
+    handleFolderChange,
     imagePreview,
-    isUploadingImage,
-    isProcessing,
+    isUploading,
+    uploadProgress,
     handlePublish,
   };
 }

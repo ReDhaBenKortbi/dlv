@@ -16,9 +16,9 @@ export class CreateBookDto {
   @IsUrl()
   coverURL: string;
 
+  @IsOptional()
   @IsString()
-  @MinLength(1)
-  indexURL: string;
+  indexURL?: string;
 
   @IsOptional()
   @IsBoolean()

@@ -1,6 +1,7 @@
 import LoadingScreen from "../../components/common/LoadingScreen";
 import { BookFormFields } from "../../components/admin/BookFormFields";
 import { useEditBookPage } from "../../hooks/books/useEditBookPage";
+import { formatBytes } from "../../infrastructure/api/uploadHelpers";
 
 const EditBook = () => {
   const {
@@ -14,6 +15,11 @@ const EditBook = () => {
     isUploadingImage,
     isProcessing,
     handleUpdate,
+    folderFiles,
+    handleFolderChange,
+    isUploadingContent,
+    contentProgress,
+    handleContentUpload,
     formTitle,
   } = useEditBookPage();
 
@@ -64,6 +70,49 @@ const EditBook = () => {
           </button>
         </div>
       </form>
+      {/* CONTENT RE-UPLOAD */}
+      <div className="mt-10 bg-base-100 rounded-2xl shadow border border-base-200 p-6 space-y-4">
+        <h2 className="text-sm font-bold uppercase tracking-widest text-warning">
+          Replace Book Content
+        </h2>
+        <p className="text-xs text-base-content/50">
+          Upload a new folder to replace the current HTML/CSS/JS content.
+        </p>
+        <input
+          type="file"
+          // @ts-expect-error webkitdirectory is not in TS typings
+          webkitdirectory=""
+          multiple
+          onChange={handleFolderChange}
+          className="file-input file-input-bordered bg-base-200 border-warning/40 w-full"
+        />
+        {folderFiles.length > 0 && (
+          <p className="text-xs text-base-content/50">{folderFiles.length} files selected</p>
+        )}
+        {contentProgress && (
+          <div className="space-y-1">
+            <div className="flex justify-between text-xs text-base-content/60">
+              <span>Uploading…</span>
+              <span>
+                {formatBytes(contentProgress.bytesDone)} / {formatBytes(contentProgress.bytesTotal)}
+              </span>
+            </div>
+            <progress
+              className="progress progress-warning w-full"
+              value={contentProgress.bytesDone}
+              max={contentProgress.bytesTotal || 1}
+            />
+          </div>
+        )}
+        <button
+          type="button"
+          className="btn btn-warning btn-sm"
+          disabled={folderFiles.length === 0 || isUploadingContent}
+          onClick={handleContentUpload}
+        >
+          {isUploadingContent ? <span className="loading loading-spinner loading-xs" /> : "Upload Content"}
+        </button>
+      </div>
     </div>
   );
 };

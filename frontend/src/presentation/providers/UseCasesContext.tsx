@@ -12,7 +12,7 @@ import type { UserRepo } from "../../application/ports/UserRepo";
 import type { Clock } from "../../application/ports/Clock";
 import type { Logger } from "../../application/ports/Logger";
 import type { DashboardStats } from "../../application/ports/DashboardRepo";
-import type { DomainTicket } from "../../application/ports/TicketRepo";
+import type { CreateTicketInput, DomainTicket } from "../../application/ports/TicketRepo";
 
 export interface UseCasesContextType {
   // Books
@@ -21,6 +21,7 @@ export interface UseCasesContextType {
   createBook: (input: CreateBookInput) => Promise<string>;
   updateBook: (id: string, updates: Partial<Omit<DomainBook, "id">>) => Promise<void>;
   deleteBook: (id: string) => Promise<void>;
+  uploadBookContent: (bookId: string, files: File[], onProgress?: (bytesDone: number, bytesTotal: number) => void) => Promise<void>;
 
   // Reviews
   getReviewsByBook: (bookId: string) => Promise<DomainReview[]>;
@@ -46,6 +47,7 @@ export interface UseCasesContextType {
 
   // Tickets
   getTickets: () => Promise<DomainTicket[]>;
+  submitTicket: (input: CreateTicketInput) => Promise<void>;
   resolveTicket: (id: string) => Promise<void>;
   removeTicket: (id: string) => Promise<void>;
 
@@ -76,5 +78,6 @@ export type {
   DomainPaymentRequest,
   DomainUser,
   DashboardStats,
+  CreateTicketInput,
   DomainTicket,
 };

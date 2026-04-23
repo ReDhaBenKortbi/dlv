@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import { useParams, useNavigate } from "react-router-dom";
 import { useBooks } from "./useBooks";
 import { useBookMutations } from "./useBookMutations";
@@ -22,7 +23,7 @@ const INITIAL_FIELDS: BookFormValues = {
 export function useEditBookPage() {
   const { bookId } = useParams<{ bookId: string }>();
   const navigate = useNavigate();
-  const { logger, uploadFile } = useUseCases();
+  const { logger, uploadFile, uploadBookContent } = useUseCases();
   const { book, isLoading: fetching } = useBooks(bookId);
   const { edit, isProcessing } = useBookMutations();
 
@@ -32,6 +33,9 @@ export function useEditBookPage() {
   const [newCoverFile, setNewCoverFile] = useState<File | null>(null);
   const [preview, setPreview] = useState("");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [folderFiles, setFolderFiles] = useState<File[]>([]);
+  const [isUploadingContent, setIsUploadingContent] = useState(false);
+  const [contentProgress, setContentProgress] = useState<{ bytesDone: number; bytesTotal: number } | null>(null);
 
   useEffect(() => {
     if (book) {
@@ -51,6 +55,33 @@ export function useEditBookPage() {
 
   const handleFieldChange = (field: keyof BookFormValues, value: string) => {
     setFields((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleFolderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFolderFiles(Array.from(e.target.files ?? []));
+  };
+
+  const handleContentUpload = async () => {
+    if (!bookId || folderFiles.length === 0) return;
+    const hasIndex = folderFiles.some((f) =>
+      ((f as File & { webkitRelativePath?: string }).webkitRelativePath ?? f.name).endsWith('index.html'),
+    );
+    if (!hasIndex) {
+      logger.error('No index.html in folder', new Error('missing index.html'));
+      return;
+    }
+    setIsUploadingContent(true);
+    try {
+      await uploadBookContent(bookId, folderFiles, (bytesDone, bytesTotal) => setContentProgress({ bytesDone, bytesTotal }));
+      setFolderFiles([]);
+      toast.success('Book content uploaded successfully.');
+    } catch (error: unknown) {
+      logger.error('Content upload failed', error);
+      toast.error('Content upload failed. Please try again.');
+    } finally {
+      setIsUploadingContent(false);
+      setContentProgress(null);
+    }
   };
 
   const handleFileChange = (file: File) => {
@@ -101,6 +132,11 @@ export function useEditBookPage() {
     isUploadingImage,
     isProcessing,
     handleUpdate,
+    folderFiles,
+    handleFolderChange,
+    isUploadingContent,
+    contentProgress,
+    handleContentUpload,
     formTitle: fields.title,
   };
 }

@@ -66,6 +66,7 @@ export function CompositionRoot({ children }: CompositionRootProps) {
       createBook: makeCreateBook(bookRepo),
       updateBook: makeUpdateBook(bookRepo),
       deleteBook: makeDeleteBook(bookRepo),
+      uploadBookContent: (bookId, files, onProgress) => bookRepo.uploadBookContent(bookId, files, onProgress),
 
       // Reviews
       getReviewsByBook: makeGetReviewsByBook(reviewRepo),
@@ -87,6 +88,7 @@ export function CompositionRoot({ children }: CompositionRootProps) {
 
       // Tickets
       getTickets: () => ticketRepo.getAll(),
+      submitTicket: (input) => ticketRepo.create(input),
       resolveTicket: (id: string) => ticketRepo.resolve(id),
       removeTicket: (id: string) => ticketRepo.remove(id),
 

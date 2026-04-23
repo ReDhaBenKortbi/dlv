@@ -1,6 +1,7 @@
 import { BookPreview } from "../../components/admin/BookPreview";
 import { BookFormFields } from "../../components/admin/BookFormFields";
 import { useAddBookPage } from "../../hooks/books/useAddBookPage";
+import { formatBytes } from "../../infrastructure/api/uploadHelpers";
 
 const AddBook = () => {
   const {
@@ -8,12 +9,12 @@ const AddBook = () => {
     handleFieldChange,
     isPremium,
     setIsPremium,
-    flipbookURL,
-    setFlipbookURL,
     setCoverFile,
+    handleFolderChange,
+    folderFiles,
     imagePreview,
-    isUploadingImage,
-    isProcessing,
+    isUploading,
+    uploadProgress,
     handlePublish,
   } = useAddBookPage();
 
@@ -31,22 +32,8 @@ const AddBook = () => {
                   requireSelects
                 />
 
-                {/* URL + COVER SECTION */}
+                {/* COVER + FOLDER SECTION */}
                 <div className="bg-base-200/50 border border-base-300 rounded-xl p-5 space-y-4">
-                  <div>
-                    <label className="text-xs font-bold text-warning uppercase">
-                      Netlify URL (index.html)
-                    </label>
-                    <input
-                      type="url"
-                      placeholder="https://your-flipbook.netlify.app/index.html"
-                      className="input input-bordered bg-base-100 border-warning/40 mt-1 w-full"
-                      value={flipbookURL}
-                      onChange={(e) => setFlipbookURL(e.target.value)}
-                      required
-                    />
-                  </div>
-
                   <div>
                     <label className="text-xs font-bold text-base-content/60 uppercase">
                       Cover Image
@@ -59,7 +46,44 @@ const AddBook = () => {
                       required
                     />
                   </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-warning uppercase">
+                      Book Folder (HTML/CSS/JS)
+                    </label>
+                    <input
+                      type="file"
+                      // @ts-expect-error webkitdirectory is not in TS typings
+                      webkitdirectory=""
+                      multiple
+                      onChange={handleFolderChange}
+                      className="file-input file-input-bordered bg-base-100 border-warning/40 mt-1 w-full"
+                      required
+                    />
+                    {folderFiles.length > 0 && (
+                      <p className="text-xs text-base-content/50 mt-1">
+                        {folderFiles.length} files selected
+                      </p>
+                    )}
+                  </div>
                 </div>
+
+                {/* UPLOAD PROGRESS */}
+                {uploadProgress && (
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs text-base-content/60">
+                      <span>Uploading…</span>
+                      <span>
+                        {formatBytes(uploadProgress.bytesDone)} / {formatBytes(uploadProgress.bytesTotal)}
+                      </span>
+                    </div>
+                    <progress
+                      className="progress progress-primary w-full"
+                      value={uploadProgress.bytesDone}
+                      max={uploadProgress.bytesTotal || 1}
+                    />
+                  </div>
+                )}
 
                 {/* PREMIUM + ACTIONS */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4">
@@ -79,9 +103,9 @@ const AddBook = () => {
                     <button
                       type="submit"
                       className="btn btn-primary px-10 shadow-lg"
-                      disabled={isUploadingImage || isProcessing}
+                      disabled={isUploading}
                     >
-                      {isUploadingImage ? (
+                      {isUploading ? (
                         <span className="loading loading-spinner"></span>
                       ) : (
                         "Publish to Library"

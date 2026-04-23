@@ -1,15 +1,13 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useUseCases } from "../../presentation/providers/UseCasesContext";
-import { db } from "../../config/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { notify } from "../../utils/toast";
 import { Send, CheckCircle, ShieldAlert } from "lucide-react";
 import { BackButton } from "../../components/common/BackButton";
 
 const SupportPage = () => {
   const { user } = useAuth();
-  const { logger } = useUseCases();
+  const { submitTicket, logger } = useUseCases();
 
   // Form States
   const [subject, setSubject] = useState("");
@@ -48,14 +46,7 @@ const SupportPage = () => {
 
     setIsSubmitting(true);
     try {
-      await addDoc(collection(db, "tickets"), {
-        userId: user?.uid || "anonymous",
-        userEmail: user?.email || "anonymous",
-        subject,
-        message,
-        status: "new",
-        createdAt: serverTimestamp(),
-      });
+      await submitTicket({ subject, message });
 
       // Set cooldown in localStorage
       localStorage.setItem(`last_ticket_${user?.uid}`, Date.now().toString());

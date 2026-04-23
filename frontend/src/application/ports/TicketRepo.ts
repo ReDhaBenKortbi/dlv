@@ -10,8 +10,14 @@ export interface DomainTicket {
   createdAt: Date;
 }
 
+export interface CreateTicketInput {
+  subject: string;
+  message: string;
+}
+
 export interface TicketRepo {
   getAll(): Promise<DomainTicket[]>;
+  create(input: CreateTicketInput): Promise<void>;
   resolve(id: string): Promise<void>;
   remove(id: string): Promise<void>;
 }

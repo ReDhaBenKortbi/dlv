@@ -54,7 +54,7 @@ model Book {
   author           String
   description      String
   coverURL         String
-  indexURL         String
+  indexURL         String?
   isPremium        Boolean  @default(false)
   category         String?
   targetLanguage   String?
