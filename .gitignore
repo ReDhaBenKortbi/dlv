@@ -48,3 +48,6 @@ service-account*.json
 
 # Coverage
 coverage/
+
+# TypeScript incremental build cache
+*.tsbuildinfo
