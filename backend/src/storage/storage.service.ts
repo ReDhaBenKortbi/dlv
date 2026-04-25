@@ -36,6 +36,9 @@ export class StorageService {
         accessKeyId: config.getOrThrow<string>('S3_ACCESS_KEY'),
         secretAccessKey: config.getOrThrow<string>('S3_SECRET_KEY'),
       },
+      // R2 does not support SDK-injected CRC32 checksums
+      requestChecksumCalculation: 'WHEN_REQUIRED',
+      responseChecksumValidation: 'WHEN_REQUIRED',
       ...(endpoint ? { endpoint, forcePathStyle } : {}),
     });
 

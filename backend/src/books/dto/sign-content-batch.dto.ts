@@ -21,7 +21,7 @@ class SignContentFileDto {
 export class SignContentBatchDto {
   @IsArray()
   @ArrayNotEmpty()
-  @ArrayMaxSize(100)
+  @ArrayMaxSize(200)
   @ValidateNested({ each: true })
   @Type(() => SignContentFileDto)
   files: SignContentFileDto[];
