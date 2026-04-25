@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { BullModule } from '@nestjs/bullmq';
 import { AuthModule } from './auth/auth.module';
 import { BooksModule } from './books/books.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
@@ -14,6 +15,18 @@ import { UsersModule } from './users/users.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    BullModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        connection: {
+          host: config.get<string>('REDIS_HOST') ?? 'localhost',
+          port: parseInt(config.get<string>('REDIS_PORT') ?? '6379', 10),
+          ...(config.get<string>('REDIS_PASSWORD')
+            ? { password: config.get<string>('REDIS_PASSWORD') }
+            : {}),
+        },
+      }),
+    }),
     PrismaModule,
     CloudinaryModule,
     StorageModule,

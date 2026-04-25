@@ -12,5 +12,18 @@ services:
     volumes:
       - ebook_postgres_data:/var/lib/postgresql/data
 
+  redis:
+    image: redis:7-alpine
+    container_name: ebook_redis
+    restart: unless-stopped
+    # Local development only — bind to loopback so the unauth'd Redis
+    # is not reachable from the LAN. Set REDIS_PASSWORD and add a
+    # `command: redis-server --requirepass ...` line for any other env.
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - ebook_redis_data:/data
+
 volumes:
   ebook_postgres_data:
+  ebook_redis_data:

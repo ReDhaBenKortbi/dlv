@@ -22,6 +22,10 @@ import { SignPartsDto } from './dto/sign-parts.dto';
 import { CompleteMultipartDto } from './dto/complete-multipart.dto';
 import { AbortMultipartDto } from './dto/abort-multipart.dto';
 import { SetContentDto } from './dto/set-content.dto';
+import {
+  CreateUploadSessionDto,
+  UpdateUploadSessionDto,
+} from './dto/upload-session.dto';
 
 @Controller('books')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -99,5 +103,36 @@ export class BooksController {
   @Roles(Role.ADMIN)
   setContentIndex(@Param('id') id: string, @Body() dto: SetContentDto) {
     return this.booksService.setContentIndex(id, dto);
+  }
+
+  @Post(':id/content/process')
+  @Roles(Role.ADMIN)
+  @HttpCode(202)
+  processContent(@Param('id') id: string, @Body() dto: SetContentDto) {
+    return this.booksService.enqueueFlipbookProcessing(id, dto);
+  }
+
+  @Get(':id/upload-session')
+  @Roles(Role.ADMIN)
+  getUploadSession(@Param('id') id: string) {
+    return this.booksService.getUploadSession(id);
+  }
+
+  @Post(':id/upload-session')
+  @Roles(Role.ADMIN)
+  createUploadSession(
+    @Param('id') id: string,
+    @Body() dto: CreateUploadSessionDto,
+  ) {
+    return this.booksService.createUploadSession(id, dto);
+  }
+
+  @Patch(':id/upload-session')
+  @Roles(Role.ADMIN)
+  updateUploadSession(
+    @Param('id') id: string,
+    @Body() dto: UpdateUploadSessionDto,
+  ) {
+    return this.booksService.updateUploadSession(id, dto);
   }
 }
