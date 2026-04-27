@@ -5,10 +5,10 @@ import LoadingScreen from "../components/common/LoadingScreen";
 const AdminRoute = () => {
   const { isAdmin, loading } = useAuth();
 
-  // 1. Wait for Firebase to check if the user is logged in
+  // 1. Wait for the auth session to resolve
   if (loading) return <LoadingScreen />;
 
-  // 2. If no user OR admin claim not present, send them to home (/)
+  // 2. If no user OR not an admin, send them to home (/)
   if (!isAdmin) {
     return <Navigate to="/" replace />;
   }

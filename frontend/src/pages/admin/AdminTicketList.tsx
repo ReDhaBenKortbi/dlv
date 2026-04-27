@@ -2,14 +2,6 @@ import { CheckCircle, Clock, Trash2 } from "lucide-react";
 import LoadingScreen from "../../components/common/LoadingScreen";
 import { useTicketService } from "../../hooks/admin_dashboard/useTicketService";
 
-// This tells TypeScript what a Ticket looks like
-interface Ticket {
-  id: string;
-  subject: string;
-  message: string;
-  status: "new" | "resolved";
-}
-
 const AdminTicketList = () => {
   const { tickets, isLoading, handleResolve, handleRemove } =
     useTicketService();
@@ -24,18 +16,18 @@ const AdminTicketList = () => {
         {tickets.length === 0 ? (
           <p className="text-center opacity-50 py-10">No messages yet.</p>
         ) : (
-          (tickets as Ticket[]).map((ticket) => (
+          tickets.map((ticket) => (
             <div
               key={ticket.id}
               className={`p-4 rounded-lg border flex justify-between items-start gap-4 ${
-                ticket.status === "resolved"
+                ticket.status === "RESOLVED"
                   ? "opacity-50 bg-base-200"
                   : "bg-base-100 shadow-sm border-primary/20"
               }`}
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  {ticket.status !== "resolved" && (
+                  {ticket.status !== "RESOLVED" && (
                     <Clock size={14} className="text-warning" />
                   )}
                   <h3 className="font-bold">{ticket.subject}</h3>
@@ -44,7 +36,7 @@ const AdminTicketList = () => {
               </div>
 
               <div className="flex gap-2">
-                {ticket.status !== "resolved" && (
+                {ticket.status !== "RESOLVED" && (
                   <button
                     onClick={() => handleResolve(ticket.id)}
                     className="btn btn-square btn-sm btn-success outline-none"

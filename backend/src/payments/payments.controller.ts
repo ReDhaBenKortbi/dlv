@@ -14,6 +14,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { JwtPayload } from '../auth/strategies/jwt.strategy';
 import { ProcessPaymentDto } from './dto/process-payment.dto';
+import { SignReceiptDto } from './dto/sign-receipt.dto';
 import { SubmitPaymentDto } from './dto/submit-payment.dto';
 import { PaymentsService } from './payments.service';
 
@@ -26,6 +27,14 @@ export class PaymentsController {
   @Roles(Role.ADMIN)
   getPending() {
     return this.paymentsService.getPending();
+  }
+
+  @Post('receipt/sign')
+  signReceipt(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: SignReceiptDto,
+  ) {
+    return this.paymentsService.signReceiptUrl(user.sub, dto);
   }
 
   @Post('submit')

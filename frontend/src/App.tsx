@@ -108,7 +108,7 @@ function App() {
   const { loading } = useAuth();
 
   // PREVENT REDIRECT FLASH:
-  // Do not mount the router until Firebase finishes checking the session.
+  // Do not mount the router until the auth session is resolved.
   if (loading) {
     return <LoadingScreen />;
   }

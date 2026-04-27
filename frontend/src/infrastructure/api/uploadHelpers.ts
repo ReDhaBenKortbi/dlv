@@ -1,9 +1,9 @@
 export const MULTIPART_THRESHOLD = 5 * 1024 * 1024;
-export const PART_SIZE = 10 * 1024 * 1024;
+const PART_SIZE = 10 * 1024 * 1024;
 export const UPLOAD_CONCURRENCY = 20; // was 5 — increased to saturate 200Mb/s with many small files
 export const PART_CONCURRENCY = 6;    // was 4 — extra parallelism for large-file chunks
 export const SIGN_BATCH_SIZE = 200;   // was 50 — backend ArrayMaxSize raised to 200, reduces sign round-trips 4×
-export const MAX_RETRIES = 3;
+const MAX_RETRIES = 3;
 
 export function stripTopFolder(file: File): string {
   const raw = (file as File & { webkitRelativePath?: string }).webkitRelativePath ?? file.name;
@@ -20,8 +20,11 @@ export function formatBytes(bytes: number): string {
 export class Semaphore {
   private active = 0;
   private queue: Array<() => void> = [];
+  private readonly limit: number;
 
-  constructor(private readonly limit: number) {}
+  constructor(limit: number) {
+    this.limit = limit;
+  }
 
   async run<T>(task: () => Promise<T>): Promise<T> {
     await this.acquire();

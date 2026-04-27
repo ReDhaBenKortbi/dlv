@@ -3,7 +3,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 import { AuthModule } from './auth/auth.module';
 import { BooksModule } from './books/books.module';
-import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { StorageModule } from './storage/storage.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { PaymentsModule } from './payments/payments.module';
@@ -28,7 +27,6 @@ import { UsersModule } from './users/users.module';
       }),
     }),
     PrismaModule,
-    CloudinaryModule,
     StorageModule,
     AuthModule,
     BooksModule,

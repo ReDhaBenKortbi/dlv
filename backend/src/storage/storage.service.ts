@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import {
   S3Client,
   PutObjectCommand,
+  GetObjectCommand,
   DeleteObjectCommand,
   ListObjectsV2Command,
   DeleteObjectsCommand,
@@ -50,12 +51,22 @@ export class StorageService {
     return `${this.publicBaseUrl}/${key}`;
   }
 
+  keyFromPublicUrl(url: string): string | null {
+    const prefix = `${this.publicBaseUrl}/`;
+    return url.startsWith(prefix) ? url.slice(prefix.length) : null;
+  }
+
   async signPutUrl(key: string, contentType: string, expiresIn = 3600): Promise<string> {
     const command = new PutObjectCommand({
       Bucket: this.bucket,
       Key: key,
       ContentType: contentType,
     });
+    return getSignedUrl(this.client, command, { expiresIn });
+  }
+
+  async signGetUrl(key: string, expiresIn = 3600): Promise<string> {
+    const command = new GetObjectCommand({ Bucket: this.bucket, Key: key });
     return getSignedUrl(this.client, command, { expiresIn });
   }
 

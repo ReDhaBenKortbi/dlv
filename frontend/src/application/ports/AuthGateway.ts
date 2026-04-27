@@ -31,7 +31,7 @@ export interface AuthGateway {
   /** Synchronous snapshot of the currently signed-in user. */
   getCurrentUser(): DomainAuthUser | null;
 
-  /** Get the current user's Firebase ID token (for server-verified calls). */
+  /** Get the current user's JWT (for server-verified calls). */
   getIdToken(forceRefresh?: boolean): Promise<string>;
 
   /**

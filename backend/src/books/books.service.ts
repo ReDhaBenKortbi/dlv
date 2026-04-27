@@ -16,6 +16,7 @@ import {
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { SignContentDto } from './dto/sign-content.dto';
+import { SignCoverDto } from './dto/sign-cover.dto';
 import { SignContentBatchDto } from './dto/sign-content-batch.dto';
 import { SignPartsDto } from './dto/sign-parts.dto';
 import { CompleteMultipartDto } from './dto/complete-multipart.dto';
@@ -111,6 +112,40 @@ export class BooksService {
     await this.findOne(id);
     await this.prisma.book.delete({ where: { id } });
     await this.storage.deleteFolder(`books/${id}`);
+  }
+
+  async signCoverUrl(dto: SignCoverDto) {
+    const safeName = dto.fileName.replace(/[^a-zA-Z0-9._-]/g, '_').slice(-128);
+    const ext = (() => {
+      const m = /\.(jpe?g|png|webp)$/i.exec(safeName);
+      if (m) return m[0].toLowerCase();
+      const t = dto.contentType.split('/')[1];
+      return `.${t === 'jpeg' ? 'jpg' : t}`;
+    })();
+    const uuid = (globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2));
+    const key = `covers/${uuid}${ext}`;
+    const putUrl = await this.storage.signPutUrl(key, dto.contentType);
+    return { key, putUrl, publicUrl: this.storage.publicUrl(key) };
+  }
+
+  async getReaderContentUrl(id: string, userId: string) {
+    const [book, user] = await Promise.all([
+      this.findOne(id),
+      this.prisma.user.findUnique({ where: { id: userId } }),
+    ]);
+    if (!book.indexURL) {
+      throw new UnprocessableEntityException('Book content not yet available');
+    }
+    const isAdmin = user?.role === 'ADMIN';
+    if (book.isPremium && !isAdmin && !user?.isSubscribed) {
+      throw new ForbiddenException('Subscription required for premium content');
+    }
+    const key = this.storage.keyFromPublicUrl(book.indexURL);
+    if (!key) {
+      throw new UnprocessableEntityException('Invalid content URL');
+    }
+    const url = await this.storage.signGetUrl(key, 3600);
+    return { url, expiresIn: 3600 };
   }
 
   async signContentUrl(id: string, dto: SignContentDto) {

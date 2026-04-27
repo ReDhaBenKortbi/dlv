@@ -41,7 +41,7 @@ Define success criteria. Loop until verified.
 
 # Project Context
 
-**Language-learning e-book platform.** React SPA frontend + NestJS backend + PostgreSQL via Prisma. Auth is JWT-based (NestJS-issued). File uploads through Multer on the backend, forwarded to Cloudinary.
+**Language-learning e-book platform.** React SPA frontend + NestJS backend + PostgreSQL via Prisma. Auth is JWT-based (NestJS-issued). File uploads use browser→R2 presigned PUTs: backend signs short-lived URLs, browser uploads directly to Cloudflare R2.
 
 ## Rules
 
@@ -57,14 +57,14 @@ React SPA (frontend/)
          ▼
 NestJS Backend (backend/)
   ├─ AuthModule       — register, login, GET /auth/me
-  ├─ BooksModule      — CRUD + Multer cover/index upload
+  ├─ BooksModule      — CRUD + R2 presigned uploads (cover + flipbook content)
   ├─ ReviewsModule    — CRUD + average rating recalculation
   ├─ PaymentsModule   — receipt upload + approve/reject + subscription logic
   ├─ UsersModule      — list users, admin subscription toggle
   ├─ TicketsModule    — support ticket CRUD
   └─ DashboardModule  — counts (users, books, pending payments)
   Prisma ORM → PostgreSQL
-  Cloudinary SDK → file storage
+  AWS S3 SDK → Cloudflare R2 (presigned URL signing only)
 ```
 
 ## Key Decisions
@@ -73,7 +73,7 @@ NestJS Backend (backend/)
 |---|---|---|
 | Database | PostgreSQL + Prisma | Relational structure; type-safe client |
 | Auth | JWT via Passport | Stateless; mirrors existing `getToken()` pattern |
-| File uploads | Multer → Cloudinary | Server handles multipart; Cloudinary stays as CDN |
+| File uploads | Browser → R2 presigned PUT | Single storage; backend only signs URLs |
 | API style | REST | Matches existing use-case-per-endpoint granularity |
 
 ## Domain Ports (frontend)
@@ -100,11 +100,14 @@ All new infrastructure lives in `src/infrastructure/api/`. Each adapter implemen
 DATABASE_URL=postgresql://user:pass@localhost:5432/ebook_platform
 JWT_SECRET=<random-secret>
 JWT_EXPIRES_IN=7d
-CLOUDINARY_CLOUD_NAME=...
-CLOUDINARY_API_KEY=...
-CLOUDINARY_API_SECRET=...
 CORS_ORIGIN=http://localhost:5173
 PORT=3000
+S3_ACCESS_KEY=...
+S3_SECRET_KEY=...
+S3_REGION=auto
+S3_BUCKET=...
+S3_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+S3_PUBLIC_BASE_URL=https://pub-<hash>.r2.dev
 ```
 
 ## Dev Setup

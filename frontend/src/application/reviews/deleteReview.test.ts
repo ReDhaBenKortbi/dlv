@@ -37,6 +37,7 @@ const makeFakeBookRepo = (book = stubBook): BookRepo => ({
   update: vi.fn().mockResolvedValue(undefined),
   updateRating: vi.fn().mockResolvedValue(undefined),
   delete: vi.fn().mockResolvedValue(undefined),
+  uploadBookContent: vi.fn().mockResolvedValue(undefined),
 });
 
 const makeFakeReviewRepo = (reviews: DomainReview[] = [stubReview]): ReviewRepo => ({

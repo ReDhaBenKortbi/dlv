@@ -11,8 +11,8 @@ import { makeApiUserRepo } from "../../infrastructure/api/ApiUserRepo";
 import { makeApiDashboardRepo } from "../../infrastructure/api/ApiDashboardRepo";
 import { makeApiTicketRepo } from "../../infrastructure/api/ApiTicketRepo";
 
-// File upload still goes directly to Cloudinary from the frontend.
-import { makeCloudinaryFileUploader } from "../../infrastructure/cloudinary/CloudinaryFileUploader";
+// File uploads use signed PUT URLs against Cloudflare R2 via the backend.
+import { makeApiR2Uploader } from "../../infrastructure/api/ApiR2Uploader";
 
 import { consoleLogger } from "../../infrastructure/logger/consoleLogger";
 import { systemClock } from "../../application/ports/Clock";
@@ -56,7 +56,8 @@ export function CompositionRoot({ children }: CompositionRootProps) {
     const userRepo = makeApiUserRepo();
     const dashboardRepo = makeApiDashboardRepo();
     const ticketRepo = makeApiTicketRepo();
-    const fileUploader = makeCloudinaryFileUploader();
+    const coverUploader = makeApiR2Uploader({ signEndpoint: "/books/cover/sign" });
+    const receiptUploader = makeApiR2Uploader({ signEndpoint: "/payments/receipt/sign" });
     const clock = systemClock;
 
     return {
@@ -76,7 +77,7 @@ export function CompositionRoot({ children }: CompositionRootProps) {
 
       // Payments
       getPendingPayments: makeGetPendingPayments(paymentRepo),
-      submitPaymentReceipt: makeSubmitPaymentReceipt({ paymentRepo, userRepo, fileUploader }),
+      submitPaymentReceipt: makeSubmitPaymentReceipt({ paymentRepo, userRepo, fileUploader: receiptUploader }),
       processPayment: makeProcessPayment({ paymentRepo, userRepo, clock }),
 
       // Users
@@ -102,7 +103,7 @@ export function CompositionRoot({ children }: CompositionRootProps) {
       clock,
 
       // Shared infrastructure
-      uploadFile: (file: File) => fileUploader.upload(file),
+      uploadFile: (file: File) => coverUploader.upload(file),
       logger: consoleLogger,
     };
   }, []);

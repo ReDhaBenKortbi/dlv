@@ -90,8 +90,13 @@ class SessionTracker {
   private queue: string[] = [];
   private timer: ReturnType<typeof setTimeout> | null = null;
   private inFlight: Promise<void> = Promise.resolve();
+  private readonly api: Api;
+  private readonly bookId: string;
 
-  constructor(private readonly api: Api, private readonly bookId: string) {}
+  constructor(api: Api, bookId: string) {
+    this.api = api;
+    this.bookId = bookId;
+  }
 
   markComplete(fileName: string): void {
     this.queue.push(fileName);

@@ -17,6 +17,9 @@ import { BooksService } from './books.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { SignContentDto } from './dto/sign-content.dto';
+import { SignCoverDto } from './dto/sign-cover.dto';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { JwtPayload } from '../auth/strategies/jwt.strategy';
 import { SignContentBatchDto } from './dto/sign-content-batch.dto';
 import { SignPartsDto } from './dto/sign-parts.dto';
 import { CompleteMultipartDto } from './dto/complete-multipart.dto';
@@ -59,6 +62,17 @@ export class BooksController {
   @HttpCode(204)
   remove(@Param('id') id: string) {
     return this.booksService.remove(id);
+  }
+
+  @Post('cover/sign')
+  @Roles(Role.ADMIN)
+  signCoverUrl(@Body() dto: SignCoverDto) {
+    return this.booksService.signCoverUrl(dto);
+  }
+
+  @Get(':id/content-url')
+  getReaderContentUrl(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.booksService.getReaderContentUrl(id, user.sub);
   }
 
   @Post(':id/content/sign')

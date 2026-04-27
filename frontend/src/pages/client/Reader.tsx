@@ -1,46 +1,61 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
-import { ArrowLeft, Lock, Loader2, ShieldCheck } from "lucide-react"; //
+import { ArrowLeft, Lock, Loader2, ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
+import { apiClient } from "../../infrastructure/api/ApiClient";
 import { useAuth } from "../../context/AuthContext";
 import { useBooks } from "../../hooks/books/useBooks";
 import LoadingScreen from "../../components/common/LoadingScreen";
-import { toast } from "sonner";
+
+interface ContentUrlResponse {
+  url: string;
+  expiresIn: number;
+}
+
+const REFRESH_LEEWAY_MS = 60 * 1000;
 
 const Reader = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isSubscribed, isAdmin, user, getToken } = useAuth();
+  const { isSubscribed, isAdmin, user } = useAuth();
   const { book, isLoading, isError } = useBooks(id);
 
-  const [proxyUrl, setProxyUrl] = useState<string>("");
+  const [contentUrl, setContentUrl] = useState<string>("");
   const [isIframeLoading, setIsIframeLoading] = useState(true);
+  const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const updateProxyUrl = useCallback(
-    async (forceRefresh = false) => {
-      if (!id || !user) return;
+  useEffect(() => {
+    if (!id || !user) return;
+
+    let cancelled = false;
+
+    const load = async () => {
       try {
-        const idToken = await getToken(forceRefresh);
-        const encodedToken = encodeURIComponent(idToken);
-
-        setProxyUrl(
-          `/.netlify/functions/proxy-book?id=${id}&token=${encodedToken}`,
+        const res = await apiClient.get<ContentUrlResponse>(
+          `/books/${id}/content-url`,
         );
-      } catch (_error) {
-        toast.error("Failed to load book. Please try again.");
+        if (cancelled) return;
+        setContentUrl(res.url);
+        const refreshIn = Math.max(
+          res.expiresIn * 1000 - REFRESH_LEEWAY_MS,
+          30 * 1000,
+        );
+        refreshTimer.current = setTimeout(() => void load(), refreshIn);
+      } catch (error) {
+        if (cancelled) return;
+        const message =
+          error instanceof Error ? error.message : "Failed to load book";
+        toast.error(message);
       }
-    },
-    [id, user, getToken],
-  );
+    };
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    updateProxyUrl();
-  }, [updateProxyUrl]);
+    void load();
 
-  useEffect(() => {
-    const interval = setInterval(() => updateProxyUrl(true), 50 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [updateProxyUrl]);
+    return () => {
+      cancelled = true;
+      if (refreshTimer.current) clearTimeout(refreshTimer.current);
+    };
+  }, [id, user]);
 
   useEffect(() => {
     const preventAction = (e: MouseEvent) => e.preventDefault();
@@ -55,8 +70,7 @@ const Reader = () => {
 
   return (
     <div className="h-screen w-full bg-base-100 flex flex-col overflow-hidden">
-      {/* Top Bar */}
-      <header className="px-4 py-3 bg-base-200/70 backdrop-blur-md flex justify-between items-center border-b border-base-300 z-20">
+      <header className="px-4 py-3 bg-base-200/80 backdrop-blur-md flex justify-between items-center border-b border-base-300 z-20">
         <button
           onClick={() => navigate("/")}
           className="btn btn-sm btn-ghost gap-2 normal-case"
@@ -65,7 +79,7 @@ const Reader = () => {
           <span className="hidden sm:inline">Library</span>
         </button>
 
-        <div className="flex flex-col items-center text-center px-2">
+        <div className="flex flex-col items-center text-center px-2 min-w-0">
           <span className="text-[10px] uppercase tracking-widest opacity-50 font-bold">
             Currently Reading
           </span>
@@ -87,10 +101,8 @@ const Reader = () => {
         </div>
       </header>
 
-      {/* Reader Container */}
       <main className="flex-grow bg-base-200 relative">
-        {/* Spinner: Visible until iframe finishes loading */}
-        {(isIframeLoading || !proxyUrl) && (
+        {(isIframeLoading || !contentUrl) && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-base-200">
             <Loader2 className="w-10 h-10 text-primary animate-spin" />
             <p className="mt-4 text-xs font-medium opacity-50 animate-pulse uppercase tracking-tighter">
@@ -99,15 +111,16 @@ const Reader = () => {
           </div>
         )}
 
-        {proxyUrl && (
+        {contentUrl && (
           <iframe
-            src={proxyUrl}
+            key={contentUrl}
+            src={contentUrl}
             title={book.title}
             className={`w-full h-full border-none transition-opacity duration-700 ${
               isIframeLoading ? "opacity-0" : "opacity-100"
             }`}
             onLoad={() => setIsIframeLoading(false)}
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+            sandbox="allow-scripts allow-same-origin"
             allowFullScreen
           />
         )}
