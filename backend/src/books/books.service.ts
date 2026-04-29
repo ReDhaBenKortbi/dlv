@@ -58,7 +58,7 @@ export class BooksService {
     const entryFileName = dto.entryFileName ?? 'index.html';
     assertSafeRelativePath(entryFileName);
 
-    const jobId = `flipbook:${id}`;
+    const jobId = `flipbook-${id}`;
     const existing = await this.flipbookQueue.getJob(jobId);
     if (existing) await existing.remove().catch(() => undefined);
 

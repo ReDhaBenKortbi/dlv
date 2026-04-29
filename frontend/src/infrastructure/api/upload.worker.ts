@@ -313,12 +313,31 @@ async function run(input: UploadWorkerInput): Promise<void> {
     .reduce((sum, p) => sum + p.file.size, 0);
 
   let bytesDone = alreadyDoneBytes;
-  const reportBytes = (delta: number) => {
-    bytesDone += delta;
+  const PROGRESS_INTERVAL_MS = 250;
+  let lastPostedAt = 0;
+  let scheduled = false;
+  const postProgress = () => {
+    lastPostedAt = Date.now();
+    scheduled = false;
     const msg: UploadWorkerMessage = { type: 'progress', bytesDone, bytesTotal: totalBytes };
     ctx.postMessage(msg);
   };
-  reportBytes(0);
+  const reportBytes = (delta: number) => {
+    bytesDone += delta;
+    const now = Date.now();
+    const since = now - lastPostedAt;
+    if (since >= PROGRESS_INTERVAL_MS) {
+      postProgress();
+    } else if (!scheduled) {
+      scheduled = true;
+      setTimeout(postProgress, PROGRESS_INTERVAL_MS - since);
+    }
+  };
+  const flushProgress = () => {
+    if (scheduled) scheduled = false;
+    postProgress();
+  };
+  flushProgress();
 
   const remaining = prepared.filter((p) => !skip.has(p.fileName));
   const smalls = remaining.filter((p) => p.file.size < MULTIPART_THRESHOLD);
@@ -339,6 +358,7 @@ async function run(input: UploadWorkerInput): Promise<void> {
     const entryFileName = findEntryFileName(prepared);
     if (!entryFileName) throw new Error('No .html entry file found in uploaded folder');
 
+    flushProgress();
     await api.post(`/books/${input.bookId}/content/process`, { entryFileName });
     await waitForIndexUrl(api, input.bookId);
     await tracker.finalize('complete');

@@ -21,7 +21,7 @@ export interface UseCasesContextType {
   createBook: (input: CreateBookInput) => Promise<string>;
   updateBook: (id: string, updates: Partial<Omit<DomainBook, "id">>) => Promise<void>;
   deleteBook: (id: string) => Promise<void>;
-  uploadBookContent: (bookId: string, files: File[], onProgress?: (bytesDone: number, bytesTotal: number) => void) => Promise<void>;
+  uploadBookContent: (bookId: string, files: File[], onProgress?: (bytesDone: number, bytesTotal: number) => void, signal?: AbortSignal) => Promise<void>;
 
   // Reviews
   getReviewsByBook: (bookId: string) => Promise<DomainReview[]>;

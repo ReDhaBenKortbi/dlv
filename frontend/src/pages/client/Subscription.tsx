@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useSubscriptionForm } from "../../hooks/subscription/useSubscriptionForm";
 import { Link } from "react-router-dom";
@@ -7,16 +7,23 @@ import { BackButton } from "../../components/common/BackButton";
 import { CheckCircle } from "lucide-react";
 
 const Subscription = () => {
-  const { user, subscriptionStatus, isSubscribed } = useAuth();
+  const { user, subscriptionStatus, isSubscribed, refreshUser } = useAuth();
   // 1. Notice we removed 'error' here because the hook handles it via Toasts
   const { submitPayment, loading } = useSubscriptionForm(user);
 
   const [file, setFile] = useState<File | null>(null);
   const [amount, setAmount] = useState("500");
+  const [justSubmitted, setJustSubmitted] = useState(false);
 
   const isEffectivelySubscribed =
     isSubscribed && subscriptionStatus === "approved";
-  const isWaiting = subscriptionStatus === "pending";
+  const isWaiting = subscriptionStatus === "pending" || justSubmitted;
+
+  useEffect(() => {
+    if (subscriptionStatus !== "none" && justSubmitted) {
+      setJustSubmitted(false);
+    }
+  }, [subscriptionStatus, justSubmitted]);
 
   if (isEffectivelySubscribed || isWaiting) {
     return (
@@ -53,6 +60,8 @@ const Subscription = () => {
     if (success) {
       // 3. Clear the file only if the upload actually worked
       setFile(null);
+      setJustSubmitted(true);
+      refreshUser();
     }
   };
 

@@ -45,7 +45,14 @@ async function request<T>(
   }
 
   if (response.status === 204) return undefined as T;
-  return response.json() as Promise<T>;
+  const text = await response.text();
+  if (!text) return undefined as T;
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    const snippet = text.length > 200 ? `${text.slice(0, 200)}…` : text;
+    throw new Error(`Invalid JSON response from ${path}: ${snippet}`);
+  }
 }
 
 export const apiClient = {

@@ -36,5 +36,6 @@ export interface BookRepo {
     bookId: string,
     files: File[],
     onProgress?: (bytesDone: number, bytesTotal: number) => void,
+    signal?: AbortSignal,
   ): Promise<void>;
 }

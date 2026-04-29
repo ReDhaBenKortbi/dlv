@@ -110,6 +110,12 @@ S3_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
 S3_PUBLIC_BASE_URL=https://pub-<hash>.r2.dev
 ```
 
+## R2 Bucket Configuration
+
+**CORS:** set `MaxAgeSeconds` to a long value (e.g. 86400) so PUT preflights are cached — without it, every PUT pays a CORS roundtrip and bulk uploads halve in throughput.
+
+**Lifecycle rule — `AbortIncompleteMultipartUpload`:** required to clean up orphaned multipart uploads when a flipbook upload is cancelled or fails mid-flight. Without it, partial parts accumulate as billable storage with no visible objects. Recommended setting: abort after **3 days**. Configure in Cloudflare dashboard → R2 → bucket → Settings → Object lifecycle rules.
+
 ## Dev Setup
 
 ```bash

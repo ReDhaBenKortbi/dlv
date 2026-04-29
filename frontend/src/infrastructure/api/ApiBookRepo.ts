@@ -48,22 +48,37 @@ function toBook(api: ApiBook): DomainBook {
 function uploadInWorker(
   input: UploadWorkerInput,
   onProgress?: (bytesDone: number, bytesTotal: number) => void,
+  signal?: AbortSignal,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new DOMException('Upload cancelled', 'AbortError'));
+      return;
+    }
     const worker = new Worker(new URL('./upload.worker.ts', import.meta.url), { type: 'module' });
+    const onAbort = () => {
+      worker.terminate();
+      signal?.removeEventListener('abort', onAbort);
+      reject(new DOMException('Upload cancelled', 'AbortError'));
+    };
+    signal?.addEventListener('abort', onAbort);
+
     worker.onmessage = (event: MessageEvent<UploadWorkerMessage>) => {
       const msg = event.data;
       if (msg.type === 'progress') {
         onProgress?.(msg.bytesDone, msg.bytesTotal);
       } else if (msg.type === 'done') {
+        signal?.removeEventListener('abort', onAbort);
         worker.terminate();
         resolve();
       } else {
+        signal?.removeEventListener('abort', onAbort);
         worker.terminate();
         reject(new Error(msg.message));
       }
     };
     worker.onerror = (event) => {
+      signal?.removeEventListener('abort', onAbort);
       worker.terminate();
       reject(new Error(event.message || 'Upload worker error'));
     };
@@ -108,10 +123,12 @@ export function makeApiBookRepo(): BookRepo {
       bookId: string,
       files: File[],
       onProgress?: (bytesDone: number, bytesTotal: number) => void,
+      signal?: AbortSignal,
     ): Promise<void> {
       await uploadInWorker(
         { bookId, files, apiBaseUrl: getApiBaseUrl(), token: getToken() },
         onProgress,
+        signal,
       );
     },
   };

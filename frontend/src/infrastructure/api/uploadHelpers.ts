@@ -2,7 +2,7 @@ export const MULTIPART_THRESHOLD = 5 * 1024 * 1024;
 const PART_SIZE = 10 * 1024 * 1024;
 export const UPLOAD_CONCURRENCY = 20; // was 5 — increased to saturate 200Mb/s with many small files
 export const PART_CONCURRENCY = 6;    // was 4 — extra parallelism for large-file chunks
-export const SIGN_BATCH_SIZE = 200;   // was 50 — backend ArrayMaxSize raised to 200, reduces sign round-trips 4×
+export const SIGN_BATCH_SIZE = 500;   // raised from 200 — fewer batches fit in HTTP/1.1's 6-connection cap, reducing queue time
 const MAX_RETRIES = 3;
 
 export function stripTopFolder(file: File): string {

@@ -70,7 +70,7 @@ export class PaymentsService {
 
     if (dto.action === PaymentAction.APPROVED) {
       const subscriptionEndDate = computeSubscriptionEndDate(now);
-      await this.prisma.$transaction([
+      const [updated] = await this.prisma.$transaction([
         this.prisma.paymentRequest.update({
           where: { id: paymentId },
           data: { status: PaymentStatus.APPROVED, processedAt: now },
@@ -85,19 +85,21 @@ export class PaymentsService {
           },
         }),
       ]);
-    } else {
-      await this.prisma.$transaction([
-        this.prisma.paymentRequest.update({
-          where: { id: paymentId },
-          data: { status: PaymentStatus.REJECTED, processedAt: now },
-        }),
-        this.prisma.user.update({
-          where: { id: payment.userId },
-          data: {
-            subscriptionStatus: SubscriptionStatus.REJECTED,
-          },
-        }),
-      ]);
+      return updated;
     }
+
+    const [updated] = await this.prisma.$transaction([
+      this.prisma.paymentRequest.update({
+        where: { id: paymentId },
+        data: { status: PaymentStatus.REJECTED, processedAt: now },
+      }),
+      this.prisma.user.update({
+        where: { id: payment.userId },
+        data: {
+          subscriptionStatus: SubscriptionStatus.REJECTED,
+        },
+      }),
+    ]);
+    return updated;
   }
 }

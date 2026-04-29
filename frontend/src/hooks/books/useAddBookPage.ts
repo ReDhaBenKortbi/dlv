@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useUseCases } from "../../presentation/providers/UseCasesContext";
@@ -29,6 +29,11 @@ export function useAddBookPage() {
   const [imagePreview, setImagePreview] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<{ bytesDone: number; bytesTotal: number } | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  const cancelUpload = useCallback(() => {
+    abortRef.current?.abort();
+  }, []);
 
   useEffect(() => {
     if (!coverFile) {
@@ -86,29 +91,40 @@ export function useAddBookPage() {
     if (!validatePublishInputs() || !coverFile) return;
 
     setIsUploading(true);
+    const controller = new AbortController();
+    abortRef.current = controller;
     let createdBookId: string | null = null;
     try {
       const coverURL = await uploadFile(coverFile);
       createdBookId = await createBookRecord(coverURL);
       if (!createdBookId) return;
 
-      await uploadBookContent(createdBookId, folderFiles, (bytesDone, bytesTotal) => {
-        setUploadProgress({ bytesDone, bytesTotal });
-      });
+      await uploadBookContent(
+        createdBookId,
+        folderFiles,
+        (bytesDone, bytesTotal) => setUploadProgress({ bytesDone, bytesTotal }),
+        controller.signal,
+      );
 
       toast.success("Book published successfully!");
       navigate("/admin/manage-books");
     } catch (error: unknown) {
-      logger.error("Publishing failed", error);
-      if (createdBookId) {
-        try {
-          await deleteBook(createdBookId);
-        } catch (cleanupError: unknown) {
-          logger.error("Orphan cleanup failed", cleanupError);
+      const wasAborted = error instanceof DOMException && error.name === "AbortError";
+      if (wasAborted) {
+        toast.info("Upload cancelled. Partial progress is saved — re-pick the same folder to resume.");
+      } else {
+        logger.error("Publishing failed", error);
+        if (createdBookId) {
+          try {
+            await deleteBook(createdBookId);
+          } catch (cleanupError: unknown) {
+            logger.error("Orphan cleanup failed", cleanupError);
+          }
         }
+        toast.error("Publishing failed. Please try again.");
       }
-      toast.error("Publishing failed. Please try again.");
     } finally {
+      abortRef.current = null;
       setIsUploading(false);
       setUploadProgress(null);
     }
@@ -127,5 +143,6 @@ export function useAddBookPage() {
     isUploading,
     uploadProgress,
     handlePublish,
+    cancelUpload,
   };
 }

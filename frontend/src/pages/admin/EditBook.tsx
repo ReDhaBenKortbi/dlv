@@ -1,7 +1,8 @@
 import LoadingScreen from "../../components/common/LoadingScreen";
 import { BookFormFields } from "../../components/admin/BookFormFields";
+import { UploadProgressModal } from "../../components/common/UploadProgressModal";
 import { useEditBookPage } from "../../hooks/books/useEditBookPage";
-import { formatBytes } from "../../infrastructure/api/uploadHelpers";
+import { useUploadGuard } from "../../hooks/books/useUploadGuard";
 
 const EditBook = () => {
   const {
@@ -20,8 +21,17 @@ const EditBook = () => {
     isUploadingContent,
     contentProgress,
     handleContentUpload,
+    cancelUpload,
     formTitle,
   } = useEditBookPage();
+
+  useUploadGuard(isUploadingContent || isUploadingImage);
+
+  const handleCancel = () => {
+    if (window.confirm("Cancel this upload? Files already uploaded are kept on the server. You can resume later by re-selecting the same folder.")) {
+      cancelUpload();
+    }
+  };
 
   if (fetching) return <LoadingScreen />;
 
@@ -30,6 +40,10 @@ const EditBook = () => {
       <h1 className="text-2xl font-bold mb-6">Edit: {formTitle}</h1>
 
       <form onSubmit={handleUpdate} className="flex flex-col md:flex-row gap-8">
+        <fieldset
+          disabled={isUploadingContent || isUploadingImage || isProcessing}
+          className="contents disabled:opacity-60"
+        >
         {/* Left: Cover */}
         <div className="w-full md:w-1/3">
           <img src={preview || ""} className="rounded shadow mb-4" />
@@ -69,9 +83,13 @@ const EditBook = () => {
             {isUploadingImage || isProcessing ? "Saving Changes..." : "Update Book"}
           </button>
         </div>
+        </fieldset>
       </form>
       {/* CONTENT RE-UPLOAD */}
-      <div className="mt-10 bg-base-100 rounded-2xl shadow border border-base-200 p-6 space-y-4">
+      <fieldset
+        disabled={isUploadingContent || isUploadingImage}
+        className="mt-10 bg-base-100 rounded-2xl shadow border border-base-200 p-6 space-y-4 disabled:opacity-60"
+      >
         <h2 className="text-sm font-bold uppercase tracking-widest text-warning">
           Replace Book Content
         </h2>
@@ -89,21 +107,6 @@ const EditBook = () => {
         {folderFiles.length > 0 && (
           <p className="text-xs text-base-content/50">{folderFiles.length} files selected</p>
         )}
-        {contentProgress && (
-          <div className="space-y-1">
-            <div className="flex justify-between text-xs text-base-content/60">
-              <span>Uploading…</span>
-              <span>
-                {formatBytes(contentProgress.bytesDone)} / {formatBytes(contentProgress.bytesTotal)}
-              </span>
-            </div>
-            <progress
-              className="progress progress-warning w-full"
-              value={contentProgress.bytesDone}
-              max={contentProgress.bytesTotal || 1}
-            />
-          </div>
-        )}
         <button
           type="button"
           className="btn btn-warning btn-sm"
@@ -112,7 +115,14 @@ const EditBook = () => {
         >
           {isUploadingContent ? <span className="loading loading-spinner loading-xs" /> : "Upload Content"}
         </button>
-      </div>
+      </fieldset>
+
+      <UploadProgressModal
+        open={isUploadingContent && contentProgress !== null}
+        bytesDone={contentProgress?.bytesDone ?? 0}
+        bytesTotal={contentProgress?.bytesTotal ?? 0}
+        onCancel={handleCancel}
+      />
     </div>
   );
 };

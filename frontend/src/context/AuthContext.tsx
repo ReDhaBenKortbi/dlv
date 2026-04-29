@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useUseCases } from "../presentation/providers/UseCasesContext";
 import type { DomainAuthUser } from "../application/ports/AuthGateway";
 
@@ -12,6 +12,8 @@ interface AuthContextType {
   logout: () => Promise<void>;
   /** Get the current JWT for authenticated API calls. */
   getToken: (forceRefresh?: boolean) => Promise<string>;
+  /** Force-refresh the current user's profile from the server. */
+  refreshUser: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -27,8 +29,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [subscriptionEndDate, setSubscriptionEndDate] = useState<Date | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [refreshTick, setRefreshTick] = useState(0);
 
   const expiryHandledRef = useRef(false);
+
+  const refreshUser = useCallback(() => setRefreshTick((n) => n + 1), []);
 
   const logout = async () => {
     await authGateway.logout();
@@ -98,8 +103,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       unsubscribeAuth();
       if (unsubscribeUserDoc) unsubscribeUserDoc();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authGateway, userRepo]);
+  }, [authGateway, userRepo, refreshTick]);
 
   return (
     <AuthContext.Provider
@@ -112,6 +116,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         loading,
         logout,
         getToken,
+        refreshUser,
       }}
     >
       {children}

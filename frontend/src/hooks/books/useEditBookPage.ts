@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
 import { useParams, useNavigate } from "react-router-dom";
 import { useBooks } from "./useBooks";
@@ -36,6 +36,11 @@ export function useEditBookPage() {
   const [folderFiles, setFolderFiles] = useState<File[]>([]);
   const [isUploadingContent, setIsUploadingContent] = useState(false);
   const [contentProgress, setContentProgress] = useState<{ bytesDone: number; bytesTotal: number } | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  const cancelUpload = useCallback(() => {
+    abortRef.current?.abort();
+  }, []);
 
   useEffect(() => {
     if (book) {
@@ -71,14 +76,27 @@ export function useEditBookPage() {
       return;
     }
     setIsUploadingContent(true);
+    const controller = new AbortController();
+    abortRef.current = controller;
     try {
-      await uploadBookContent(bookId, folderFiles, (bytesDone, bytesTotal) => setContentProgress({ bytesDone, bytesTotal }));
+      await uploadBookContent(
+        bookId,
+        folderFiles,
+        (bytesDone, bytesTotal) => setContentProgress({ bytesDone, bytesTotal }),
+        controller.signal,
+      );
       setFolderFiles([]);
       toast.success('Book content uploaded successfully.');
     } catch (error: unknown) {
-      logger.error('Content upload failed', error);
-      toast.error('Content upload failed. Please try again.');
+      const wasAborted = error instanceof DOMException && error.name === 'AbortError';
+      if (wasAborted) {
+        toast.info('Upload cancelled. Partial progress is saved — re-pick the same folder to resume.');
+      } else {
+        logger.error('Content upload failed', error);
+        toast.error('Content upload failed. Please try again.');
+      }
     } finally {
+      abortRef.current = null;
       setIsUploadingContent(false);
       setContentProgress(null);
     }
@@ -137,6 +155,7 @@ export function useEditBookPage() {
     isUploadingContent,
     contentProgress,
     handleContentUpload,
+    cancelUpload,
     formTitle: fields.title,
   };
 }
