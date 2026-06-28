@@ -30,3 +30,11 @@ dist/
 
 # Local Netlify folder
 .netlify
+
+# Monorepo build outputs
+apps/*/dist/
+apps/api/dist/
+
+# Env files
+apps/*/.env
+apps/*/.env.local
