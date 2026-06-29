@@ -5,5 +5,5 @@ export interface Ticket {
   subject: string;
   message: string;
   status: "new" | "read" | "resolved";
-  createdAt: any;
+  createdAt: string;
 }

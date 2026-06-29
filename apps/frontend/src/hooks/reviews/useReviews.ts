@@ -14,8 +14,8 @@ export const useReviews = (bookId: string) => {
 
   // 2. Fetch the current user's review (if it exists)
   const { data: userReview } = useQuery({
-    queryKey: ["userReview", bookId, user?.uid],
-    queryFn: () => reviewService.getUserReviewForBook(bookId, user!.uid),
+    queryKey: ["userReview", bookId, user?.id],
+    queryFn: () => reviewService.getUserReviewForBook(bookId, user!.id),
     enabled: !!user,
   });
 
@@ -25,7 +25,7 @@ export const useReviews = (bookId: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reviews", bookId] });
       queryClient.invalidateQueries({
-        queryKey: ["userReview", bookId, user?.uid],
+        queryKey: ["userReview", bookId, user?.id],
       });
       // Also invalidate the book query so the BookCard/Details shows new rating
       queryClient.invalidateQueries({ queryKey: ["books", bookId] });
@@ -39,7 +39,7 @@ export const useReviews = (bookId: string) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reviews", bookId] });
       queryClient.invalidateQueries({
-        queryKey: ["userReview", bookId, user?.uid],
+        queryKey: ["userReview", bookId, user?.id],
       });
       queryClient.invalidateQueries({ queryKey: ["books", bookId] });
     },

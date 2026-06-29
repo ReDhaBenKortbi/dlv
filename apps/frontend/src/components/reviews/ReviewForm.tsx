@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Star, PenLine } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
 import { useReviews } from "../../hooks/reviews/useReviews";
 
 interface Props {
@@ -8,7 +7,6 @@ interface Props {
 }
 
 const ReviewForm = ({ bookId }: Props) => {
-  const { user } = useAuth();
   const { addReview, isAdding, userReview } = useReviews(bookId);
 
   const [rating, setRating] = useState(0);
@@ -30,13 +28,7 @@ const ReviewForm = ({ bookId }: Props) => {
     e.preventDefault();
     if (rating === 0) return;
 
-    addReview({
-      bookId,
-      userId: user?.uid || "anonymous",
-      userName: user?.displayName || "Reader",
-      rating,
-      comment: comment.trim(),
-    });
+    addReview({ bookId, rating, body: comment.trim() });
 
     setComment("");
     setRating(0);

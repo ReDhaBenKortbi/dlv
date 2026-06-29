@@ -9,18 +9,9 @@ const ReviewList = ({ bookId }: ListProps) => {
   const { reviews, isLoadingReviews, isDeleting, deleteReview } =
     useReviews(bookId);
 
-  // Sort locally by date (Newest First)
-  const sortedReviews = [...reviews].sort((a, b) => {
-    const dateA =
-      a.createdAt instanceof Date
-        ? a.createdAt.getTime()
-        : a.createdAt.toMillis();
-    const dateB =
-      b.createdAt instanceof Date
-        ? b.createdAt.getTime()
-        : b.createdAt.toMillis();
-    return dateB - dateA;
-  });
+  const sortedReviews = [...reviews].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
 
   /* ---------------- LOADING ---------------- */
   if (isLoadingReviews) {

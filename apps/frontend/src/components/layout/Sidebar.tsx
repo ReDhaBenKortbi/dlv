@@ -24,7 +24,7 @@ const Sidebar = () => {
     try {
       await logout();
       navigate("/login");
-    } catch (error) {
+    } catch {
       toast.error("Failed to log out. Please try again.");
     }
   };
@@ -121,7 +121,7 @@ const Sidebar = () => {
 
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">
-                {user?.displayName || "Administrator"}
+                {(user?.email?.split("@")[0] ?? "Administrator")}
               </p>
               <p className="text-xs opacity-50 truncate">{user?.email}</p>
             </div>

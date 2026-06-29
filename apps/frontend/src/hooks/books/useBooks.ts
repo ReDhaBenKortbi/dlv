@@ -4,9 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { getBooks, getBookById } from "../../services/bookService";
 import { useSearch } from "../../context/SearchContext";
 import { useMemo } from "react";
+import type { Book } from "../../types/book";
 
-// Update arguments: instead of 'category', we accept the whole 'book' object for better context
-export const useBooks = (bookId?: string, currentBook?: any) => {
+export const useBooks = (bookId?: string, currentBook?: Book) => {
   const { searchTerm } = useSearch();
 
   const allBooksQuery = useQuery({
@@ -21,7 +21,7 @@ export const useBooks = (bookId?: string, currentBook?: any) => {
   });
 
   const filteredBooks = useMemo(() => {
-    const data = allBooksQuery.data ?? [];
+    const data = allBooksQuery.data?.data ?? [];
     if (!searchTerm) return data;
     const term = searchTerm.toLowerCase();
     return data.filter((b) => b.title.toLowerCase().includes(term));
@@ -29,24 +29,21 @@ export const useBooks = (bookId?: string, currentBook?: any) => {
 
   // --- UPDATED SMART RECOMMENDATIONS ---
   const relatedBooks = useMemo(() => {
-    if (!currentBook || !bookId || !allBooksQuery.data) return [];
+    const allData = allBooksQuery.data?.data;
+    if (!currentBook || !bookId || !allData) return [];
 
-    return allBooksQuery.data
+    return allData
       .filter((b) => {
         // 1. Don't show the current book itself
         if (b.id === bookId) return false;
 
-        // 2. Logic: Prioritize same language
-        // If we have a targetLanguage, match it.
-        // If not, fallback to the old category system.
-        if (currentBook.targetLanguage) {
-          return b.targetLanguage === currentBook.targetLanguage;
-        }
-
-        return b.category === currentBook.category;
+        // 2. Logic: recommend books that share the same target language.
+        if (!currentBook.targetLanguage) return false;
+        return b.targetLanguage === currentBook.targetLanguage;
       })
       .slice(0, 4);
   }, [allBooksQuery.data, currentBook, bookId]);
+
 
   return {
     books: filteredBooks,

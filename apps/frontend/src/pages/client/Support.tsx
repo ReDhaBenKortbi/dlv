@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { db } from "../../config/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { api } from "../../lib/api";
 import { notify } from "../../utils/toast";
 import { Send, CheckCircle, ShieldAlert } from "lucide-react";
 import { BackButton } from "../../components/common/BackButton";
@@ -22,7 +21,7 @@ const SupportPage = () => {
   // Check for 24h cooldown on mount
   useEffect(() => {
     const checkCooldown = () => {
-      const lastSubmit = localStorage.getItem(`last_ticket_${user?.uid}`);
+      const lastSubmit = localStorage.getItem(`last_ticket_${user?.id}`);
       if (lastSubmit) {
         const lastDate = parseInt(lastSubmit);
         const now = Date.now();
@@ -37,8 +36,8 @@ const SupportPage = () => {
       }
     };
 
-    if (user?.uid) checkCooldown();
-  }, [user?.uid]);
+    if (user?.id) checkCooldown();
+  }, [user?.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,22 +45,17 @@ const SupportPage = () => {
 
     setIsSubmitting(true);
     try {
-      await addDoc(collection(db, "tickets"), {
-        userId: user?.uid || "anonymous",
-        userEmail: user?.email || "anonymous",
-        subject,
-        message,
-        status: "new",
-        createdAt: serverTimestamp(),
+      await api("/tickets", {
+        method: "POST",
+        body: JSON.stringify({ subject, message }),
       });
 
       // Set cooldown in localStorage
-      localStorage.setItem(`last_ticket_${user?.uid}`, Date.now().toString());
+      localStorage.setItem(`last_ticket_${user?.id}`, Date.now().toString());
 
       setIsSubmitted(true);
       notify.success("Support ticket sent!");
-    } catch (error) {
-      console.error("Support submission error:", error);
+    } catch {
       notify.error("Failed to send message. Please try again.");
     } finally {
       setIsSubmitting(false);

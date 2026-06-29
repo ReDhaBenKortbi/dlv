@@ -1,31 +1,28 @@
 import { useState } from "react";
 import { registerUser } from "../../services/authService";
+import { useAuth } from "../../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import logo from "../../assets/logo/logo.svg";
 
 const Signup = () => {
-  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  // 1. Add loading state
   const [isLoading, setIsLoading] = useState(false);
+  const { refreshUser } = useAuth();
   const navigate = useNavigate();
 
-  const handleSignup = async (e: React.SubmitEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
     try {
-      await registerUser(email, password, fullName);
-      navigate("/");
-    } catch (err: any) {
-      const message =
-        err.code === "auth/email-already-in-use"
-          ? "This email is already registered."
-          : err.message;
-      setError(message);
+      await registerUser(email, password);
+      await refreshUser();
+      navigate("/", { replace: true });
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Registration failed. Try again.");
     } finally {
       setIsLoading(false);
     }
@@ -58,23 +55,6 @@ const Signup = () => {
             )}
 
             <form onSubmit={handleSignup} className="space-y-5">
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text text-xs uppercase tracking-wide opacity-70 font-semibold">
-                    Full Name
-                  </span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Ahmed Benali"
-                  className="input input-bordered focus:input-primary w-full"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  disabled={isLoading} // 4. Disable inputs while loading
-                  required
-                />
-              </div>
-
               <div className="form-control">
                 <label className="label">
                   <span className="label-text text-xs uppercase tracking-wide opacity-70 font-semibold">

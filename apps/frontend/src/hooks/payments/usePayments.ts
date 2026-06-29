@@ -59,8 +59,8 @@ export const usePayments = () => {
         {
           loading: `Processing payment: ${actionText}...`,
           success: `${request.userEmail}: ${successText}`,
-          error: (err: any) =>
-            `Action failed: ${err.message || "Unknown error"}`,
+          error: (err: unknown) =>
+            `Action failed: ${err instanceof Error ? err.message : "Unknown error"}`,
         },
       );
     },

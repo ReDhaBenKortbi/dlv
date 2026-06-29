@@ -1,45 +1,33 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
-import { ArrowLeft, Lock, Loader2, ShieldCheck } from "lucide-react"; //
+import { ArrowLeft, Lock, Loader2, ShieldCheck } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useBooks } from "../../hooks/books/useBooks";
 import LoadingScreen from "../../components/common/LoadingScreen";
-import { toast } from "sonner";
+
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
 
 const Reader = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isSubscribed, isAdmin, user } = useAuth();
+  const { isSubscribed, isAdmin } = useAuth();
   const { book, isLoading, isError } = useBooks(id);
 
-  const [proxyUrl, setProxyUrl] = useState<string>("");
   const [isIframeLoading, setIsIframeLoading] = useState(true);
 
-  const updateProxyUrl = useCallback(
-    async (forceRefresh = false) => {
-      if (!id || !user) return;
-      try {
-        const idToken = await user.getIdToken(forceRefresh);
-        const encodedToken = encodeURIComponent(idToken);
-
-        setProxyUrl(
-          `/.netlify/functions/proxy-book?id=${id}&token=${encodedToken}`,
-        );
-      } catch (error) {
-        toast.error("Failed to load book. Please try again.");
-      }
-    },
-    [id, user],
-  );
-
+  // Increments every 14 min to re-derive proxyUrl with a fresh access token
+  const [tick, setTick] = useState(0);
   useEffect(() => {
-    updateProxyUrl();
-  }, [updateProxyUrl]);
-
-  useEffect(() => {
-    const interval = setInterval(() => updateProxyUrl(true), 50 * 60 * 1000);
+    const interval = setInterval(() => setTick((t) => t + 1), 14 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [updateProxyUrl]);
+  }, []);
+
+  const proxyUrl = useMemo(() => {
+    if (!id) return "";
+    const token = localStorage.getItem("accessToken") ?? "";
+    return `${API_URL}/books/${id}/read?token=${encodeURIComponent(token)}`;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, tick]); // tick intentionally triggers re-derivation of the access token
 
   useEffect(() => {
     const preventAction = (e: MouseEvent) => e.preventDefault();

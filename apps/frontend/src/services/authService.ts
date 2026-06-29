@@ -1,42 +1,27 @@
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  updateProfile,
-} from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
-import { auth, db } from "../config/firebase";
+import { api } from "../lib/api";
 
-// registration function
-export const registerUser = async (
-  email: string,
-  pass: string,
-  fullName: string,
-) => {
-  const userCredential = await createUserWithEmailAndPassword(
-    auth,
-    email,
-    pass,
-  );
-  const user = userCredential.user;
+interface TokenResponse {
+  accessToken: string;
+  refreshToken: string;
+}
 
-  await updateProfile(user, { displayName: fullName });
+const storeTokens = ({ accessToken, refreshToken }: TokenResponse) => {
+  localStorage.setItem("accessToken", accessToken);
+  localStorage.setItem("refreshToken", refreshToken);
+};
 
-  await setDoc(doc(db, "users", user.uid), {
-    fullName: fullName,
-    email: user.email,
-    isSubscribed: false,
-    role: "client",
-    createdAt: new Date(),
+export const registerUser = async (email: string, password: string) => {
+  const tokens = await api<TokenResponse>("/auth/register", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
   });
-
-  return user;
+  storeTokens(tokens);
 };
 
-export const loginUser = (email: string, pass: string) => {
-  return signInWithEmailAndPassword(auth, email, pass);
-};
-
-export const logoutUser = () => {
-  return signOut(auth);
+export const loginUser = async (email: string, password: string) => {
+  const tokens = await api<TokenResponse>("/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
+  storeTokens(tokens);
 };

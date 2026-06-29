@@ -15,8 +15,8 @@ const Subscription = () => {
   const [amount, setAmount] = useState("500");
 
   const isEffectivelySubscribed =
-    isSubscribed && subscriptionStatus === "approved";
-  const isWaiting = subscriptionStatus === "pending";
+    isSubscribed && subscriptionStatus === "APPROVED";
+  const isWaiting = subscriptionStatus === "PENDING";
 
   if (isEffectivelySubscribed || isWaiting) {
     return (

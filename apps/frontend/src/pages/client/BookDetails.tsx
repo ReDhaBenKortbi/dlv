@@ -23,8 +23,7 @@ const BookDetails = () => {
   // STEP 1: Fetch the main book data
   const { book, isLoading, isError } = useBooks(id);
 
-  // STEP 2: Fetch related books based on the category of the book above
-  // Our new useBooks hook is smart enough to wait if category is undefined
+  // STEP 2: Fetch related books that share the same target language
   const { relatedBooks } = useBooks(id, book);
 
   // STEP 3: Guard clause (This stops TypeScript from complaining)

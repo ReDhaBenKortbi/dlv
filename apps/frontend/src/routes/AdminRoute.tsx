@@ -5,7 +5,7 @@ import LoadingScreen from "../components/common/LoadingScreen";
 const AdminRoute = () => {
   const { isAdmin, loading } = useAuth();
 
-  // 1. Wait for Firebase to check if the user is logged in
+  // 1. Wait for the auth check to confirm whether the user is logged in
   if (loading) return <LoadingScreen />;
 
   // 2. If no user OR email doesn't match, send them to home (/)

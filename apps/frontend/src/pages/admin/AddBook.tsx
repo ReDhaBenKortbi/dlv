@@ -46,6 +46,7 @@ const AddBook = () => {
   // Handle local image preview
   useEffect(() => {
     if (!coverFile) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setImagePreview("");
       return;
     }
@@ -81,17 +82,13 @@ const AddBook = () => {
         targetLanguage: targetLanguage as TargetLanguageCode,
         focusSkill: focusSkill as FocusSkillCode,
         proficiencyLevel: proficiencyLevel as ProficiencyLevelCode,
-        category: "Academic",
-        // ADD THIS LINE:
       });
 
-      // Step C: Only navigate if the Firestore save actually worked
+      // Step C: Only navigate if the save actually worked
       if (success) {
         navigate("/admin/manage-books");
       }
-    } catch (err: any) {
-      // We catch the error here just to stop the local loading state,
-      // the hook already showed the error toast to the user.
+    } catch (err: unknown) {
       console.error("Publishing failed:", err);
     } finally {
       setIsUploadingImage(false);

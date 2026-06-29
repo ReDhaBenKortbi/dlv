@@ -8,7 +8,7 @@ export const SubscriptionWatcher = () => {
   useEffect(() => {
     if (loading || !user) return;
 
-    const storageKey = `sub_status_${user.uid}`;
+    const storageKey = `sub_status_${user.id}`;
     const lastKnownStatus = localStorage.getItem(storageKey);
 
     if (lastKnownStatus === "false" && isSubscribed === true) {

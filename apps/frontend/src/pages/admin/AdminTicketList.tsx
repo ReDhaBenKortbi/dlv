@@ -1,4 +1,4 @@
-import { CheckCircle, Clock, Trash2 } from "lucide-react";
+import { CheckCircle, Clock } from "lucide-react";
 import LoadingScreen from "../../components/common/LoadingScreen";
 import { useTicketService } from "../../services/useTicketService";
 
@@ -11,8 +11,7 @@ interface Ticket {
 }
 
 const AdminTicketList = () => {
-  const { tickets, isLoading, handleResolve, handleRemove } =
-    useTicketService();
+  const { tickets, isLoading, handleResolve } = useTicketService();
 
   if (isLoading) return <LoadingScreen />;
 
@@ -53,13 +52,6 @@ const AdminTicketList = () => {
                     <CheckCircle size={18} />
                   </button>
                 )}
-                <button
-                  onClick={() => handleRemove(ticket.id)}
-                  className="btn btn-square btn-sm btn-ghost text-error"
-                  title="Delete"
-                >
-                  <Trash2 size={18} />
-                </button>
               </div>
             </div>
           ))

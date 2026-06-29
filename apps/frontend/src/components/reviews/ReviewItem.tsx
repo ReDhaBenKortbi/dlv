@@ -10,14 +10,11 @@ interface ItemProps {
 
 const ReviewItem = ({ review, onDelete, isDeleting }: ItemProps) => {
   const { user } = useAuth();
-  const isOwner = user?.uid === review.userId;
+  const isOwner = user?.id === review.userId;
 
-  // Format date safely
-  const dateString =
-    review.createdAt instanceof Date
-      ? review.createdAt.toLocaleDateString()
-      : (review.createdAt as any)?.toDate?.().toLocaleDateString() ||
-        "Recently";
+  const dateString = review.createdAt
+    ? new Date(review.createdAt).toLocaleDateString()
+    : "Recently";
 
   return (
     <div className="group relative bg-base-100 dark:bg-base-200/50 border border-base-300 dark:border-base-400/10 p-5 rounded-2xl transition-all hover:shadow-md mb-4">
@@ -28,14 +25,14 @@ const ReviewItem = ({ review, onDelete, isDeleting }: ItemProps) => {
           <div className="avatar placeholder">
             <div className="bg-primary text-primary-content rounded-full w-10 flex items-center justify-center">
               <span className="text-sm font-bold uppercase ">
-                {review.userName.charAt(0)}
+                {review.user.email.charAt(0)}
               </span>
             </div>
           </div>
 
           <div>
             <h4 className="font-bold text-sm md:text-base text-base-content leading-tight">
-              {review.userName}
+              {review.user.email}
             </h4>
             <p className="text-[10px] md:text-xs opacity-50 font-medium uppercase tracking-wider">
               {dateString}
@@ -78,7 +75,7 @@ const ReviewItem = ({ review, onDelete, isDeleting }: ItemProps) => {
       {/* Review Content */}
       <div className="mt-3">
         <p className="text-sm md:text-base text-base-content/80 leading-relaxed italic italic-none">
-          "{review.comment}"
+          "{review.body}"
         </p>
       </div>
 

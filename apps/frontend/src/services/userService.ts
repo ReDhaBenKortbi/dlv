@@ -1,31 +1,21 @@
-import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
-import { db } from "../config/firebase";
+import { api } from "../lib/api";
+import type { AuthUser } from "../context/AuthContext";
 
-export interface UserProfile {
-  id: string;
-  email: string;
-  fullName?: string;
-  isSubscribed: boolean;
-  createdAt?: any;
+export type UserProfile = AuthUser & { createdAt: string };
+
+export const getUsers = (): Promise<UserProfile[]> => api("/users");
+
+export interface DashboardStats {
+  users: number;
+  books: number;
+  pendingPayments: number;
 }
 
-const USERS_COL = "users";
+export const getDashboardStats = (): Promise<DashboardStats> =>
+  api("/users/stats");
 
-export const getUsers = async (): Promise<UserProfile[]> => {
-  const querySnapshot = await getDocs(collection(db, USERS_COL));
-  return querySnapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  })) as UserProfile[];
-};
-
-export const updateUserSubscription = async ({
-  userId,
-  isSubscribed,
-}: {
-  userId: string;
-  isSubscribed: boolean;
-}) => {
-  const userRef = doc(db, USERS_COL, userId);
-  await updateDoc(userRef, { isSubscribed });
-};
+export const updateUserSubscription = (payload: { userId: string; isSubscribed: boolean }) =>
+  api(`/users/${payload.userId}/subscription`, {
+    method: "PATCH",
+    body: JSON.stringify({ isSubscribed: payload.isSubscribed }),
+  });

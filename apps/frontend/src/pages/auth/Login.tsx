@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { loginUser } from "../../services/authService";
-import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo/logo.svg";
 
 const Login = () => {
@@ -8,16 +9,20 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { refreshUser, isAdmin } = useAuth();
+  const navigate = useNavigate();
 
-  const handleLogin = async (e: React.SubmitEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
     try {
       await loginUser(email, password);
-    } catch (err: any) {
-      setError("Invalid email or password.");
+      await refreshUser();
+      navigate(isAdmin ? "/admin" : "/", { replace: true });
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Invalid email or password.");
       setLoading(false);
     }
   };

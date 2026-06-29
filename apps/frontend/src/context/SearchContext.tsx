@@ -22,6 +22,7 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
 };
 
 // 4. Create a custom hook to use it easily
+// eslint-disable-next-line react-refresh/only-export-components
 export const useSearch = () => {
   const context = useContext(SearchContext);
   if (!context) {

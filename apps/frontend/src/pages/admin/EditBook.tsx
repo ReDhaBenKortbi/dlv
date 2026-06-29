@@ -10,6 +10,11 @@ import {
   FOCUS_SKILLS,
   PROFICIENCY_LEVELS,
 } from "../../constants/bookOptions";
+import type {
+  TargetLanguageCode,
+  FocusSkillCode,
+  ProficiencyLevelCode,
+} from "../../constants/bookOptions";
 
 const EditBook = () => {
   const { bookId } = useParams();
@@ -21,16 +26,23 @@ const EditBook = () => {
   // 2. Mutations hook
   const { edit, isProcessing } = useBookMutations();
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string;
+    author: string;
+    description: string;
+    coverURL: string;
+    targetLanguage: TargetLanguageCode | "";
+    focusSkill: FocusSkillCode | "";
+    proficiencyLevel: ProficiencyLevelCode | "";
+    isPremium: boolean;
+  }>({
     title: "",
     author: "",
     description: "",
-    category: "",
     coverURL: "",
-    // Add new fields here
-    targetLanguage: "" as any,
-    focusSkill: "" as any,
-    proficiencyLevel: "" as any,
+    targetLanguage: "",
+    focusSkill: "",
+    proficiencyLevel: "",
     isPremium: false,
   });
 
@@ -41,11 +53,11 @@ const EditBook = () => {
   // 4. Sync Database Data to Form (Only runs once when 'book' arrives)
   useEffect(() => {
     if (book) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         title: book.title,
         author: book.author,
         description: book.description,
-        category: book.category || "General",
         coverURL: book.coverURL,
         targetLanguage: book.targetLanguage || "",
         focusSkill: book.focusSkill || "",

@@ -9,9 +9,7 @@ const UsersManager = () => {
 
   const filteredUsers = users.filter((u) => {
     const term = searchTerm.toLowerCase();
-    const matchesSearch =
-      u.email.toLowerCase().includes(term) ||
-      (u.fullName && u.fullName.toLowerCase().includes(term));
+    const matchesSearch = u.email.toLowerCase().includes(term);
     return matchesSearch && u.email !== ADMIN_EMAIL;
   });
 
@@ -49,8 +47,7 @@ const UsersManager = () => {
             <table className="table table-compact w-full">
               <thead className="bg-base-300 text-gray-500 uppercase text-xs font-bold">
                 <tr>
-                  <th className="py-4 text-left">Full Name</th>
-                  <th className="text-left">Email</th>
+                  <th className="py-4 text-left">Email</th>
                   <th>Status</th>
                   <th className="text-right">Actions</th>
                 </tr>
@@ -61,9 +58,6 @@ const UsersManager = () => {
                     key={user.id}
                     className="hover:bg-base-100 transition-colors"
                   >
-                    <td className="font-medium text-gray-700">
-                      {user.fullName || "-"}
-                    </td>
                     <td className="font-medium text-gray-700">{user.email}</td>
                     <td>
                       {user.isSubscribed ? (

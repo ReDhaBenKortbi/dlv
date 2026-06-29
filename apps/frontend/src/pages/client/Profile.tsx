@@ -19,7 +19,7 @@ const Profile = () => {
     try {
       await logout();
       navigate("/login");
-    } catch (error) {
+    } catch {
       toast.error("Failed to log out. Please try again.");
     }
   };
@@ -28,7 +28,7 @@ const Profile = () => {
   const daysLeft = useMemo(() => {
     if (!subscriptionEndDate || !isSubscribed) return null;
     const now = new Date();
-    const end = subscriptionEndDate.toDate();
+    const end = new Date(subscriptionEndDate);
     const diffTime = end.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays > 0 ? diffDays : 0;
@@ -48,13 +48,13 @@ const Profile = () => {
         class: "badge-secondary",
         text: "Subscription Active",
       };
-    if (subscriptionStatus === "pending")
+    if (subscriptionStatus === "PENDING")
       return {
         label: "PENDING",
         class: "badge-warning",
         text: "Reviewing your receipt...",
       };
-    if (subscriptionStatus === "rejected")
+    if (subscriptionStatus === "REJECTED")
       return {
         label: "REJECTED",
         class: "badge-error",
@@ -86,7 +86,7 @@ const Profile = () => {
               {/* User Info */}
               <div className="flex-1">
                 <h2 className="text-2xl font-extrabold">
-                  {user?.displayName || "Reader"}
+                  {user?.email?.split("@")[0] ?? "Reader"}
                 </h2>
                 <p className="text-sm text-base-content/60 mt-1">
                   {user?.email}
@@ -94,7 +94,7 @@ const Profile = () => {
 
                 <div className="mt-3 flex items-center gap-3 flex-wrap">
                   <div className={`badge badge-lg font-bold ${status.class}`}>
-                    {subscriptionStatus === "pending" && (
+                    {subscriptionStatus === "PENDING" && (
                       <span className="loading loading-spinner loading-xs"></span>
                     )}
                     {status.label}
@@ -117,7 +117,7 @@ const Profile = () => {
                     <p className="text-sm mt-1">
                       Valid until{" "}
                       <span className="font-semibold">
-                        {subscriptionEndDate?.toDate().toLocaleDateString()}
+                        {subscriptionEndDate ? new Date(subscriptionEndDate).toLocaleDateString() : ""}
                       </span>
                     </p>
                   </div>
@@ -147,7 +147,7 @@ const Profile = () => {
                   onClick={() => navigate("/subscription")}
                   className="btn btn-primary font-semibold shadow-md"
                 >
-                  {subscriptionStatus === "rejected"
+                  {subscriptionStatus === "REJECTED"
                     ? "Retry Subscription"
                     : "Upgrade to Premium"}
                 </button>
