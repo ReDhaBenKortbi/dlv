@@ -28,6 +28,11 @@ enum PaymentStatus {
   REJECTED
 }
 
+enum PaymentMethod {
+  MANUAL
+  CHARGILY
+}
+
 enum TicketStatus {
   NEW
   READ
@@ -116,13 +121,15 @@ model Review {
 }
 
 model PaymentRequest {
-  id          String        @id @default(cuid())
-  fullName    String
-  amount      String
-  receiptURL  String
-  status      PaymentStatus @default(PENDING)
-  createdAt   DateTime      @default(now())
-  processedAt DateTime?
+  id                  String        @id @default(cuid())
+  fullName            String
+  amount              String
+  receiptURL          String?
+  paymentMethod       PaymentMethod @default(MANUAL)
+  chargilyCheckoutId  String?       @unique
+  status              PaymentStatus @default(PENDING)
+  createdAt           DateTime      @default(now())
+  processedAt         DateTime?
 
   userId    String
   user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)

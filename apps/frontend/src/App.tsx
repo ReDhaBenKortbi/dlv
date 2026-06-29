@@ -21,6 +21,8 @@ import AdminTicketList from "./pages/admin/AdminTicketList";
 // Lazy load client components
 const Library = lazy(() => import("./pages/client/Library"));
 const Subscription = lazy(() => import("./pages/client/Subscription"));
+const PaymentSuccess = lazy(() => import("./pages/client/PaymentSuccess"));
+const PaymentFailure = lazy(() => import("./pages/client/PaymentFailure"));
 const BookDetails = lazy(() => import("./pages/client/BookDetails"));
 const Reader = lazy(() => import("./pages/client/Reader"));
 const Profile = lazy(() => import("./pages/client/Profile"));
@@ -52,6 +54,8 @@ const router = createBrowserRouter([
               { path: "/", element: <Library /> },
               { path: "/profile", element: <Profile /> },
               { path: "/subscription", element: <Subscription /> },
+              { path: "/payment/success", element: <PaymentSuccess /> },
+              { path: "/payment/failure", element: <PaymentFailure /> },
               { path: "/book/:id", element: <BookDetails /> },
               { path: "/support", element: <SupportPage /> },
             ],

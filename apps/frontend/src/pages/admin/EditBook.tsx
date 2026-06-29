@@ -91,6 +91,9 @@ const EditBook = () => {
       const success = await edit(bookId, {
         ...formData,
         coverURL: finalCoverURL,
+        targetLanguage: formData.targetLanguage || undefined,
+        focusSkill: formData.focusSkill || undefined,
+        proficiencyLevel: formData.proficiencyLevel || undefined,
       });
 
       // Step C: Redirect only if the mutation was successful
@@ -159,7 +162,7 @@ const EditBook = () => {
               className="select select-bordered w-full"
               value={formData.targetLanguage}
               onChange={(e) =>
-                setFormData({ ...formData, targetLanguage: e.target.value })
+                setFormData({ ...formData, targetLanguage: e.target.value as TargetLanguageCode | "" })
               }
             >
               <option value="">Language</option>
@@ -174,7 +177,7 @@ const EditBook = () => {
               className="select select-bordered w-full"
               value={formData.focusSkill}
               onChange={(e) =>
-                setFormData({ ...formData, focusSkill: e.target.value })
+                setFormData({ ...formData, focusSkill: e.target.value as FocusSkillCode | "" })
               }
             >
               <option value="">Skill</option>
@@ -189,7 +192,7 @@ const EditBook = () => {
               className="select select-bordered w-full"
               value={formData.proficiencyLevel}
               onChange={(e) =>
-                setFormData({ ...formData, proficiencyLevel: e.target.value })
+                setFormData({ ...formData, proficiencyLevel: e.target.value as ProficiencyLevelCode | "" })
               }
             >
               <option value="">Level</option>

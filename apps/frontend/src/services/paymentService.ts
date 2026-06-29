@@ -24,3 +24,11 @@ export const processPayment = (
   request: PaymentRequest,
   newStatus: "approved" | "rejected",
 ) => api(`/payments/${request.id}/${newStatus}`, { method: "POST" });
+
+export const createChargilyCheckout = (
+  fullName: string,
+): Promise<{ checkoutUrl: string }> =>
+  api("/payments/chargily/checkout", {
+    method: "POST",
+    body: JSON.stringify({ fullName }),
+  });

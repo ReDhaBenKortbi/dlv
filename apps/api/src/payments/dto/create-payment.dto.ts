@@ -1,4 +1,4 @@
-import { IsString, IsUrl } from 'class-validator';
+import { IsOptional, IsString, IsUrl } from 'class-validator';
 
 export class CreatePaymentDto {
   @IsString()
@@ -7,6 +7,7 @@ export class CreatePaymentDto {
   @IsString()
   amount: string;
 
+  @IsOptional()
   @IsUrl()
-  receiptURL: string;
+  receiptURL?: string;
 }
