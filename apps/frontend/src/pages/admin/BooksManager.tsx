@@ -114,9 +114,9 @@ const BooksManager = () => {
 
                     <td>
                       <div
-                        className={`badge badge-sm font-bold ${book.isPremium ? "badge-secondary" : "badge-outline"}`}
+                        className={`badge badge-sm font-bold ${book.bookTier === "GOLD" ? "badge-warning" : book.bookTier === "PRO" ? "badge-secondary" : "badge-outline"}`}
                       >
-                        {book.isPremium ? "PREMIUM" : "FREE"}
+                        {book.bookTier}
                       </div>
                     </td>
 

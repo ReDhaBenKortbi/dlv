@@ -1,11 +1,10 @@
-import { FocusSkill, ProficiencyLevel, TargetLanguage } from '@prisma/client';
 import {
-  IsBoolean,
-  IsEnum,
-  IsOptional,
-  IsString,
-  IsUrl,
-} from 'class-validator';
+  BookTier,
+  FocusSkill,
+  ProficiencyLevel,
+  TargetLanguage,
+} from '@prisma/client';
+import { IsEnum, IsOptional, IsString, IsUrl } from 'class-validator';
 
 export class CreateBookDto {
   @IsString()
@@ -23,9 +22,9 @@ export class CreateBookDto {
   @IsUrl()
   indexURL: string;
 
-  @IsBoolean()
+  @IsEnum(BookTier)
   @IsOptional()
-  isPremium?: boolean;
+  bookTier?: BookTier;
 
   @IsEnum(TargetLanguage)
   @IsOptional()

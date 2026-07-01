@@ -1,34 +1,32 @@
 import { api } from "../lib/api";
-import { uploadImageToCloudinary } from "./cloudinaryService";
-import type { PaymentRequest } from "../types/paymentRequest";
-
-export const uploadReceiptAndSubmit = async (
-  fullName: string,
-  file: File,
-  amount: string,
-) => {
-  const receiptURL = await uploadImageToCloudinary(file);
-  return api("/payments", {
-    method: "POST",
-    body: JSON.stringify({ fullName, amount, receiptURL }),
-  });
-};
-
-export const getMyPayments = (): Promise<PaymentRequest[]> =>
-  api("/payments/mine");
-
-export const getPendingPayments = (): Promise<PaymentRequest[]> =>
-  api("/payments");
-
-export const processPayment = (
-  request: PaymentRequest,
-  newStatus: "approved" | "rejected",
-) => api(`/payments/${request.id}/${newStatus}`, { method: "POST" });
 
 export const createChargilyCheckout = (
-  fullName: string,
+  plan: string,
 ): Promise<{ checkoutUrl: string }> =>
   api("/payments/chargily/checkout", {
     method: "POST",
-    body: JSON.stringify({ fullName }),
+    body: JSON.stringify({ plan }),
   });
+
+export interface PaymentHistoryItem {
+  id: string;
+  fullName: string;
+  amount: string;
+  paymentMethod: string;
+  plan: string;
+  status: string;
+  createdAt: string;
+  processedAt: string | null;
+  user: { fullName: string; email: string };
+}
+
+export const getPaymentHistory = (params?: {
+  status?: string;
+  plan?: string;
+}): Promise<PaymentHistoryItem[]> => {
+  const query = new URLSearchParams();
+  if (params?.status) query.set("status", params.status);
+  if (params?.plan) query.set("plan", params.plan);
+  const qs = query.toString();
+  return api(`/payments/history${qs ? `?${qs}` : ""}`);
+};

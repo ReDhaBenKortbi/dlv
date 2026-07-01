@@ -5,15 +5,17 @@ import { BookPreview } from "../../components/admin/BookPreview";
 import { useBookMutations } from "../../hooks/books/useBookMutations";
 // New Pillars
 import {
-  TARGET_LANGUAGES, // For dropdown options
-  FOCUS_SKILLS, // For dropdown options
-  PROFICIENCY_LEVELS, // For dropdown options
+  TARGET_LANGUAGES,
+  FOCUS_SKILLS,
+  PROFICIENCY_LEVELS,
+  BOOK_TIERS,
 } from "../../constants/bookOptions";
 
 import type {
   TargetLanguageCode,
   FocusSkillCode,
   ProficiencyLevelCode,
+  BookTier,
 } from "../../constants/bookOptions";
 import { toast } from "sonner";
 
@@ -34,7 +36,7 @@ const AddBook = () => {
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [description, setDescription] = useState("");
-  const [isPremium, setIsPremium] = useState(false);
+  const [bookTier, setBookTier] = useState<BookTier>("FREE");
   const [flipbookURL, setFlipbookURL] = useState("");
 
   const [coverFile, setCoverFile] = useState<File | null>(null);
@@ -78,7 +80,7 @@ const AddBook = () => {
         description: description.trim(),
         indexURL: flipbookURL.trim(),
         coverURL,
-        isPremium,
+        bookTier,
         targetLanguage: targetLanguage as TargetLanguageCode,
         focusSkill: focusSkill as FocusSkillCode,
         proficiencyLevel: proficiencyLevel as ProficiencyLevelCode,
@@ -257,19 +259,24 @@ const AddBook = () => {
                   </div>
                 </div>
 
-                {/* PREMIUM + ACTIONS */}
+                {/* TIER + ACTIONS */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4">
-                  <label className="flex items-center gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="checkbox checkbox-secondary"
-                      checked={isPremium}
-                      onChange={(e) => setIsPremium(e.target.checked)}
-                    />
-                    <span className="text-xs font-bold text-secondary uppercase">
-                      Set as Premium
-                    </span>
-                  </label>
+                  <div className="flex items-center gap-3">
+                    <label className="text-xs font-bold text-base-content/60 uppercase">
+                      Access Tier
+                    </label>
+                    <select
+                      className="select select-bordered select-sm"
+                      value={bookTier}
+                      onChange={(e) => setBookTier(e.target.value as BookTier)}
+                    >
+                      {BOOK_TIERS.map((tier) => (
+                        <option key={tier.id} value={tier.id}>
+                          {tier.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
                   <div className="flex gap-3 justify-end">
                     <button
@@ -296,7 +303,7 @@ const AddBook = () => {
             title={title}
             author={author}
             previewUrl={imagePreview}
-            isPremium={isPremium}
+            bookTier={bookTier}
           />
         </div>
       </div>

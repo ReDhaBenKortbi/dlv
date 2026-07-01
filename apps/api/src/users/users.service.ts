@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { SubscriptionPlan, SubscriptionStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 const PUBLIC_FIELDS = {
   id: true,
+  fullName: true,
   email: true,
   role: true,
   isSubscribed: true,
   subscriptionStatus: true,
+  subscriptionPlan: true,
   subscriptionEndDate: true,
   createdAt: true,
 };
@@ -30,11 +33,20 @@ export class UsersService {
   }
 
   updateSubscription(userId: string, isSubscribed: boolean) {
+    // A manual admin grant unlocks all tiers (GOLD); revoking resets to FREE.
+    // The plan must be set here — access control gates on subscriptionPlan,
+    // so toggling isSubscribed alone would grant nothing.
     return this.prisma.user.update({
       where: { id: userId },
       data: {
         isSubscribed,
-        subscriptionStatus: isSubscribed ? 'APPROVED' : 'NONE',
+        subscriptionStatus: isSubscribed
+          ? SubscriptionStatus.APPROVED
+          : SubscriptionStatus.NONE,
+        subscriptionPlan: isSubscribed
+          ? SubscriptionPlan.GOLD
+          : SubscriptionPlan.FREE,
+        subscriptionEndDate: null,
       },
       select: PUBLIC_FIELDS,
     });

@@ -7,12 +7,13 @@ import { useSearch } from "../../context/SearchContext";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "sonner";
+import { TierBadge } from "../common/TierBadge";
 
 const Navbar = () => {
   // Get search term and setter from context
   const { searchTerm, setSearchTerm } = useSearch();
 
-  const { user, logout, isSubscribed } = useAuth();
+  const { user, logout, isSubscribed, subscriptionPlan } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -70,8 +71,13 @@ const Navbar = () => {
           {user && (
             <div className="dropdown dropdown-end">
               <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
-                <div className="w-8 rounded-full bg-primary text-primary-content flex items-center justify-center text-sm font-semibold">
+                <div className={`relative w-8 rounded-full text-primary-content flex items-center justify-center text-sm font-semibold ${subscriptionPlan === "GOLD" ? "bg-amber-500 ring-2 ring-amber-400 ring-offset-1" : subscriptionPlan === "PRO" ? "bg-secondary ring-2 ring-secondary/60 ring-offset-1" : "bg-primary"}`}>
                   {user.email?.charAt(0).toUpperCase()}
+                  {subscriptionPlan !== "FREE" && (
+                    <span className={`absolute -bottom-1 -right-1 rounded-full p-0.5 ${subscriptionPlan === "GOLD" ? "bg-amber-500" : "bg-secondary"}`}>
+                      {subscriptionPlan === "GOLD" ? <Crown size={8} className="text-white" /> : <Crown size={8} className="text-white" />}
+                    </span>
+                  )}
                 </div>
               </label>
 
@@ -82,6 +88,11 @@ const Navbar = () => {
                 <li className="px-4 py-2 text-xs opacity-60 break-all ">
                   {user.email}
                 </li>
+                {subscriptionPlan !== "FREE" && (
+                  <li className="px-4 pb-1">
+                    <TierBadge plan={subscriptionPlan} size="sm" />
+                  </li>
+                )}
 
                 <div className="divider my-1"></div>
 

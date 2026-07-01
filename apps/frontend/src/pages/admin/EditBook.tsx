@@ -9,11 +9,13 @@ import {
   TARGET_LANGUAGES,
   FOCUS_SKILLS,
   PROFICIENCY_LEVELS,
+  BOOK_TIERS,
 } from "../../constants/bookOptions";
 import type {
   TargetLanguageCode,
   FocusSkillCode,
   ProficiencyLevelCode,
+  BookTier,
 } from "../../constants/bookOptions";
 
 const EditBook = () => {
@@ -34,7 +36,7 @@ const EditBook = () => {
     targetLanguage: TargetLanguageCode | "";
     focusSkill: FocusSkillCode | "";
     proficiencyLevel: ProficiencyLevelCode | "";
-    isPremium: boolean;
+    bookTier: BookTier;
   }>({
     title: "",
     author: "",
@@ -43,7 +45,7 @@ const EditBook = () => {
     targetLanguage: "",
     focusSkill: "",
     proficiencyLevel: "",
-    isPremium: false,
+    bookTier: "FREE",
   });
 
   const [newCoverFile, setNewCoverFile] = useState<File | null>(null);
@@ -62,7 +64,7 @@ const EditBook = () => {
         targetLanguage: book.targetLanguage || "",
         focusSkill: book.focusSkill || "",
         proficiencyLevel: book.proficiencyLevel || "",
-        isPremium: !!book.isPremium, // Ensure it's a boolean
+        bookTier: book.bookTier ?? "FREE",
       });
       setPreview(book.coverURL);
     }
@@ -207,23 +209,22 @@ const EditBook = () => {
           {/* ACCESS TIER SELECTION */}
           <div className="bg-base-200 p-4 rounded-xl border border-base-300">
             <label className="label pt-0">
-              <span className="label-text text-xs uppercase trackPng-widest opacity-60 font-bold">
-                Pricing & Access
+              <span className="label-text text-xs uppercase tracking-widest opacity-60 font-bold">
+                Access Tier
               </span>
             </label>
             <select
-              className={`select select-bordered w-full ${formData.isPremium ? "select-warning" : ""}`}
-              value={formData.isPremium ? "premium" : "freemium"} // Convert boolean to string for UI
-              onChange={
-                (e) =>
-                  setFormData({
-                    ...formData,
-                    isPremium: e.target.value === "premium",
-                  }) // Convert back to boolean
+              className="select select-bordered w-full"
+              value={formData.bookTier}
+              onChange={(e) =>
+                setFormData({ ...formData, bookTier: e.target.value as BookTier })
               }
             >
-              <option value="freemium">🔓 Freemium (Public)</option>
-              <option value="premium">💎 Premium (Subscribers Only)</option>
+              {BOOK_TIERS.map((tier) => (
+                <option key={tier.id} value={tier.id}>
+                  {tier.label}
+                </option>
+              ))}
             </select>
           </div>
 

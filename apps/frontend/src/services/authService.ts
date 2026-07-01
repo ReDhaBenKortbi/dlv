@@ -10,10 +10,10 @@ const storeTokens = ({ accessToken, refreshToken }: TokenResponse) => {
   localStorage.setItem("refreshToken", refreshToken);
 };
 
-export const registerUser = async (email: string, password: string) => {
+export const registerUser = async (fullName: string, email: string, password: string) => {
   const tokens = await api<TokenResponse>("/auth/register", {
     method: "POST",
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ fullName, email, password }),
   });
   storeTokens(tokens);
 };

@@ -4,7 +4,7 @@ import type { User } from '@prisma/client';
 
 @Injectable()
 export class OptionalJwtGuard extends AuthGuard('jwt') {
-  handleRequest(_err: unknown, user: User | null): User | null {
+  handleRequest<TUser = User>(_err: unknown, user: TUser | null): TUser | null {
     return user ?? null;
   }
 

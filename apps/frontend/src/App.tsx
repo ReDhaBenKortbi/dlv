@@ -30,11 +30,11 @@ const SupportPage = lazy(() => import("./pages/client/Support"));
 
 // Lazy load Admin components
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
-const PaymentManager = lazy(() => import("./pages/admin/PaymentManager"));
 const AddBook = lazy(() => import("./pages/admin/AddBook"));
 const UsersManager = lazy(() => import("./pages/admin/UsersManager"));
 const BooksManager = lazy(() => import("./pages/admin/BooksManager"));
 const EditBook = lazy(() => import("./pages/admin/EditBook"));
+const SubscribersHistory = lazy(() => import("./pages/admin/SubscribersHistory"));
 
 /**
  * BROWSER ROUTER CONFIGURATION
@@ -68,7 +68,6 @@ const router = createBrowserRouter([
                 element: <AdminLayout />,
                 children: [
                   { path: "/admin", element: <AdminDashboard /> },
-                  { path: "/admin/payments", element: <PaymentManager /> },
                   { path: "/admin/add-book", element: <AddBook /> },
                   { path: "/admin/users", element: <UsersManager /> },
                   { path: "/admin/manage-books", element: <BooksManager /> },
@@ -76,6 +75,10 @@ const router = createBrowserRouter([
                   {
                     path: "/admin/support-tickets",
                     element: <AdminTicketList />,
+                  },
+                  {
+                    path: "/admin/subscribers-history",
+                    element: <SubscribersHistory />,
                   },
                 ],
               },

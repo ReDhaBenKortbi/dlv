@@ -3,6 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Info } from "lucide-react";
 import { toast } from "sonner";
+import { TierBadge } from "../../components/common/TierBadge";
 
 const Profile = () => {
   const {
@@ -11,6 +12,7 @@ const Profile = () => {
     isAdmin,
     isSubscribed,
     subscriptionStatus,
+    subscriptionPlan,
     subscriptionEndDate,
   } = useAuth();
   const navigate = useNavigate();
@@ -52,13 +54,13 @@ const Profile = () => {
       return {
         label: "PENDING",
         class: "badge-warning",
-        text: "Reviewing your receipt...",
+        text: "Payment is being confirmed...",
       };
     if (subscriptionStatus === "REJECTED")
       return {
         label: "REJECTED",
         class: "badge-error",
-        text: "Receipt invalid. Try again.",
+        text: "Payment failed. Try again.",
       };
 
     return {
@@ -78,16 +80,19 @@ const Profile = () => {
             <div className="flex flex-col sm:flex-row sm:items-center gap-6">
               {/* Avatar */}
               <div className="avatar">
-                <div className="w-20 rounded-full bg-gradient-to-br from-primary/90 to-secondary/80 text-primary-content flex items-center justify-center text-2xl font-bold shadow-lg ring ring-base-100 ring-offset-2">
+                <div className={`w-20 rounded-full text-primary-content flex items-center justify-center text-2xl font-bold shadow-lg ring-offset-2 ${subscriptionPlan === "GOLD" ? "bg-gradient-to-br from-amber-400 to-amber-600 ring-4 ring-amber-400" : subscriptionPlan === "PRO" ? "bg-gradient-to-br from-secondary/90 to-secondary/60 ring-4 ring-secondary/60" : "bg-gradient-to-br from-primary/90 to-secondary/80 ring ring-base-100"}`}>
                   {user?.email?.charAt(0).toUpperCase()}
                 </div>
               </div>
 
               {/* User Info */}
               <div className="flex-1">
-                <h2 className="text-2xl font-extrabold">
-                  {user?.email?.split("@")[0] ?? "Reader"}
-                </h2>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-2xl font-extrabold">
+                    {user?.email?.split("@")[0] ?? "Reader"}
+                  </h2>
+                  {!isAdmin && <TierBadge plan={subscriptionPlan} />}
+                </div>
                 <p className="text-sm text-base-content/60 mt-1">
                   {user?.email}
                 </p>
@@ -111,9 +116,12 @@ const Profile = () => {
               <div className="mt-8 p-6 rounded-xl bg-base-200 border border-base-300">
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   <div>
-                    <p className="text-xs uppercase tracking-widest text-base-content/50 font-bold">
-                      Subscription
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs uppercase tracking-widest text-base-content/50 font-bold">
+                        Subscription
+                      </p>
+                      <TierBadge plan={subscriptionPlan} size="sm" />
+                    </div>
                     <p className="text-sm mt-1">
                       Valid until{" "}
                       <span className="font-semibold">

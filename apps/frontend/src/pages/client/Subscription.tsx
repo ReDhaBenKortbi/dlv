@@ -1,43 +1,53 @@
 import { useState } from "react";
-import { useAuth } from "../../context/AuthContext";
-import { useSubscriptionForm } from "../../hooks/subscription/useSubscriptionForm";
-import { useChargilyCheckout } from "../../hooks/payments/useChargilyCheckout";
 import { Link } from "react-router-dom";
+import { CheckCircle, Zap, Star, Lock } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { useChargilyCheckout } from "../../hooks/payments/useChargilyCheckout";
 import { BackButton } from "../../components/common/BackButton";
-import { CheckCircle } from "lucide-react";
+import { SUBSCRIPTION_PLANS } from "../../constants/subscriptionPlans";
+import type { SubscriptionPlan } from "../../constants/subscriptionPlans";
 
-type PaymentTab = "manual" | "chargily";
+const PLAN_FEATURES: Record<SubscriptionPlan, string[]> = {
+  FREE: ["Access to all free books", "Basic library browsing", "Book ratings & reviews"],
+  PRO: ["Everything in Free", "Access to all Pro books", "Priority support"],
+  GOLD: ["Everything in Pro", "Access to all Gold books", "Exclusive content"],
+};
+
+const PLAN_ICONS: Record<SubscriptionPlan, React.ReactNode> = {
+  FREE: <Lock className="w-5 h-5" />,
+  PRO: <Zap className="w-5 h-5" />,
+  GOLD: <Star className="w-5 h-5" />,
+};
+
+const PLAN_STYLES: Record<SubscriptionPlan, { card: string; badge: string; btn: string }> = {
+  FREE: { card: "border-base-300", badge: "badge-neutral", btn: "btn-neutral" },
+  PRO: { card: "border-secondary", badge: "badge-secondary", btn: "btn-secondary" },
+  GOLD: { card: "border-warning", badge: "badge-warning", btn: "btn-warning" },
+};
 
 const Subscription = () => {
-  const { user, subscriptionStatus, isSubscribed } = useAuth();
-  const { submitPayment, loading: manualLoading } = useSubscriptionForm(user);
+  const { subscriptionStatus, isSubscribed } = useAuth();
   const { startCheckout, loading: chargilyLoading } = useChargilyCheckout();
 
-  const [tab, setTab] = useState<PaymentTab>("chargily");
-  const [file, setFile] = useState<File | null>(null);
-  const [amount, setAmount] = useState("500");
-  const [fullName, setFullName] = useState("");
+  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
 
-  const isEffectivelySubscribed =
-    isSubscribed && subscriptionStatus === "APPROVED";
+  const isEffectivelySubscribed = isSubscribed && subscriptionStatus === "APPROVED";
   const isWaiting = subscriptionStatus === "PENDING";
 
   if (isEffectivelySubscribed || isWaiting) {
     return (
       <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
         <div className="card w-full max-w-md bg-base-100 shadow-2xl text-center p-10">
-          <div
-            className={`badge ${isWaiting ? "badge-warning" : "badge-success"} mb-4`}
-          >
-            {isWaiting ? "Under Review" : "Active"}
+          <div className={`badge ${isWaiting ? "badge-warning" : "badge-success"} mb-4`}>
+            {isWaiting ? "Processing" : "Active"}
           </div>
           <h2 className="text-2xl font-bold">
-            {isWaiting ? "Request Pending" : "Premium Active"}
+            {isWaiting ? "Payment Processing" : "Subscription Active"}
           </h2>
           <p className="text-base-content/70 mt-2">
             {isWaiting
-              ? "We are verifying your receipt. This usually takes less than 24h."
-              : "You already have full access to all books!"}
+              ? "Your payment is being confirmed. This usually takes a few minutes."
+              : "You already have access to your plan's books!"}
           </p>
           <Link to="/" className="btn btn-primary mt-8">
             Return to Library
@@ -47,188 +57,112 @@ const Subscription = () => {
     );
   }
 
-  const handleManualSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!file) return;
-    const success = await submitPayment(file, amount);
-    if (success) setFile(null);
-  };
+  const planKeys = Object.keys(SUBSCRIPTION_PLANS) as SubscriptionPlan[];
 
   return (
-    <div className="min-h-screen bg-base-200 pb-10 px-4">
+    <div className="min-h-screen bg-base-200 pb-16 px-4">
       <div className="max-w-6xl mx-auto px-4 pt-6">
         <BackButton className="mb-2" />
       </div>
-      <div className="max-w-lg mx-auto space-y-8">
+
+      <div className="max-w-4xl mx-auto space-y-10">
         <header className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-primary">
-            Unlock Premium Access
-          </h1>
-          <p className="text-sm opacity-60">500 DA / month</p>
+          <h1 className="text-3xl font-bold text-primary">Choose Your Plan</h1>
+          <p className="text-sm opacity-60">Unlock more books by upgrading your subscription</p>
         </header>
 
-        {/* TABS */}
-        <div role="tablist" className="tabs tabs-boxed">
-          <button
-            role="tab"
-            className={`tab flex-1 ${tab === "chargily" ? "tab-active" : ""}`}
-            onClick={() => setTab("chargily")}
-          >
-            Pay Online
-          </button>
-          <button
-            role="tab"
-            className={`tab flex-1 ${tab === "manual" ? "tab-active" : ""}`}
-            onClick={() => setTab("manual")}
-          >
-            Manual Receipt
-          </button>
+        {/* PLAN CARDS */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {planKeys.map((key) => {
+            const plan = SUBSCRIPTION_PLANS[key];
+            const styles = PLAN_STYLES[key];
+            const isSelected = selectedPlan === key;
+            const isFree = key === "FREE";
+
+            return (
+              <div
+                key={key}
+                onClick={() => !isFree && setSelectedPlan(key)}
+                className={`card bg-base-100 border-2 shadow-md rounded-2xl transition-all duration-200 ${styles.card} ${
+                  isSelected ? "ring-2 ring-offset-2 ring-primary shadow-xl scale-[1.02]" : ""
+                } ${!isFree ? "cursor-pointer hover:shadow-lg" : "opacity-70"}`}
+              >
+                <div className="card-body p-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className={`badge ${styles.badge} gap-1`}>
+                      {PLAN_ICONS[key]}
+                      {plan.label}
+                    </div>
+                    {isSelected && <CheckCircle className="w-5 h-5 text-primary" />}
+                  </div>
+
+                  <div>
+                    {plan.price === 0 ? (
+                      <span className="text-2xl font-bold">Free</span>
+                    ) : (
+                      <span className="text-2xl font-bold">
+                        {plan.price} <span className="text-base font-normal opacity-60">DA / month</span>
+                      </span>
+                    )}
+                  </div>
+
+                  <ul className="space-y-2">
+                    {PLAN_FEATURES[key].map((feature) => (
+                      <li key={feature} className="flex items-start gap-2 text-sm">
+                        <CheckCircle className="w-4 h-4 text-success mt-0.5 shrink-0" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+
+                  {isFree ? (
+                    <div className="btn btn-neutral btn-sm w-full pointer-events-none opacity-50">
+                      Current Default
+                    </div>
+                  ) : (
+                    <button
+                      className={`btn ${styles.btn} btn-sm w-full`}
+                      onClick={(e) => { e.stopPropagation(); setSelectedPlan(key); }}
+                    >
+                      {isSelected ? "Selected" : `Choose ${plan.label}`}
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
 
-        {/* CHARGILY TAB */}
-        {tab === "chargily" && (
-          <div className="card bg-base-100 border border-base-200 shadow-xl rounded-2xl">
-            <div className="card-body space-y-6">
-              <div>
-                <h2 className="font-semibold text-lg">Pay with Chargily</h2>
-                <p className="text-sm text-base-content/60 mt-1">
-                  Secure online payment via CIB / EDAHABIA card. You will be
-                  redirected to the Chargily payment page.
-                </p>
-              </div>
-
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-semibold text-xs uppercase tracking-wide opacity-70">
-                    Full Name
-                  </span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="Your full name"
-                  className="input input-bordered focus:input-primary w-full"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                />
-              </div>
-
-              <button
-                className={`btn btn-primary w-full font-semibold ${chargilyLoading ? "loading" : ""}`}
-                disabled={chargilyLoading || !fullName.trim()}
-                onClick={() => startCheckout(fullName)}
-              >
-                {chargilyLoading ? "Redirecting..." : "Pay 500 DA"}
-              </button>
-
-              <div className="bg-base-200 rounded-xl p-4 text-xs opacity-70">
-                Your subscription is activated automatically after a successful
-                payment.
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* MANUAL TAB */}
-        {tab === "manual" && (
-          <>
-            <div className="card bg-primary text-primary-content shadow-2xl rounded-2xl overflow-hidden">
-              <div className="card-body space-y-4">
-                <div>
-                  <p className="text-xs uppercase opacity-80 font-semibold tracking-wide">
-                    Payment Details (CCP)
-                  </p>
-                  <p className="font-mono text-lg font-bold bg-white/10 px-3 py-2 rounded-lg mt-2 select-all">
-                    00799999000123456789
-                  </p>
-                  <p className="text-sm opacity-80 mt-1">
-                    Account Name: Nedjme Eddine Benkortbi
-                  </p>
-                </div>
-                <div className="divider divider-neutral/20 my-1"></div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm opacity-80">Monthly Subscription</span>
-                  <span className="text-xl font-bold">500 DA</span>
-                </div>
-              </div>
+        {/* PAYMENT SECTION — only shown when a paid plan is selected */}
+        {selectedPlan && selectedPlan !== "FREE" && (
+          <div className="space-y-6">
+            <div className="divider text-sm opacity-50">
+              Pay for {SUBSCRIPTION_PLANS[selectedPlan].label} — {SUBSCRIPTION_PLANS[selectedPlan].price} DA / month
             </div>
 
-            <form
-              onSubmit={handleManualSubmit}
-              className="card bg-base-100 border border-base-200 shadow-xl rounded-2xl"
-            >
+            <div className="card bg-base-100 border border-base-200 shadow-xl rounded-2xl max-w-lg mx-auto">
               <div className="card-body space-y-6">
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-semibold text-xs uppercase tracking-wide opacity-70">
-                      Amount Paid
-                    </span>
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="e.g. 500 DA"
-                    className="input input-bordered focus:input-primary w-full"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-semibold text-xs uppercase tracking-wide opacity-70">
-                      Receipt Photo
-                    </span>
-                  </label>
-                  <label
-                    className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-300 ${
-                      file
-                        ? "border-success bg-success/10"
-                        : "border-base-300 hover:border-primary"
-                    }`}
-                  >
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => setFile(e.target.files?.[0] || null)}
-                      required
-                    />
-                    {!file ? (
-                      <div className="text-center space-y-1">
-                        <p className="text-sm font-medium">
-                          Click to upload receipt
-                        </p>
-                        <p className="text-xs opacity-50">PNG, JPG up to 10MB</p>
-                      </div>
-                    ) : (
-                      <div className="text-center space-y-1 flex flex-col items-center">
-                        <CheckCircle className="text-success w-6 h-6 mb-1" />
-                        <p className="text-sm font-semibold text-success">
-                          Receipt Uploaded
-                        </p>
-                        <p className="text-xs opacity-60 truncate max-w-[200px]">
-                          {file.name}
-                        </p>
-                      </div>
-                    )}
-                  </label>
+                <div>
+                  <h2 className="font-semibold text-lg">Pay with Chargily</h2>
+                  <p className="text-sm text-base-content/60 mt-1">
+                    Secure online payment via CIB / EDAHABIA card. You will be redirected to the Chargily payment page.
+                  </p>
                 </div>
 
                 <button
-                  type="submit"
-                  className={`btn btn-primary w-full font-semibold ${manualLoading ? "loading" : ""}`}
-                  disabled={manualLoading || !file}
+                  className={`btn btn-primary w-full font-semibold ${chargilyLoading ? "loading" : ""}`}
+                  disabled={chargilyLoading}
+                  onClick={() => startCheckout(selectedPlan)}
                 >
-                  {manualLoading ? "Submitting..." : "Submit Receipt"}
+                  {chargilyLoading ? "Redirecting..." : `Pay ${SUBSCRIPTION_PLANS[selectedPlan].price} DA`}
                 </button>
 
                 <div className="bg-base-200 rounded-xl p-4 text-xs opacity-70">
-                  After submitting your receipt, our team will verify your
-                  payment within 24 hours.
+                  Your subscription is activated automatically after a successful payment.
                 </div>
               </div>
-            </form>
-          </>
+            </div>
+          </div>
         )}
       </div>
     </div>

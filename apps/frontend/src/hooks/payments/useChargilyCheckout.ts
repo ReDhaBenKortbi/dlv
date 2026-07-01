@@ -1,19 +1,15 @@
 import { useState } from "react";
 import { createChargilyCheckout } from "../../services/paymentService";
 import { notify } from "../../utils/toast";
+import type { SubscriptionPlan } from "../../constants/subscriptionPlans";
 
 export const useChargilyCheckout = () => {
   const [loading, setLoading] = useState(false);
 
-  const startCheckout = async (fullName: string): Promise<void> => {
-    if (!fullName.trim()) {
-      notify.error("Please enter your full name.");
-      return;
-    }
-
+  const startCheckout = async (plan: SubscriptionPlan): Promise<void> => {
     setLoading(true);
     try {
-      const { checkoutUrl } = await createChargilyCheckout(fullName);
+      const { checkoutUrl } = await createChargilyCheckout(plan);
       window.location.href = checkoutUrl;
     } catch {
       notify.error("Failed to start payment. Please try again.");

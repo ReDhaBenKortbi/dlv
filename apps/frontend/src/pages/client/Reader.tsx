@@ -10,7 +10,7 @@ const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
 const Reader = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { isSubscribed, isAdmin } = useAuth();
+  const { subscriptionPlan, isAdmin } = useAuth();
   const { book, isLoading, isError } = useBooks(id);
 
   const [isIframeLoading, setIsIframeLoading] = useState(true);
@@ -37,8 +37,12 @@ const Reader = () => {
 
   if (isLoading) return <LoadingScreen />;
   if (isError || !book) return <ErrorView onBack={() => navigate("/")} />;
-  if (book.isPremium && !isSubscribed && !isAdmin)
-    return <Navigate to="/subscription" replace />;
+  const canAccess = book.bookTier === "FREE"
+    || isAdmin
+    || (book.bookTier === "PRO" && (subscriptionPlan === "PRO" || subscriptionPlan === "GOLD"))
+    || (book.bookTier === "GOLD" && subscriptionPlan === "GOLD");
+
+  if (!canAccess) return <Navigate to="/subscription" replace />;
 
   return (
     <div className="h-screen w-full bg-base-100 flex flex-col overflow-hidden">

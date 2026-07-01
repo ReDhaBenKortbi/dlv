@@ -1,15 +1,24 @@
 import { useNavigate } from "react-router-dom";
-import { Star, Crown, Languages } from "lucide-react";
+import { Star, Crown, Languages, LockKeyhole, UnlockKeyhole } from "lucide-react";
 import type { Book } from "../../types/book";
 import { FOCUS_SKILLS } from "../../constants/bookOptions"; // Import to get colors
+import { useAuth } from "../../context/AuthContext";
 
 interface BookCardProps {
   book: Book;
-  isSubscribed?: boolean;
 }
 
 export const BookCard = ({ book }: BookCardProps) => {
   const navigate = useNavigate();
+  const { subscriptionPlan, isAdmin } = useAuth();
+
+  const canAccess = () => {
+    if (book.bookTier === "FREE") return true;
+    if (isAdmin) return true;
+    if (book.bookTier === "PRO") return subscriptionPlan === "PRO" || subscriptionPlan === "GOLD";
+    return subscriptionPlan === "GOLD";
+  };
+  const hasAccess = canAccess();
 
   const rating = book.averageRating || 0;
   const totalReviews = book.totalReviews || 0;
@@ -37,13 +46,27 @@ export const BookCard = ({ book }: BookCardProps) => {
           </div>
         )}
 
-        {/* TOP RIGHT: Pro Badge */}
-        {book.isPremium && (
-          <div className="absolute top-2 right-2 backdrop-blur-md bg-black/40 border border-white/10 rounded-md px-1.5 py-0.5 flex items-center gap-1 shadow-lg">
-            <Crown size={10} className="text-warning" />
+        {/* TOP RIGHT: Tier Badge or access indicator */}
+        {book.bookTier !== "FREE" && (
+          <div className={`absolute top-2 right-2 backdrop-blur-md border rounded-md px-1.5 py-0.5 flex items-center gap-1 shadow-lg ${hasAccess ? "bg-emerald-500/80 border-emerald-400/30" : "bg-black/40 border-white/10"}`}>
+            {hasAccess ? (
+              <UnlockKeyhole size={10} className="text-white" />
+            ) : (
+              <Crown size={10} className={book.bookTier === "GOLD" ? "text-warning" : "text-secondary"} />
+            )}
             <span className="text-[9px] font-bold text-white uppercase">
-              Pro
+              {book.bookTier}
             </span>
+          </div>
+        )}
+
+        {/* BOTTOM: locked overlay for inaccessible premium books */}
+        {book.bookTier !== "FREE" && !hasAccess && (
+          <div className="absolute inset-0 bg-black/30 flex items-end justify-center pb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div className="flex items-center gap-1 bg-black/70 backdrop-blur-sm rounded-full px-2.5 py-1">
+              <LockKeyhole size={10} className="text-white/80" />
+              <span className="text-[9px] text-white/80 font-semibold uppercase">Requires {book.bookTier}</span>
+            </div>
           </div>
         )}
       </div>

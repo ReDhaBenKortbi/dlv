@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { api } from "../lib/api";
+import type { SubscriptionPlan } from "../constants/subscriptionPlans";
 
 export interface AuthUser {
   id: string;
@@ -7,6 +8,7 @@ export interface AuthUser {
   role: "USER" | "ADMIN";
   isSubscribed: boolean;
   subscriptionStatus: "NONE" | "PENDING" | "APPROVED" | "REJECTED";
+  subscriptionPlan: SubscriptionPlan;
   subscriptionEndDate: string | null;
 }
 
@@ -14,6 +16,7 @@ interface AuthContextType {
   user: AuthUser | null;
   isSubscribed: boolean;
   subscriptionStatus: "NONE" | "PENDING" | "APPROVED" | "REJECTED";
+  subscriptionPlan: SubscriptionPlan;
   subscriptionEndDate: string | null;
   isAdmin: boolean;
   loading: boolean;
@@ -60,11 +63,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const isAdmin = user?.role === "ADMIN";
   const isSubscribed = user?.isSubscribed ?? false;
   const subscriptionStatus = user?.subscriptionStatus ?? "NONE";
+  const subscriptionPlan = user?.subscriptionPlan ?? "FREE";
   const subscriptionEndDate = user?.subscriptionEndDate ?? null;
 
   return (
     <AuthContext.Provider
-      value={{ user, isSubscribed, subscriptionStatus, subscriptionEndDate, isAdmin, loading, logout, refreshUser }}
+      value={{ user, isSubscribed, subscriptionStatus, subscriptionPlan, subscriptionEndDate, isAdmin, loading, logout, refreshUser }}
     >
       {children}
     </AuthContext.Provider>

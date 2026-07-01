@@ -4,8 +4,14 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { Role, User } from '@prisma/client';
+import { BookTier, Role, SubscriptionPlan, User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+
+function canAccess(bookTier: BookTier, userPlan: SubscriptionPlan): boolean {
+  if (bookTier === 'FREE') return true;
+  if (bookTier === 'PRO') return userPlan === 'PRO' || userPlan === 'GOLD';
+  return userPlan === 'GOLD';
+}
 import { BooksFilterDto } from './dto/books-filter.dto';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
@@ -49,7 +55,7 @@ export class BooksService {
           author: true,
           description: true,
           coverURL: true,
-          isPremium: true,
+          bookTier: true,
           targetLanguage: true,
           focusSkill: true,
           proficiencyLevel: true,
@@ -69,11 +75,12 @@ export class BooksService {
     const book = await this.prisma.book.findUnique({ where: { id } });
     if (!book) throw new NotFoundException('Book not found');
 
-    if (book.isPremium && requestingUser) {
+    if (book.bookTier !== 'FREE' && requestingUser) {
       const isAdmin = requestingUser.role === Role.ADMIN;
-      const isSubscribed = requestingUser.isSubscribed;
-      if (!isAdmin && !isSubscribed) {
-        // Return book metadata without the reader URL
+      if (
+        !isAdmin &&
+        !canAccess(book.bookTier, requestingUser.subscriptionPlan)
+      ) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { indexURL: _indexURL, ...meta } = book;
         return meta;
@@ -112,7 +119,11 @@ export class BooksService {
     const book = await this.prisma.book.findUnique({ where: { id } });
     if (!book) throw new NotFoundException('Book not found');
 
-    if (book.isPremium && user.role !== Role.ADMIN && !user.isSubscribed) {
+    if (
+      book.bookTier !== 'FREE' &&
+      user.role !== Role.ADMIN &&
+      !canAccess(book.bookTier, user.subscriptionPlan)
+    ) {
       throw new ForbiddenException('Subscription required');
     }
 

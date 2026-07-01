@@ -42,8 +42,8 @@ const Sidebar = () => {
       icon: <PlusCircle className="h-4 w-4" />,
     },
     {
-      name: "Payments",
-      path: "/admin/payments",
+      name: "Subscribers",
+      path: "/admin/subscribers-history",
       icon: <CreditCard className="h-4 w-4" />,
     },
     {

@@ -41,3 +41,12 @@ export const PROFICIENCY_LEVELS = [
 ] as const;
 
 export type ProficiencyLevelCode = (typeof PROFICIENCY_LEVELS)[number]["id"];
+
+// --- 4. BOOK TIERS ---
+export const BOOK_TIERS = [
+  { id: "FREE", label: "Free", color: "badge-neutral" },
+  { id: "PRO", label: "Pro", color: "badge-secondary" },
+  { id: "GOLD", label: "Gold", color: "badge-warning" },
+] as const;
+
+export type BookTier = (typeof BOOK_TIERS)[number]["id"];

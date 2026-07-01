@@ -1,8 +1,11 @@
 import type {
+  BookTier,
   TargetLanguageCode,
   FocusSkillCode,
   ProficiencyLevelCode,
 } from "../constants/bookOptions";
+
+export type { BookTier };
 
 export interface Book {
   id: string;
@@ -11,7 +14,7 @@ export interface Book {
   description: string;
   coverURL: string;
   indexURL: string;
-  isPremium: boolean;
+  bookTier: BookTier;
 
   targetLanguage?: TargetLanguageCode; // e.g., "AR", "EN"
   focusSkill?: FocusSkillCode; // e.g., "GRAMMAR"

@@ -1,8 +1,9 @@
-import { Languages, GraduationCap, Target } from "lucide-react";
+import { Languages, GraduationCap, Target, CheckCircle } from "lucide-react";
 import { FOCUS_SKILLS, TARGET_LANGUAGES } from "../../constants/bookOptions";
 
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { TierBadge } from "../../components/common/TierBadge";
 import LoadingScreen from "../../components/common/LoadingScreen";
 import { BookCard } from "../../components/library/BookCard";
 import { useBooks } from "../../hooks/books/useBooks";
@@ -18,7 +19,7 @@ const BookDetails = () => {
   const { id } = useParams();
   const { reviews } = useReviews(id!);
   const navigate = useNavigate();
-  const { isSubscribed, isAdmin } = useAuth();
+  const { subscriptionPlan, isAdmin } = useAuth();
 
   // STEP 1: Fetch the main book data
   const { book, isLoading, isError } = useBooks(id);
@@ -42,7 +43,12 @@ const BookDetails = () => {
   }
 
   // STEP 4: Logic is now safe. 'book' is guaranteed to exist below this line.
-  const hasAccess = !book.isPremium || isSubscribed || isAdmin;
+  const canAccess = (tier: string) => {
+    if (tier === "FREE") return true;
+    if (tier === "PRO") return subscriptionPlan === "PRO" || subscriptionPlan === "GOLD";
+    return subscriptionPlan === "GOLD";
+  };
+  const hasAccess = isAdmin || canAccess(book.bookTier);
 
   // Find the readable labels and colors
   const skillInfo = FOCUS_SKILLS.find((s) => s.id === book.focusSkill);
@@ -59,10 +65,10 @@ const BookDetails = () => {
           {/* LEFT — COVER */}
           <div className="md:col-span-4 flex justify-center">
             <div className="relative">
-              {book.isPremium && (
+              {book.bookTier !== "FREE" && (
                 <div className="absolute top-3 right-3 z-10">
-                  <span className="badge badge-secondary font-bold uppercase tracking-wider text-[10px] px-3 py-3">
-                    Premium
+                  <span className={`badge font-bold uppercase tracking-wider text-[10px] px-3 py-3 ${book.bookTier === "GOLD" ? "badge-warning" : "badge-secondary"}`}>
+                    {book.bookTier}
                   </span>
                 </div>
               )}
@@ -134,36 +140,48 @@ const BookDetails = () => {
             {/* ACTION AREA */}
             <div className="pt-8 border-t border-base-300">
               {hasAccess ? (
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <button
-                    onClick={() => navigate(`/reader/${book.id}`)}
-                    className="btn btn-primary btn-lg px-10 shadow-md"
-                  >
-                    📖 Start Reading
-                  </button>
+                <div className="flex flex-col gap-4">
+                  {book.bookTier !== "FREE" && !isAdmin && (
+                    <div className="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
+                      <CheckCircle size={16} />
+                      <span>Included in your</span>
+                      <TierBadge plan={subscriptionPlan} size="sm" />
+                      <span>plan</span>
+                    </div>
+                  )}
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <button
+                      onClick={() => navigate(`/reader/${book.id}`)}
+                      className="btn btn-primary btn-lg px-10 shadow-md"
+                    >
+                      📖 Start Reading
+                    </button>
 
-                  <button
-                    onClick={() => navigate("/")}
-                    className="btn btn-outline btn-lg"
-                  >
-                    Back to Library
-                  </button>
+                    <button
+                      onClick={() => navigate("/")}
+                      className="btn btn-outline btn-lg"
+                    >
+                      Back to Library
+                    </button>
+                  </div>
                 </div>
               ) : (
-                <div className="rounded-2xl bg-base-300 p-8 border border-base-300 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+                <div className={`rounded-2xl p-8 border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 ${book.bookTier === "GOLD" ? "bg-amber-500/10 border-amber-500/20" : "bg-secondary/10 border-secondary/20"}`}>
                   <div>
-                    <h4 className="text-lg font-bold">
-                      Premium Access Required
-                    </h4>
-                    <p className="text-sm text-base-content/60 mt-1 max-w-md">
-                      Unlock this book and 100+ premium titles by upgrading your
-                      plan.
+                    <div className="flex items-center gap-2 mb-2">
+                      <h4 className="text-lg font-bold">
+                        {book.bookTier === "GOLD" ? "Gold" : "Pro"} Access Required
+                      </h4>
+                      <TierBadge plan={book.bookTier as "PRO" | "GOLD"} size="sm" />
+                    </div>
+                    <p className="text-sm text-base-content/60 max-w-md">
+                      Unlock this book and 100+ premium titles by upgrading your plan.
                     </p>
                   </div>
 
                   <button
                     onClick={() => navigate("/subscription")}
-                    className="btn btn-primary px-8"
+                    className={`btn px-8 ${book.bookTier === "GOLD" ? "bg-amber-500 hover:bg-amber-600 text-white border-none" : "btn-secondary"}`}
                   >
                     Upgrade Now
                   </button>
@@ -217,7 +235,6 @@ const BookDetails = () => {
               <BookCard
                 key={relBook.id}
                 book={relBook}
-                isSubscribed={isSubscribed}
               />
             ))
           ) : (

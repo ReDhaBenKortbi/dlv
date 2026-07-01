@@ -29,7 +29,6 @@ enum PaymentStatus {
 }
 
 enum PaymentMethod {
-  MANUAL
   CHARGILY
 }
 
@@ -63,17 +62,31 @@ enum ProficiencyLevel {
   C2
 }
 
+enum SubscriptionPlan {
+  FREE
+  PRO
+  GOLD
+}
+
+enum BookTier {
+  FREE
+  PRO
+  GOLD
+}
+
 // ---------------------------------------------------------------------------
 // Models
 // ---------------------------------------------------------------------------
 
 model User {
   id                  String             @id @default(cuid())
+  fullName            String
   email               String             @unique
   passwordHash        String
   role                Role               @default(USER)
   isSubscribed        Boolean            @default(false)
   subscriptionStatus  SubscriptionStatus @default(NONE)
+  subscriptionPlan    SubscriptionPlan   @default(FREE)
   subscriptionEndDate DateTime?
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
@@ -91,7 +104,7 @@ model Book {
   description      String
   coverURL         String
   indexURL         String
-  isPremium        Boolean          @default(false)
+  bookTier         BookTier         @default(FREE)
   targetLanguage   TargetLanguage?
   focusSkill       FocusSkill?
   proficiencyLevel ProficiencyLevel?
@@ -121,18 +134,18 @@ model Review {
 }
 
 model PaymentRequest {
-  id                  String        @id @default(cuid())
-  fullName            String
-  amount              String
-  receiptURL          String?
-  paymentMethod       PaymentMethod @default(MANUAL)
-  chargilyCheckoutId  String?       @unique
-  status              PaymentStatus @default(PENDING)
-  createdAt           DateTime      @default(now())
-  processedAt         DateTime?
+  id                 String           @id @default(cuid())
+  fullName           String
+  amount             String
+  paymentMethod      PaymentMethod    @default(CHARGILY)
+  plan               SubscriptionPlan @default(PRO)
+  chargilyCheckoutId String?          @unique
+  status             PaymentStatus    @default(PENDING)
+  createdAt          DateTime         @default(now())
+  processedAt        DateTime?
 
-  userId    String
-  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Ticket {

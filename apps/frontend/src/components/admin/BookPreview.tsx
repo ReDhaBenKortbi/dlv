@@ -1,15 +1,17 @@
+import type { BookTier } from "../../constants/bookOptions";
+
 export interface PreviewProps {
   title: string;
   author: string;
-  previewUrl: string; // This will be the local blob URL from URL.createObjectURL
-  isPremium?: boolean; // Optional boolean to toggle the badge
+  previewUrl: string;
+  bookTier?: BookTier;
 }
 
 export const BookPreview = ({
   title,
   author,
   previewUrl,
-  isPremium,
+  bookTier = "FREE",
 }: PreviewProps) => {
   return (
     <div className="bg-base-100 rounded-2xl shadow-xl border border-base-200 sticky top-8 transition-all duration-300">
@@ -20,10 +22,10 @@ export const BookPreview = ({
 
         {/* COVER */}
         <div className="aspect-[3/4] bg-base-200 rounded-xl flex items-center justify-center relative overflow-hidden border border-base-300">
-          {isPremium && (
+          {bookTier !== "FREE" && (
             <div className="absolute top-3 right-3">
-              <span className="badge badge-secondary text-[10px] px-3 py-3 font-bold shadow-sm">
-                PREMIUM
+              <span className={`badge text-[10px] px-3 py-3 font-bold shadow-sm ${bookTier === "GOLD" ? "badge-warning" : "badge-secondary"}`}>
+                {bookTier}
               </span>
             </div>
           )}
