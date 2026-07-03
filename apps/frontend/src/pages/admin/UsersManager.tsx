@@ -5,7 +5,7 @@ import LoadingScreen from "../../components/common/LoadingScreen";
 
 const UsersManager = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const { users, isLoading, toggleSubscription, isUpdating } = useUsers();
+  const { users, isLoading, toggleSubscription, pendingUserId } = useUsers();
 
   const filteredUsers = users.filter((u) => {
     const term = searchTerm.toLowerCase();
@@ -71,27 +71,32 @@ const UsersManager = () => {
                       )}
                     </td>
                     <td className="flex justify-end gap-2">
-                      <button
-                        onClick={() =>
-                          toggleSubscription(user.id, user.isSubscribed)
-                        }
-                        // Add 'disabled' here to prevent double-clicks
-                        disabled={isUpdating}
-                        className={`btn btn-sm ${
-                          user.isSubscribed
-                            ? "btn-outline btn-error"
-                            : "btn-primary text-white"
-                        }`}
-                      >
-                        {/* Show a mini spinner if this specific button is working */}
-                        {isUpdating ? (
-                          <span className="loading loading-spinner loading-xs"></span>
-                        ) : user.isSubscribed ? (
-                          "Revoke Access"
-                        ) : (
-                          "Grant Premium"
-                        )}
-                      </button>
+                      {(() => {
+                        const isRowUpdating = pendingUserId === user.id;
+                        return (
+                          <button
+                            onClick={() =>
+                              toggleSubscription(user.id, user.isSubscribed)
+                            }
+                            // Disable only this row while it is mutating
+                            disabled={isRowUpdating}
+                            className={`btn btn-sm ${
+                              user.isSubscribed
+                                ? "btn-outline btn-error"
+                                : "btn-primary text-white"
+                            }`}
+                          >
+                            {/* Show a mini spinner if this specific button is working */}
+                            {isRowUpdating ? (
+                              <span className="loading loading-spinner loading-xs"></span>
+                            ) : user.isSubscribed ? (
+                              "Revoke Access"
+                            ) : (
+                              "Grant Premium"
+                            )}
+                          </button>
+                        );
+                      })()}
                     </td>
                   </tr>
                 ))}

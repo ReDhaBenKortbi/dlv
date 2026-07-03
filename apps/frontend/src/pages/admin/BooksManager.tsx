@@ -12,7 +12,7 @@ const BooksManager = () => {
   const { books, isLoading: isFetching } = useBooks();
 
   // 3. Use the "Writer" hook for the delete action
-  const { remove, isProcessing } = useBookMutations();
+  const { remove, deletingId } = useBookMutations();
 
   const handleDelete = async (id: string, title: string) => {
     // 1. Keep the native confirm for safety (toasts are for progress, confirm is for intent)
@@ -130,10 +130,10 @@ const BooksManager = () => {
                         </Link>
                         <button
                           onClick={() => handleDelete(book.id, book.title)}
-                          disabled={isProcessing}
+                          disabled={deletingId === book.id}
                           className="btn btn-xs btn-outline btn-error"
                         >
-                          {isProcessing ? "..." : "Delete"}
+                          {deletingId === book.id ? "..." : "Delete"}
                         </button>
                       </div>
                     </td>

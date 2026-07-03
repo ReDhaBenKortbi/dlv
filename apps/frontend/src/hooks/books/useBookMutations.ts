@@ -33,8 +33,7 @@ export const useBookMutations = () => {
   return {
     // Add Book
     add: async (bookData: Omit<Book, "id" | "createdAt">) => {
-      const fullBook = { ...bookData, createdAt: new Date().toISOString() };
-      return await notify.promise(addMutation.mutateAsync(fullBook), {
+      return await notify.promise(addMutation.mutateAsync(bookData), {
         loading: "Adding new book to library...",
         success: "Book created successfully! 📚",
         error: "Failed to create book. Please check fields.",
@@ -63,5 +62,10 @@ export const useBookMutations = () => {
       addMutation.isPending ||
       editMutation.isPending ||
       deleteMutation.isPending,
+
+    // Id of the book currently being deleted, so only that row shows a spinner.
+    deletingId: deleteMutation.isPending
+      ? deleteMutation.variables
+      : undefined,
   };
 };

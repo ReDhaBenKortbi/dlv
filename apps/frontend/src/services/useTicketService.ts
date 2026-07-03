@@ -12,15 +12,21 @@ export const useTicketService = () => {
   });
 
   const resolveMutation = useMutation({
-    mutationFn: (id: string) =>
-      api(`/tickets/${id}/status`, { method: "PATCH", body: JSON.stringify({ status: "RESOLVED" }) }),
+    mutationFn: async (id: string) => {
+      // Mark resolved first (audit/consistency), then remove the ticket.
+      await api(`/tickets/${id}/status`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: "RESOLVED" }),
+      });
+      await api(`/tickets/${id}`, { method: "DELETE" });
+    },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tickets"] }),
   });
 
   const handleResolve = (id: string) => {
     notify.promise(resolveMutation.mutateAsync(id), {
-      loading: "Marking as resolved...",
-      success: "Ticket resolved!",
+      loading: "Resolving ticket...",
+      success: "Ticket resolved & removed!",
       error: "Could not update ticket.",
     });
   };

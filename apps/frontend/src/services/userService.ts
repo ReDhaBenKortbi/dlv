@@ -8,7 +8,7 @@ export const getUsers = (): Promise<UserProfile[]> => api("/users");
 export interface DashboardStats {
   users: number;
   books: number;
-  pendingPayments: number;
+  activeSubscribers: number;
 }
 
 export const getDashboardStats = (): Promise<DashboardStats> =>

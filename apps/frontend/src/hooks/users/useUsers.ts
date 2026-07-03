@@ -37,6 +37,8 @@ export const useUsers = () => {
     users: query.data ?? [],
     isLoading: query.isLoading,
     isUpdating: mutation.isPending,
+    // Id of the user currently being mutated, so only that row shows a spinner.
+    pendingUserId: mutation.isPending ? mutation.variables?.userId : undefined,
     toggleSubscription, // Now returns a promise with a toast
   };
 };

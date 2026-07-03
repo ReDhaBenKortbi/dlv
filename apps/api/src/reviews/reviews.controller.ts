@@ -36,12 +36,7 @@ export class ReviewsController {
     @Req() req: AuthenticatedRequest,
     @Body() dto: CreateReviewDto,
   ) {
-    return this.reviewsService.create(
-      req.user.id,
-      bookId,
-      dto.rating,
-      dto.body,
-    );
+    return this.reviewsService.create(req.user, bookId, dto.rating, dto.body);
   }
 
   @UseGuards(JwtAuthGuard)

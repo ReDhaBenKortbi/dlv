@@ -202,9 +202,17 @@ const BookDetails = () => {
           </p>
         </div>
 
-        {/* Form always on top */}
+        {/* Only entitled readers can write a review */}
         <div className="mb-10">
-          <ReviewForm bookId={book.id} />
+          {hasAccess ? (
+            <ReviewForm bookId={book.id} />
+          ) : (
+            <div className="bg-base-100 border border-base-300 rounded-xl p-5 text-center">
+              <p className="text-sm opacity-70">
+                Subscribe to this book to share your review.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Reviews */}

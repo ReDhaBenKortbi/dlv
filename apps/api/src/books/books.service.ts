@@ -4,14 +4,9 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { BookTier, Role, SubscriptionPlan, User } from '@prisma/client';
+import { Role, User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-
-function canAccess(bookTier: BookTier, userPlan: SubscriptionPlan): boolean {
-  if (bookTier === 'FREE') return true;
-  if (bookTier === 'PRO') return userPlan === 'PRO' || userPlan === 'GOLD';
-  return userPlan === 'GOLD';
-}
+import { canAccess } from './access.util';
 import { BooksFilterDto } from './dto/books-filter.dto';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';

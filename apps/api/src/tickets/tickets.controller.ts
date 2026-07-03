@@ -1,7 +1,10 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -40,5 +43,12 @@ export class TicketsController {
   @Patch(':id/status')
   updateStatus(@Param('id') id: string, @Body('status') status: TicketStatus) {
     return this.ticketsService.updateStatus(id, status);
+  }
+
+  @UseGuards(AdminGuard)
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@Param('id') id: string) {
+    return this.ticketsService.remove(id);
   }
 }

@@ -30,4 +30,10 @@ export class TicketsService {
     if (!ticket) throw new NotFoundException('Ticket not found');
     return this.prisma.ticket.update({ where: { id }, data: { status } });
   }
+
+  async remove(id: string) {
+    const ticket = await this.prisma.ticket.findUnique({ where: { id } });
+    if (!ticket) throw new NotFoundException('Ticket not found');
+    await this.prisma.ticket.delete({ where: { id } });
+  }
 }

@@ -1,8 +1,11 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Role, User } from '@prisma/client';
+import { canAccess } from '../books/access.util';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -18,9 +21,21 @@ export class ReviewsService {
     });
   }
 
-  async create(userId: string, bookId: string, rating: number, body?: string) {
+  async create(user: User, bookId: string, rating: number, body?: string) {
+    const userId = user.id;
     const book = await this.prisma.book.findUnique({ where: { id: bookId } });
     if (!book) throw new NotFoundException('Book not found');
+
+    // Only users entitled to the book (by subscription tier) may review it.
+    // Admins bypass tier gating.
+    if (
+      user.role !== Role.ADMIN &&
+      !canAccess(book.bookTier, user.subscriptionPlan)
+    ) {
+      throw new ForbiddenException(
+        'A subscription is required to review this book',
+      );
+    }
 
     const existing = await this.prisma.review.findUnique({
       where: { userId_bookId: { userId, bookId } },

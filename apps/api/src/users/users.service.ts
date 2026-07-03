@@ -53,11 +53,11 @@ export class UsersService {
   }
 
   async stats() {
-    const [users, books, pendingPayments] = await Promise.all([
+    const [users, books, activeSubscribers] = await Promise.all([
       this.prisma.user.count(),
       this.prisma.book.count(),
-      this.prisma.paymentRequest.count({ where: { status: 'PENDING' } }),
+      this.prisma.user.count({ where: { isSubscribed: true } }),
     ]);
-    return { users, books, pendingPayments };
+    return { users, books, activeSubscribers };
   }
 }

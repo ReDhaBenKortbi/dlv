@@ -1,4 +1,4 @@
-import { Users, BookOpen, CreditCard } from "lucide-react";
+import { Users, BookOpen, Crown } from "lucide-react";
 import MetricDisplayCard from "./MetricDisplayCard";
 import type { DashboardStats } from "../../services/adminService";
 
@@ -24,10 +24,10 @@ const BASE_STATS_CONFIG: {
     iconColorClass: "text-indigo-500 dark:text-indigo-300",
   },
   {
-    key: "pendingPayments",
-    title: "Pending Requests",
-    desc: "Awaiting approval",
-    icon: CreditCard,
+    key: "activeSubscribers",
+    title: "Active Subscribers",
+    desc: "Currently subscribed",
+    icon: Crown,
     iconBgClass: "bg-emerald-50 dark:bg-emerald-900",
     iconColorClass: "text-emerald-500 dark:text-emerald-300",
   },
@@ -46,8 +46,8 @@ const getBadgeText = (key: keyof DashboardStats, value: number) => {
   switch (key) {
     case "users":
       return value > 0 ? "Active" : "Growing";
-    case "pendingPayments":
-      return value > 0 ? "Urgent" : "Clear";
+    case "activeSubscribers":
+      return value > 0 ? "Premium" : "None";
     case "books":
       return value > 0 ? "Live" : "Empty";
   }
@@ -62,9 +62,7 @@ const AdminMetricsGrid = ({ stats }: Props) => {
 
     // Badge color logic
     const badgeColor =
-      item.key === "pendingPayments" && value > 0
-        ? "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300"
-        : "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300";
+      "bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300";
 
     const Icon = item.icon;
 

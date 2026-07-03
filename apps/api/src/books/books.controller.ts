@@ -63,6 +63,15 @@ export class BooksController {
       frontendUrl,
     );
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    // Allow the frontend origin to embed this reader in an iframe.
+    // Global helmet defaults to `frame-ancestors 'self'` + X-Frame-Options,
+    // which blocks the cross-origin frontend from framing this API response.
+    const frontendOrigin = new URL(frontendUrl).origin;
+    res.setHeader(
+      'Content-Security-Policy',
+      `frame-ancestors 'self' ${frontendOrigin}`,
+    );
+    res.removeHeader('X-Frame-Options');
     res.send(html);
   }
 
