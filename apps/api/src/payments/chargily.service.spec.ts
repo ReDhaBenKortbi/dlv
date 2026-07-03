@@ -136,13 +136,50 @@ describe('ChargilyService', () => {
       expect(prisma.$transaction).not.toHaveBeenCalled();
     });
 
-    it('ignores non-paid event types', async () => {
-      const event = { type: 'checkout.failed', data: { id: checkoutId } };
+    it('ignores unrelated event types', async () => {
+      const event = { type: 'checkout.created', data: { id: checkoutId } };
       const body = Buffer.from(JSON.stringify(event));
 
       await service.handleWebhookEvent(sign(body), body, event);
 
       expect(prisma.paymentRequest.findUnique).not.toHaveBeenCalled();
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+    });
+
+    it.each(['checkout.failed', 'checkout.canceled', 'checkout.expired'])(
+      'rejects the payment request and resets subscriptionStatus on %s',
+      async (type) => {
+        const event = { type, data: { id: checkoutId } };
+        const body = Buffer.from(JSON.stringify(event));
+        prisma.paymentRequest.findUnique.mockResolvedValue(pendingRequest());
+
+        await service.handleWebhookEvent(sign(body), body, event);
+
+        const prUpdateCalls = prisma.paymentRequest.update.mock.calls as Array<
+          [{ where: { id: string }; data: { status: string } }]
+        >;
+        expect(prUpdateCalls[0][0].where).toEqual({ id: 'pr_1' });
+        expect(prUpdateCalls[0][0].data.status).toBe('REJECTED');
+
+        const userUpdateCalls = prisma.user.update.mock.calls as Array<
+          [{ where: { id: string }; data: { subscriptionStatus: string } }]
+        >;
+        expect(userUpdateCalls[0][0].where).toEqual({ id: 'u_1' });
+        expect(userUpdateCalls[0][0].data.subscriptionStatus).toBe('REJECTED');
+
+        expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+      },
+    );
+
+    it('is idempotent: an already-REJECTED request is not re-processed on a failure event', async () => {
+      const event = { type: 'checkout.failed', data: { id: checkoutId } };
+      const body = Buffer.from(JSON.stringify(event));
+      prisma.paymentRequest.findUnique.mockResolvedValue(
+        pendingRequest({ status: 'REJECTED' }),
+      );
+
+      await service.handleWebhookEvent(sign(body), body, event);
+
       expect(prisma.$transaction).not.toHaveBeenCalled();
     });
 

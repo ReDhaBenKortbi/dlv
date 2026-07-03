@@ -69,10 +69,10 @@ Note: the anti-framing script is cosmetic content protection, not DRM.
 ### Subscription Payment Flow (Chargily)
 1. `POST /payments/chargily/checkout` (JWT) with `{ plan: "PRO" | "GOLD" }`. `fullName` is taken from the authenticated user, never the body. Creates a `PENDING` `PaymentRequest` + a Chargily checkout, returns `checkoutUrl`.
 2. User pays on Chargily's hosted page.
-3. `POST /payments/chargily/webhook` (no auth guard; **HMAC-SHA256 signature verified** against `CHARGILY_SECRET`, timing-safe). On `checkout.paid`, marks the request `APPROVED` and activates the user's subscription (`isSubscribed`, `subscriptionPlan`, `subscriptionEndDate` = +1 month) in a transaction.
+3. `POST /payments/chargily/webhook` (no auth guard; **HMAC-SHA256 signature verified** against `CHARGILY_SECRET`, timing-safe). On `checkout.paid`, marks the request `APPROVED` and activates the user's subscription (`isSubscribed`, `subscriptionPlan`, `subscriptionEndDate` = +1 month) in a transaction. On `checkout.failed` / `checkout.canceled` / `checkout.expired`, marks the request `REJECTED` and resets the user's `subscriptionStatus` to `REJECTED` so the frontend stops showing a stuck "pending payment" state.
 4. Admin views history at `GET /payments/history` (admin only).
 
-Webhook activation is idempotent: it no-ops unless the matching `PaymentRequest` is still `PENDING`.
+Webhook activation/rejection is idempotent: it no-ops unless the matching `PaymentRequest` is still `PENDING`.
 
 ### Prisma Models
 `User`, `Book`, `Review` (unique per user+book, maintains `averageRating`/`totalReviews` aggregates), `PaymentRequest`, `Ticket`, `RefreshToken`. See `apps/api/prisma/schema.prisma`.

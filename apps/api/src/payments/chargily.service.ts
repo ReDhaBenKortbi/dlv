@@ -115,6 +115,12 @@ export class ChargilyService {
     });
   }
 
+  private static readonly FAILURE_EVENTS = new Set([
+    'checkout.failed',
+    'checkout.canceled',
+    'checkout.expired',
+  ]);
+
   async handleWebhookEvent(
     signature: string,
     rawBody: Buffer,
@@ -124,13 +130,29 @@ export class ChargilyService {
       throw new UnauthorizedException('Invalid signature');
     }
 
-    if (event.type !== 'checkout.paid' || !event.data?.id) return;
+    const isPaid = event.type === 'checkout.paid';
+    const isFailure = ChargilyService.FAILURE_EVENTS.has(event.type);
+    if ((!isPaid && !isFailure) || !event.data?.id) return;
 
     const paymentRequest = await this.prisma.paymentRequest.findUnique({
       where: { chargilyCheckoutId: event.data.id },
     });
 
     if (!paymentRequest || paymentRequest.status !== 'PENDING') return;
+
+    if (isFailure) {
+      await this.prisma.$transaction([
+        this.prisma.paymentRequest.update({
+          where: { id: paymentRequest.id },
+          data: { status: 'REJECTED', processedAt: new Date() },
+        }),
+        this.prisma.user.update({
+          where: { id: paymentRequest.userId },
+          data: { subscriptionStatus: SubscriptionStatus.REJECTED },
+        }),
+      ]);
+      return;
+    }
 
     const subscriptionEndDate = new Date();
     subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
