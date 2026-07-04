@@ -2,12 +2,17 @@ import { useEffect } from "react";
 import { XCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { cancelPendingPayment } from "../../services/paymentService";
 
 const PaymentFailure = () => {
   const { refreshUser } = useAuth();
 
   useEffect(() => {
-    void refreshUser();
+    // The webhook (checkout.failed/canceled/expired) also clears PENDING, but
+    // it fires asynchronously and can lag behind this redirect. Resolving it
+    // here too avoids leaving the user stuck on a "Payment Processing" card
+    // if they land back on /subscription before the webhook arrives.
+    void cancelPendingPayment().finally(() => void refreshUser());
   }, [refreshUser]);
 
   return (

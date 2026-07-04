@@ -89,6 +89,34 @@ export class ChargilyService {
     return { checkoutUrl: data.checkout_url };
   }
 
+  async cancelPendingSubscription(userId: string): Promise<void> {
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+      select: { subscriptionStatus: true },
+    });
+    if (user.subscriptionStatus !== SubscriptionStatus.PENDING) return;
+
+    const pendingRequest = await this.prisma.paymentRequest.findFirst({
+      where: { userId, status: 'PENDING' },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    await this.prisma.$transaction([
+      ...(pendingRequest
+        ? [
+            this.prisma.paymentRequest.update({
+              where: { id: pendingRequest.id },
+              data: { status: 'REJECTED', processedAt: new Date() },
+            }),
+          ]
+        : []),
+      this.prisma.user.update({
+        where: { id: userId },
+        data: { subscriptionStatus: SubscriptionStatus.REJECTED },
+      }),
+    ]);
+  }
+
   verifySignature(signature: string, rawBody: Buffer): boolean {
     const secret = process.env.CHARGILY_SECRET;
     if (!secret)

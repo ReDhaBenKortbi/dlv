@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { CheckCircle, Zap, Star, Lock } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
@@ -6,6 +6,13 @@ import { useChargilyCheckout } from "../../hooks/payments/useChargilyCheckout";
 import { BackButton } from "../../components/common/BackButton";
 import { SUBSCRIPTION_PLANS } from "../../constants/subscriptionPlans";
 import type { SubscriptionPlan } from "../../constants/subscriptionPlans";
+import { cancelPendingPayment } from "../../services/paymentService";
+import { notify } from "../../utils/toast";
+
+// If a checkout has been PENDING longer than this, treat it as stale (the
+// webhook likely never arrived — user abandoned checkout, network issue,
+// etc.) and offer a way out instead of leaving the card stuck forever.
+const STALE_PENDING_MS = 3 * 60 * 1000;
 
 const PLAN_FEATURES: Record<SubscriptionPlan, string[]> = {
   FREE: ["Access to all free books", "Basic library browsing", "Book ratings & reviews"],
@@ -26,13 +33,37 @@ const PLAN_STYLES: Record<SubscriptionPlan, { card: string; badge: string; btn: 
 };
 
 const Subscription = () => {
-  const { subscriptionStatus, isSubscribed } = useAuth();
+  const { subscriptionStatus, isSubscribed, subscriptionUpdatedAt, refreshUser } = useAuth();
   const { startCheckout, loading: chargilyLoading } = useChargilyCheckout();
 
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
+  const [cancelling, setCancelling] = useState(false);
 
   const isEffectivelySubscribed = isSubscribed && subscriptionStatus === "APPROVED";
   const isWaiting = subscriptionStatus === "PENDING";
+
+  const [isStalePending, setIsStalePending] = useState(false);
+
+  useEffect(() => {
+    if (!isWaiting || !subscriptionUpdatedAt) return;
+    const pendingSince = new Date(subscriptionUpdatedAt).getTime();
+    const interval = setInterval(() => {
+      setIsStalePending(Date.now() - pendingSince > STALE_PENDING_MS);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [isWaiting, subscriptionUpdatedAt]);
+
+  const handleCancelPending = async () => {
+    setCancelling(true);
+    try {
+      await cancelPendingPayment();
+      await refreshUser();
+    } catch {
+      notify.error("Couldn't cancel the pending payment. Please try again.");
+    } finally {
+      setCancelling(false);
+    }
+  };
 
   if (isEffectivelySubscribed || isWaiting) {
     return (
@@ -49,6 +80,20 @@ const Subscription = () => {
               ? "Your payment is being confirmed. This usually takes a few minutes."
               : "You already have access to your plan's books!"}
           </p>
+          {isStalePending && (
+            <div className="mt-6 space-y-2">
+              <p className="text-sm text-base-content/60">
+                Still stuck? The payment may not have gone through.
+              </p>
+              <button
+                className={`btn btn-outline btn-warning btn-sm w-full ${cancelling ? "loading" : ""}`}
+                disabled={cancelling}
+                onClick={() => void handleCancelPending()}
+              >
+                Cancel & Try Again
+              </button>
+            </div>
+          )}
           <Link to="/" className="btn btn-primary mt-8">
             Return to Library
           </Link>

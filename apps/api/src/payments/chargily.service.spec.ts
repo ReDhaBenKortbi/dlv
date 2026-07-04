@@ -11,10 +11,12 @@ function createPrismaMock() {
     paymentRequest: {
       create: jest.fn(),
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
       update: jest.fn(),
     },
     user: {
       update: jest.fn(),
+      findUniqueOrThrow: jest.fn(),
     },
     // handleWebhookEvent passes an array of prepared operations; just resolve.
     $transaction: jest.fn().mockResolvedValue([]),
@@ -191,6 +193,72 @@ describe('ChargilyService', () => {
       await service.handleWebhookEvent(sign(body), body, event);
 
       expect(prisma.$transaction).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('cancelPendingSubscription', () => {
+    const userId = 'u_1';
+
+    it('no-ops when the user is not PENDING', async () => {
+      prisma.user.findUniqueOrThrow.mockResolvedValue({
+        subscriptionStatus: 'APPROVED',
+      });
+
+      await service.cancelPendingSubscription(userId);
+
+      expect(prisma.paymentRequest.findFirst).not.toHaveBeenCalled();
+      expect(prisma.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('rejects the latest pending request and resets the user when PENDING', async () => {
+      prisma.user.findUniqueOrThrow.mockResolvedValue({
+        subscriptionStatus: 'PENDING',
+      });
+      prisma.paymentRequest.findFirst.mockResolvedValue({
+        id: 'pr_1',
+        userId,
+        status: 'PENDING',
+      });
+
+      await service.cancelPendingSubscription(userId);
+
+      expect(prisma.paymentRequest.findFirst).toHaveBeenCalledWith({
+        where: { userId, status: 'PENDING' },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const prUpdateCalls = prisma.paymentRequest.update.mock.calls as Array<
+        [{ where: { id: string }; data: { status: string } }]
+      >;
+      expect(prUpdateCalls[0][0].where).toEqual({ id: 'pr_1' });
+      expect(prUpdateCalls[0][0].data.status).toBe('REJECTED');
+
+      const userUpdateCalls = prisma.user.update.mock.calls as Array<
+        [{ where: { id: string }; data: { subscriptionStatus: string } }]
+      >;
+      expect(userUpdateCalls[0][0].where).toEqual({ id: userId });
+      expect(userUpdateCalls[0][0].data.subscriptionStatus).toBe('REJECTED');
+
+      expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+    });
+
+    it('still resets the user when PENDING but no matching payment request is found', async () => {
+      prisma.user.findUniqueOrThrow.mockResolvedValue({
+        subscriptionStatus: 'PENDING',
+      });
+      prisma.paymentRequest.findFirst.mockResolvedValue(null);
+
+      await service.cancelPendingSubscription(userId);
+
+      expect(prisma.paymentRequest.update).not.toHaveBeenCalled();
+
+      const userUpdateCalls = prisma.user.update.mock.calls as Array<
+        [{ where: { id: string }; data: { subscriptionStatus: string } }]
+      >;
+      expect(userUpdateCalls[0][0].where).toEqual({ id: userId });
+      expect(userUpdateCalls[0][0].data.subscriptionStatus).toBe('REJECTED');
+
+      expect(prisma.$transaction).toHaveBeenCalledTimes(1);
     });
   });
 });

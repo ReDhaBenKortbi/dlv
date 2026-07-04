@@ -10,6 +10,7 @@ export interface AuthUser {
   subscriptionStatus: "NONE" | "PENDING" | "APPROVED" | "REJECTED";
   subscriptionPlan: SubscriptionPlan;
   subscriptionEndDate: string | null;
+  updatedAt: string;
 }
 
 interface AuthContextType {
@@ -18,6 +19,7 @@ interface AuthContextType {
   subscriptionStatus: "NONE" | "PENDING" | "APPROVED" | "REJECTED";
   subscriptionPlan: SubscriptionPlan;
   subscriptionEndDate: string | null;
+  subscriptionUpdatedAt: string | null;
   isAdmin: boolean;
   loading: boolean;
   logout: () => Promise<void>;
@@ -65,10 +67,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const subscriptionStatus = user?.subscriptionStatus ?? "NONE";
   const subscriptionPlan = user?.subscriptionPlan ?? "FREE";
   const subscriptionEndDate = user?.subscriptionEndDate ?? null;
+  const subscriptionUpdatedAt = user?.updatedAt ?? null;
 
   return (
     <AuthContext.Provider
-      value={{ user, isSubscribed, subscriptionStatus, subscriptionPlan, subscriptionEndDate, isAdmin, loading, logout, refreshUser }}
+      value={{ user, isSubscribed, subscriptionStatus, subscriptionPlan, subscriptionEndDate, subscriptionUpdatedAt, isAdmin, loading, logout, refreshUser }}
     >
       {children}
     </AuthContext.Provider>

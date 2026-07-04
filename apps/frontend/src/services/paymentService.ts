@@ -8,6 +8,9 @@ export const createChargilyCheckout = (
     body: JSON.stringify({ plan }),
   });
 
+export const cancelPendingPayment = (): Promise<void> =>
+  api("/payments/chargily/cancel-pending", { method: "POST" });
+
 export interface PaymentHistoryItem {
   id: string;
   fullName: string;

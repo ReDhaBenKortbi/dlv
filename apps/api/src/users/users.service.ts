@@ -12,6 +12,7 @@ const PUBLIC_FIELDS = {
   subscriptionPlan: true,
   subscriptionEndDate: true,
   createdAt: true,
+  updatedAt: true,
 };
 
 @Injectable()
