@@ -32,6 +32,7 @@ const EditBook = () => {
     title: string;
     author: string;
     description: string;
+    indexURL: string;
     coverURL: string;
     targetLanguage: TargetLanguageCode | "";
     focusSkill: FocusSkillCode | "";
@@ -41,6 +42,7 @@ const EditBook = () => {
     title: "",
     author: "",
     description: "",
+    indexURL: "",
     coverURL: "",
     targetLanguage: "",
     focusSkill: "",
@@ -60,6 +62,7 @@ const EditBook = () => {
         title: book.title,
         author: book.author,
         description: book.description,
+        indexURL: book.indexURL,
         coverURL: book.coverURL,
         targetLanguage: book.targetLanguage || "",
         focusSkill: book.focusSkill || "",
@@ -150,12 +153,13 @@ const EditBook = () => {
             placeholder="Author"
           />
 
-          <textarea
-            className="textarea textarea-bordered w-full h-32"
-            value={formData.description}
+          <input
+            className="input input-bordered w-full"
+            value={formData.indexURL}
             onChange={(e) =>
-              setFormData({ ...formData, description: e.target.value })
+              setFormData({ ...formData, indexURL: e.target.value })
             }
+            placeholder="Index URL"
           />
 
           {/* ACADEMIC INFO ROW */}
