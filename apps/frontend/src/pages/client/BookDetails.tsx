@@ -7,6 +7,7 @@ import { TierBadge } from "../../components/common/TierBadge";
 import LoadingScreen from "../../components/common/LoadingScreen";
 import { BookCard } from "../../components/library/BookCard";
 import { useBooks } from "../../hooks/books/useBooks";
+import { canAccessTier, groupBooksIntoSeries } from "../../lib/bookSeries";
 
 // review imports
 import ReviewList from "../../components/reviews/ReviewList";
@@ -24,8 +25,9 @@ const BookDetails = () => {
   // STEP 1: Fetch the main book data
   const { book, isLoading, isError } = useBooks(id);
 
-  // STEP 2: Fetch related books that share the same target language
-  const { relatedBooks } = useBooks(id, book);
+  // STEP 2: Fetch related books that share the same target language, plus
+  // sibling tier editions of this same title (if any)
+  const { relatedBooks, groupEditions } = useBooks(id, book);
 
   // STEP 3: Guard clause (This stops TypeScript from complaining)
   if (isLoading) return <LoadingScreen />;
@@ -53,6 +55,11 @@ const BookDetails = () => {
   // Find the readable labels and colors
   const skillInfo = FOCUS_SKILLS.find((s) => s.id === book.focusSkill);
   const langInfo = TARGET_LANGUAGES.find((l) => l.id === book.targetLanguage);
+
+  // More than one tier edition of this title exists — show the full access
+  // ladder (design doc variant 1d) instead of a single tier's CTA.
+  const hasEditionLadder = groupEditions.length > 1;
+  const relatedSeries = groupBooksIntoSeries(relatedBooks);
 
   return (
     <div className="min-h-screen bg-base-200 pb-24">
@@ -139,7 +146,77 @@ const BookDetails = () => {
 
             {/* ACTION AREA */}
             <div className="pt-8 border-t border-base-300">
-              {hasAccess ? (
+              {hasEditionLadder ? (
+                <div className="flex flex-col gap-3">
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-base-content/40">
+                    How you can read it
+                  </h3>
+                  {groupEditions.map((edition) => {
+                    const editionAccessible = isAdmin || canAccessTier(edition.bookTier, subscriptionPlan, isAdmin);
+                    const isCurrent = edition.id === book.id;
+                    return (
+                      <div
+                        key={edition.id}
+                        className={`rounded-2xl p-4 border flex flex-col sm:flex-row sm:items-center gap-4 ${
+                          isCurrent
+                            ? "border-primary bg-primary/5 shadow-sm"
+                            : "border-base-300 bg-base-100"
+                        }`}
+                      >
+                        <div className="sm:w-20 flex-none">
+                          <span
+                            className={`inline-block w-full text-center py-1.5 rounded-md text-[11px] font-bold uppercase ${
+                              edition.bookTier === "GOLD"
+                                ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                                : edition.bookTier === "PRO"
+                                  ? "bg-secondary/15 text-secondary"
+                                  : "bg-primary/15 text-primary"
+                            }`}
+                          >
+                            {edition.bookTier === "FREE" ? "Sample" : edition.bookTier}
+                          </span>
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold line-clamp-1">{edition.title}</p>
+                          <p
+                            className={`text-xs mt-0.5 ${
+                              editionAccessible
+                                ? "text-emerald-600 dark:text-emerald-400"
+                                : "text-base-content/50"
+                            }`}
+                          >
+                            {editionAccessible
+                              ? edition.bookTier === "FREE"
+                                ? "Free · no card needed"
+                                : "Included in your plan"
+                              : `Upgrade to ${edition.bookTier === "GOLD" ? "Gold" : "Pro"} to unlock`}
+                          </p>
+                        </div>
+
+                        <button
+                          onClick={() =>
+                            navigate(
+                              editionAccessible ? `/reader/${edition.id}` : "/subscription",
+                            )
+                          }
+                          className={`btn btn-sm flex-none ${
+                            editionAccessible
+                              ? "btn-primary"
+                              : "btn-outline"
+                          }`}
+                        >
+                          {editionAccessible
+                            ? edition.bookTier === "FREE"
+                              ? "Preview"
+                              : "Start reading"
+                            : "Upgrade"}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : hasAccess ? (
                 <div className="flex flex-col gap-4">
                   {book.bookTier !== "FREE" && !isAdmin && (
                     <div className="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
@@ -238,11 +315,12 @@ const BookDetails = () => {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {relatedBooks.length > 0 ? (
-            relatedBooks.map((relBook) => (
+          {relatedSeries.length > 0 ? (
+            relatedSeries.map(({ groupKey, editions }) => (
               <BookCard
-                key={relBook.id}
-                book={relBook}
+                key={groupKey}
+                book={editions[0]}
+                editions={editions}
               />
             ))
           ) : (

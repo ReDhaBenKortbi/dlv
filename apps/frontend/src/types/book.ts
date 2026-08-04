@@ -15,6 +15,7 @@ export interface Book {
   coverURL: string;
   indexURL: string;
   bookTier: BookTier;
+  groupKey?: string;
 
   targetLanguage?: TargetLanguageCode; // e.g., "AR", "EN"
   focusSkill?: FocusSkillCode; // e.g., "GRAMMAR"

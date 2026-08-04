@@ -105,6 +105,10 @@ model Book {
   coverURL         String
   indexURL         String
   bookTier         BookTier         @default(FREE)
+  // Links tier editions of the same title together (e.g. Free/Pro/Gold
+  // editions of one course). Books with the same groupKey render as one
+  // library card with an edition switcher; null means a standalone title.
+  groupKey         String?
   targetLanguage   TargetLanguage?
   focusSkill       FocusSkill?
   proficiencyLevel ProficiencyLevel?
@@ -116,6 +120,7 @@ model Book {
   reviews Review[]
 
   @@unique([title, author])
+  @@index([groupKey])
 }
 
 model Review {

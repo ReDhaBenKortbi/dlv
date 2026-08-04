@@ -4,6 +4,7 @@ import { LibrarySidebar } from "../../components/library/LibrarySidebar";
 import { BookCard } from "../../components/library/BookCard";
 import LoadingScreen from "../../components/common/LoadingScreen";
 import { Filter } from "lucide-react";
+import { groupBooksIntoSeries } from "../../lib/bookSeries";
 
 const Library = () => {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -32,6 +33,14 @@ const Library = () => {
       return langMatch && skillMatch && levelMatch;
     });
   }, [books, selectedLanguage, selectedSkills, selectedLevels]);
+
+  // Tier editions of the same title (linked via `groupKey`) collapse into a
+  // single card here — a series is kept if any of its editions match the
+  // filters above, so switching a filter never hides an otherwise-matching title.
+  const series = useMemo(
+    () => groupBooksIntoSeries(filteredBooks),
+    [filteredBooks],
+  );
 
   const toggleSkill = (skillId: string) => {
     setSelectedSkills((prev) =>
@@ -79,7 +88,7 @@ const Library = () => {
               <div>
                 <h1 className="text-2xl font-bold">Explore Library</h1>
                 <p className="text-xs opacity-50 font-medium uppercase tracking-wider">
-                  {filteredBooks.length} titles found
+                  {series.length} titles found
                 </p>
               </div>
 
@@ -94,10 +103,10 @@ const Library = () => {
             </div>
 
             {/* The Grid */}
-            {filteredBooks.length > 0 ? (
+            {series.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 min-h-full py-4 ">
-                {filteredBooks.map((book) => (
-                  <BookCard key={book.id} book={book} />
+                {series.map(({ groupKey, editions }) => (
+                  <BookCard key={groupKey} book={editions[0]} editions={editions} />
                 ))}
               </div>
             ) : (

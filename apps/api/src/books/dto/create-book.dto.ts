@@ -26,6 +26,10 @@ export class CreateBookDto {
   @IsOptional()
   bookTier?: BookTier;
 
+  @IsString()
+  @IsOptional()
+  groupKey?: string;
+
   @IsEnum(TargetLanguage)
   @IsOptional()
   targetLanguage?: TargetLanguage;

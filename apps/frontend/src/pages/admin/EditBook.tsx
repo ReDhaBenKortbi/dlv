@@ -38,6 +38,7 @@ const EditBook = () => {
     focusSkill: FocusSkillCode | "";
     proficiencyLevel: ProficiencyLevelCode | "";
     bookTier: BookTier;
+    groupKey: string;
   }>({
     title: "",
     author: "",
@@ -48,6 +49,7 @@ const EditBook = () => {
     focusSkill: "",
     proficiencyLevel: "",
     bookTier: "FREE",
+    groupKey: "",
   });
 
   const [newCoverFile, setNewCoverFile] = useState<File | null>(null);
@@ -68,6 +70,7 @@ const EditBook = () => {
         focusSkill: book.focusSkill || "",
         proficiencyLevel: book.proficiencyLevel || "",
         bookTier: book.bookTier ?? "FREE",
+        groupKey: book.groupKey || "",
       });
       setPreview(book.coverURL);
     }
@@ -99,6 +102,10 @@ const EditBook = () => {
         targetLanguage: formData.targetLanguage || undefined,
         focusSkill: formData.focusSkill || undefined,
         proficiencyLevel: formData.proficiencyLevel || undefined,
+        // Send even when blank so clearing the field actually un-groups the
+        // book — `|| undefined` here would get dropped by JSON.stringify
+        // and silently leave the old groupKey in place.
+        groupKey: formData.groupKey.trim(),
       });
 
       // Step C: Redirect only if the mutation was successful
@@ -230,6 +237,28 @@ const EditBook = () => {
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* GROUP KEY — links tier editions of the same title together */}
+          <div className="bg-base-200 p-4 rounded-xl border border-base-300">
+            <label className="label pt-0">
+              <span className="label-text text-xs uppercase tracking-widest opacity-60 font-bold">
+                Group Key (optional)
+              </span>
+            </label>
+            <input
+              type="text"
+              className="input input-bordered w-full"
+              placeholder="e.g. english-grammar-foundations"
+              value={formData.groupKey}
+              onChange={(e) =>
+                setFormData({ ...formData, groupKey: e.target.value })
+              }
+            />
+            <p className="text-xs opacity-50 mt-2">
+              Books sharing the same Group Key render as one library card
+              with an edition switcher. Leave blank for a standalone book.
+            </p>
           </div>
 
           <button

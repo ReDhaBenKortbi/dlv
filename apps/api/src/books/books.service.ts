@@ -51,6 +51,7 @@ export class BooksService {
           description: true,
           coverURL: true,
           bookTier: true,
+          groupKey: true,
           targetLanguage: true,
           focusSkill: true,
           proficiencyLevel: true,

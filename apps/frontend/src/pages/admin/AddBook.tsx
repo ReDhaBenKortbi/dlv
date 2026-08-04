@@ -37,6 +37,7 @@ const AddBook = () => {
   const [author, setAuthor] = useState("");
   const [description, setDescription] = useState("");
   const [bookTier, setBookTier] = useState<BookTier>("FREE");
+  const [groupKey, setGroupKey] = useState("");
   const [flipbookURL, setFlipbookURL] = useState("");
 
   const [coverFile, setCoverFile] = useState<File | null>(null);
@@ -81,6 +82,7 @@ const AddBook = () => {
         indexURL: flipbookURL.trim(),
         coverURL,
         bookTier,
+        groupKey: groupKey.trim() || undefined,
         targetLanguage: targetLanguage as TargetLanguageCode,
         focusSkill: focusSkill as FocusSkillCode,
         proficiencyLevel: proficiencyLevel as ProficiencyLevelCode,
@@ -259,23 +261,39 @@ const AddBook = () => {
                   </div>
                 </div>
 
-                {/* TIER + ACTIONS */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4">
-                  <div className="flex items-center gap-3">
-                    <label className="text-xs font-bold text-base-content/60 uppercase">
-                      Access Tier
-                    </label>
-                    <select
-                      className="select select-bordered select-sm"
-                      value={bookTier}
-                      onChange={(e) => setBookTier(e.target.value as BookTier)}
-                    >
-                      {BOOK_TIERS.map((tier) => (
-                        <option key={tier.id} value={tier.id}>
-                          {tier.label}
-                        </option>
-                      ))}
-                    </select>
+                {/* TIER + GROUP KEY + ACTIONS */}
+                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 pt-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <div className="flex items-center gap-3">
+                      <label className="text-xs font-bold text-base-content/60 uppercase">
+                        Access Tier
+                      </label>
+                      <select
+                        className="select select-bordered select-sm"
+                        value={bookTier}
+                        onChange={(e) => setBookTier(e.target.value as BookTier)}
+                      >
+                        {BOOK_TIERS.map((tier) => (
+                          <option key={tier.id} value={tier.id}>
+                            {tier.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-base-content/60 uppercase block mb-1 sm:mb-0 sm:hidden">
+                        Group Key
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Group key (optional)"
+                        title="Books sharing the same Group Key render as one library card with an edition switcher. Leave blank for a standalone book."
+                        className="input input-bordered input-sm bg-base-200 border-base-300"
+                        value={groupKey}
+                        onChange={(e) => setGroupKey(e.target.value)}
+                      />
+                    </div>
                   </div>
 
                   <div className="flex gap-3 justify-end">
