@@ -22,9 +22,48 @@ const PLAN_PRICES: Record<SubscriptionPlan, number> = {
   GOLD: 900,
 };
 
+// Higher rank = more valuable plan; used to detect a same-cycle upgrade.
+const PLAN_RANK: Record<SubscriptionPlan, number> = {
+  FREE: 0,
+  PRO: 1,
+  GOLD: 2,
+};
+
 @Injectable()
 export class ChargilyService {
   constructor(private prisma: PrismaService) {}
+
+  // A user already on an active paid plan who checks out a strictly higher
+  // plan is upgrading mid-cycle: they've already paid for their current
+  // plan's remaining days, so they should only owe the price difference and
+  // keep their existing subscriptionEndDate instead of losing those days.
+  private async resolveUpgrade(
+    userId: string,
+    plan: SubscriptionPlan,
+  ): Promise<{ amount: number; isUpgrade: boolean }> {
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+      select: {
+        subscriptionPlan: true,
+        isSubscribed: true,
+        subscriptionStatus: true,
+        subscriptionEndDate: true,
+      },
+    });
+
+    const isUpgrade =
+      user.isSubscribed &&
+      user.subscriptionStatus === SubscriptionStatus.APPROVED &&
+      !!user.subscriptionEndDate &&
+      user.subscriptionEndDate > new Date() &&
+      PLAN_RANK[plan] > PLAN_RANK[user.subscriptionPlan];
+
+    const amount = isUpgrade
+      ? PLAN_PRICES[plan] - PLAN_PRICES[user.subscriptionPlan]
+      : PLAN_PRICES[plan];
+
+    return { amount, isUpgrade };
+  }
 
   async createCheckout(
     userId: string,
@@ -35,7 +74,7 @@ export class ChargilyService {
     if (!apiKey)
       throw new InternalServerErrorException('Chargily not configured');
 
-    const amount = PLAN_PRICES[plan];
+    const { amount, isUpgrade } = await this.resolveUpgrade(userId, plan);
 
     const response = await fetch(`${CHARGILY_API}/checkouts`, {
       method: 'POST',
@@ -78,6 +117,7 @@ export class ChargilyService {
           plan,
           paymentMethod: 'CHARGILY',
           chargilyCheckoutId: data.id,
+          isUpgrade,
         },
       }),
       this.prisma.user.update({
@@ -182,8 +222,13 @@ export class ChargilyService {
       return;
     }
 
-    const subscriptionEndDate = new Date();
-    subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
+    // An upgrade keeps the existing subscriptionEndDate — the user already
+    // paid for those remaining days, just at the new (higher) tier.
+    let subscriptionEndDate: Date | undefined;
+    if (!paymentRequest.isUpgrade) {
+      subscriptionEndDate = new Date();
+      subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
+    }
 
     await this.prisma.$transaction([
       this.prisma.paymentRequest.update({
@@ -196,7 +241,7 @@ export class ChargilyService {
           isSubscribed: true,
           subscriptionStatus: SubscriptionStatus.APPROVED,
           subscriptionPlan: paymentRequest.plan,
-          subscriptionEndDate,
+          ...(subscriptionEndDate ? { subscriptionEndDate } : {}),
         },
       }),
     ]);

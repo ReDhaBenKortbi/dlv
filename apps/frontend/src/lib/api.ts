@@ -1,32 +1,39 @@
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
 
+// Access token lives in memory only — never persisted (localStorage/sessionStorage
+// are readable by any injected script). The refresh token lives in an httpOnly
+// cookie the browser attaches automatically; JS never sees it.
+let accessToken: string | null = null;
+
+export function getAccessToken(): string | null {
+  return accessToken;
+}
+
+export function setAccessToken(token: string | null): void {
+  accessToken = token;
+}
+
 let refreshing: Promise<boolean> | null = null;
 
 async function doRefresh(): Promise<boolean> {
-  const rt = localStorage.getItem('refreshToken');
-  if (!rt) return false;
-
   const res = await fetch(`${API_URL}/auth/refresh`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refreshToken: rt }),
+    credentials: 'include',
   });
 
   if (!res.ok) {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    setAccessToken(null);
     return false;
   }
 
   const data = await res.json();
-  localStorage.setItem('accessToken', data.accessToken);
-  localStorage.setItem('refreshToken', data.refreshToken);
+  setAccessToken(data.accessToken);
   return true;
 }
 
 export async function api<T = unknown>(path: string, options: RequestInit = {}): Promise<T> {
   const makeHeaders = (): Record<string, string> => {
-    const token = localStorage.getItem('accessToken');
+    const token = getAccessToken();
     return {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),
@@ -34,13 +41,21 @@ export async function api<T = unknown>(path: string, options: RequestInit = {}):
     };
   };
 
-  let res = await fetch(`${API_URL}${path}`, { ...options, headers: makeHeaders() });
+  let res = await fetch(`${API_URL}${path}`, {
+    ...options,
+    credentials: 'include',
+    headers: makeHeaders(),
+  });
 
-  if (res.status === 401 && localStorage.getItem('refreshToken')) {
+  if (res.status === 401) {
     if (!refreshing) refreshing = doRefresh().finally(() => { refreshing = null; });
     const ok = await refreshing;
     if (ok) {
-      res = await fetch(`${API_URL}${path}`, { ...options, headers: makeHeaders() });
+      res = await fetch(`${API_URL}${path}`, {
+        ...options,
+        credentials: 'include',
+        headers: makeHeaders(),
+      });
     }
   }
 

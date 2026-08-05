@@ -1,27 +1,21 @@
-import { api } from "../lib/api";
+import { api, setAccessToken } from "../lib/api";
 
 interface TokenResponse {
   accessToken: string;
-  refreshToken: string;
 }
 
-const storeTokens = ({ accessToken, refreshToken }: TokenResponse) => {
-  localStorage.setItem("accessToken", accessToken);
-  localStorage.setItem("refreshToken", refreshToken);
-};
-
 export const registerUser = async (fullName: string, email: string, password: string) => {
-  const tokens = await api<TokenResponse>("/auth/register", {
+  const { accessToken } = await api<TokenResponse>("/auth/register", {
     method: "POST",
     body: JSON.stringify({ fullName, email, password }),
   });
-  storeTokens(tokens);
+  setAccessToken(accessToken);
 };
 
 export const loginUser = async (email: string, password: string) => {
-  const tokens = await api<TokenResponse>("/auth/login", {
+  const { accessToken } = await api<TokenResponse>("/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
-  storeTokens(tokens);
+  setAccessToken(accessToken);
 };

@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { api } from "../lib/api";
+import { api, setAccessToken } from "../lib/api";
 import type { SubscriptionPlan } from "../constants/subscriptionPlans";
 
 export interface AuthUser {
@@ -33,14 +33,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   const refreshUser = useCallback(async () => {
-    if (!localStorage.getItem("accessToken")) return;
     try {
       const data = await api<AuthUser>("/users/me");
       setUser(data);
     } catch {
       setUser(null);
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
+      setAccessToken(null);
     }
   }, []);
 
@@ -50,15 +48,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [refreshUser]);
 
   const logout = async () => {
-    const rt = localStorage.getItem("refreshToken");
-    if (rt) {
-      await api("/auth/logout", {
-        method: "POST",
-        body: JSON.stringify({ refreshToken: rt }),
-      }).catch(() => {});
-    }
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
+    await api("/auth/logout", { method: "POST" }).catch(() => {});
+    setAccessToken(null);
     setUser(null);
   };
 

@@ -4,6 +4,7 @@ import { ArrowLeft, Lock, Loader2, ShieldCheck } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useBooks } from "../../hooks/books/useBooks";
 import LoadingScreen from "../../components/common/LoadingScreen";
+import { getAccessToken } from "../../lib/api";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
 
@@ -24,7 +25,7 @@ const Reader = () => {
 
   const proxyUrl = useMemo(() => {
     if (!id) return "";
-    const token = localStorage.getItem("accessToken") ?? "";
+    const token = getAccessToken() ?? "";
     return `${API_URL}/books/${id}/read?token=${encodeURIComponent(token)}`;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, tick]); // tick intentionally triggers re-derivation of the access token
