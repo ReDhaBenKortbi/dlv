@@ -194,6 +194,115 @@ describe('ChargilyService', () => {
 
       expect(prisma.$transaction).not.toHaveBeenCalled();
     });
+
+    it('preserves subscriptionEndDate on an upgrade payment instead of resetting it', async () => {
+      const event = { type: 'checkout.paid', data: { id: checkoutId } };
+      const body = Buffer.from(JSON.stringify(event));
+      prisma.paymentRequest.findUnique.mockResolvedValue(
+        pendingRequest({ plan: 'GOLD', isUpgrade: true }),
+      );
+
+      await service.handleWebhookEvent(sign(body), body, event);
+
+      const userUpdateCalls = prisma.user.update.mock.calls as Array<
+        [{ where: { id: string }; data: Record<string, unknown> }]
+      >;
+      const userUpdate = userUpdateCalls[0][0];
+      expect(userUpdate.data.subscriptionPlan).toBe('GOLD');
+      expect(userUpdate.data).not.toHaveProperty('subscriptionEndDate');
+    });
+  });
+
+  describe('createCheckout', () => {
+    const userId = 'u_1';
+    const fullName = 'Jane Doe';
+
+    function mockFetchOk(id = 'ck_new') {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({ id, checkout_url: `https://pay.example/${id}` }),
+      });
+    }
+
+    function activeProUser(overrides: Partial<Record<string, unknown>> = {}) {
+      const future = new Date();
+      future.setDate(future.getDate() + 10);
+      return {
+        subscriptionPlan: 'PRO',
+        isSubscribed: true,
+        subscriptionStatus: 'APPROVED',
+        subscriptionEndDate: future,
+        ...overrides,
+      };
+    }
+
+    function chargedAmount(): number {
+      const call = (global.fetch as jest.Mock).mock.calls[0] as [
+        string,
+        { body: string },
+      ];
+      return (JSON.parse(call[1].body) as { amount: number }).amount;
+    }
+
+    beforeEach(() => {
+      mockFetchOk();
+      prisma.paymentRequest.create.mockResolvedValue({});
+      prisma.user.update.mockResolvedValue({});
+    });
+
+    it('charges full price for a fresh FREE -> PRO subscribe', async () => {
+      prisma.user.findUniqueOrThrow.mockResolvedValue(
+        activeProUser({
+          subscriptionPlan: 'FREE',
+          isSubscribed: false,
+          subscriptionStatus: 'NONE',
+          subscriptionEndDate: null,
+        }),
+      );
+
+      await service.createCheckout(userId, fullName, 'PRO');
+
+      expect(chargedAmount()).toBe(500);
+      const prCreateCalls = prisma.paymentRequest.create.mock.calls as Array<
+        [{ data: { amount: string; isUpgrade: boolean } }]
+      >;
+      expect(prCreateCalls[0][0].data.amount).toBe('500');
+      expect(prCreateCalls[0][0].data.isUpgrade).toBe(false);
+    });
+
+    it('charges only the price difference when an active PRO user upgrades to GOLD', async () => {
+      prisma.user.findUniqueOrThrow.mockResolvedValue(activeProUser());
+
+      await service.createCheckout(userId, fullName, 'GOLD');
+
+      expect(chargedAmount()).toBe(400);
+      const prCreateCalls = prisma.paymentRequest.create.mock.calls as Array<
+        [{ data: { amount: string; isUpgrade: boolean } }]
+      >;
+      expect(prCreateCalls[0][0].data.amount).toBe('400');
+      expect(prCreateCalls[0][0].data.isUpgrade).toBe(true);
+    });
+
+    it('charges full GOLD price when the PRO subscription has already expired', async () => {
+      const past = new Date();
+      past.setDate(past.getDate() - 1);
+      prisma.user.findUniqueOrThrow.mockResolvedValue(
+        activeProUser({ subscriptionEndDate: past }),
+      );
+
+      await service.createCheckout(userId, fullName, 'GOLD');
+
+      expect(chargedAmount()).toBe(900);
+    });
+
+    it('does not discount a same-tier repurchase', async () => {
+      prisma.user.findUniqueOrThrow.mockResolvedValue(activeProUser());
+
+      await service.createCheckout(userId, fullName, 'PRO');
+
+      expect(chargedAmount()).toBe(500);
+    });
   });
 
   describe('cancelPendingSubscription', () => {

@@ -32,8 +32,12 @@ const PLAN_STYLES: Record<SubscriptionPlan, { card: string; badge: string; btn: 
   GOLD: { card: "border-warning", badge: "badge-warning", btn: "btn-warning" },
 };
 
+// Higher rank = more valuable plan; mirrors the backend's upgrade detection
+// in chargily.service.ts so the price shown here matches what gets charged.
+const PLAN_RANK: Record<SubscriptionPlan, number> = { FREE: 0, PRO: 1, GOLD: 2 };
+
 const Subscription = () => {
-  const { subscriptionStatus, isSubscribed, subscriptionUpdatedAt, refreshUser } = useAuth();
+  const { subscriptionStatus, isSubscribed, subscriptionPlan, subscriptionUpdatedAt, refreshUser } = useAuth();
   const { startCheckout, loading: chargilyLoading } = useChargilyCheckout();
 
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
@@ -41,6 +45,9 @@ const Subscription = () => {
 
   const isEffectivelySubscribed = isSubscribed && subscriptionStatus === "APPROVED";
   const isWaiting = subscriptionStatus === "PENDING";
+  // A user on an active paid plan with room to go higher (PRO -> GOLD today)
+  // gets an upgrade flow instead of the "already subscribed" dead end.
+  const isUpgradeEligible = isEffectivelySubscribed && PLAN_RANK[subscriptionPlan] < PLAN_RANK.GOLD;
 
   const [isStalePending, setIsStalePending] = useState(false);
 
@@ -65,7 +72,7 @@ const Subscription = () => {
     }
   };
 
-  if (isEffectivelySubscribed || isWaiting) {
+  if ((isEffectivelySubscribed && !isUpgradeEligible) || isWaiting) {
     return (
       <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
         <div className="card w-full max-w-md bg-base-100 shadow-2xl text-center p-10">
@@ -104,6 +111,14 @@ const Subscription = () => {
 
   const planKeys = Object.keys(SUBSCRIPTION_PLANS) as SubscriptionPlan[];
 
+  // While upgrading, the price owed is only the difference vs. the plan
+  // already paid for — matches the backend's isUpgrade pricing so what's
+  // shown here is exactly what gets charged.
+  const payablePrice = selectedPlan
+    ? SUBSCRIPTION_PLANS[selectedPlan].price -
+      (isUpgradeEligible ? SUBSCRIPTION_PLANS[subscriptionPlan].price : 0)
+    : 0;
+
   return (
     <div className="min-h-screen bg-base-200 pb-16 px-4">
       <div className="max-w-6xl mx-auto px-4 pt-6">
@@ -112,8 +127,14 @@ const Subscription = () => {
 
       <div className="max-w-4xl mx-auto space-y-10">
         <header className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-primary">Choose Your Plan</h1>
-          <p className="text-sm opacity-60">Unlock more books by upgrading your subscription</p>
+          <h1 className="text-3xl font-bold text-primary">
+            {isUpgradeEligible ? "Upgrade Your Plan" : "Choose Your Plan"}
+          </h1>
+          <p className="text-sm opacity-60">
+            {isUpgradeEligible
+              ? `You're on ${SUBSCRIPTION_PLANS[subscriptionPlan].label} — upgrade to unlock more, you'll only pay the difference`
+              : "Unlock more books by upgrading your subscription"}
+          </p>
         </header>
 
         {/* PLAN CARDS */}
@@ -123,14 +144,17 @@ const Subscription = () => {
             const styles = PLAN_STYLES[key];
             const isSelected = selectedPlan === key;
             const isFree = key === "FREE";
+            const isCurrentPlan = isUpgradeEligible && key === subscriptionPlan;
+            const isUpgradeTarget = isUpgradeEligible && PLAN_RANK[key] > PLAN_RANK[subscriptionPlan];
+            const isDisabled = isFree || isCurrentPlan;
 
             return (
               <div
                 key={key}
-                onClick={() => !isFree && setSelectedPlan(key)}
+                onClick={() => !isDisabled && setSelectedPlan(key)}
                 className={`card bg-base-100 border-2 shadow-md rounded-2xl transition-all duration-200 ${styles.card} ${
                   isSelected ? "ring-2 ring-offset-2 ring-primary shadow-xl scale-[1.02]" : ""
-                } ${!isFree ? "cursor-pointer hover:shadow-lg" : "opacity-70"}`}
+                } ${!isDisabled ? "cursor-pointer hover:shadow-lg" : "opacity-70"}`}
               >
                 <div className="card-body p-6 space-y-4">
                   <div className="flex items-center justify-between">
@@ -144,6 +168,11 @@ const Subscription = () => {
                   <div>
                     {plan.price === 0 ? (
                       <span className="text-2xl font-bold">Free</span>
+                    ) : isUpgradeTarget ? (
+                      <span className="text-2xl font-bold">
+                        {plan.price - SUBSCRIPTION_PLANS[subscriptionPlan].price}{" "}
+                        <span className="text-base font-normal opacity-60">DA to upgrade</span>
+                      </span>
                     ) : (
                       <span className="text-2xl font-bold">
                         {plan.price} <span className="text-base font-normal opacity-60">DA / month</span>
@@ -164,12 +193,16 @@ const Subscription = () => {
                     <div className="btn btn-neutral btn-sm w-full pointer-events-none opacity-50">
                       Current Default
                     </div>
+                  ) : isCurrentPlan ? (
+                    <div className="btn btn-neutral btn-sm w-full pointer-events-none opacity-50">
+                      Current Plan
+                    </div>
                   ) : (
                     <button
                       className={`btn ${styles.btn} btn-sm w-full`}
                       onClick={(e) => { e.stopPropagation(); setSelectedPlan(key); }}
                     >
-                      {isSelected ? "Selected" : `Choose ${plan.label}`}
+                      {isSelected ? "Selected" : isUpgradeTarget ? `Upgrade to ${plan.label}` : `Choose ${plan.label}`}
                     </button>
                   )}
                 </div>
@@ -182,7 +215,9 @@ const Subscription = () => {
         {selectedPlan && selectedPlan !== "FREE" && (
           <div className="space-y-6">
             <div className="divider text-sm opacity-50">
-              Pay for {SUBSCRIPTION_PLANS[selectedPlan].label} — {SUBSCRIPTION_PLANS[selectedPlan].price} DA / month
+              {isUpgradeEligible
+                ? `Upgrade to ${SUBSCRIPTION_PLANS[selectedPlan].label} — ${payablePrice} DA`
+                : `Pay for ${SUBSCRIPTION_PLANS[selectedPlan].label} — ${payablePrice} DA / month`}
             </div>
 
             <div className="card bg-base-100 border border-base-200 shadow-xl rounded-2xl max-w-lg mx-auto">
@@ -199,11 +234,13 @@ const Subscription = () => {
                   disabled={chargilyLoading}
                   onClick={() => startCheckout(selectedPlan)}
                 >
-                  {chargilyLoading ? "Redirecting..." : `Pay ${SUBSCRIPTION_PLANS[selectedPlan].price} DA`}
+                  {chargilyLoading ? "Redirecting..." : `Pay ${payablePrice} DA`}
                 </button>
 
                 <div className="bg-base-200 rounded-xl p-4 text-xs opacity-70">
-                  Your subscription is activated automatically after a successful payment.
+                  {isUpgradeEligible
+                    ? "You're only charged the difference — your subscription end date stays the same."
+                    : "Your subscription is activated automatically after a successful payment."}
                 </div>
               </div>
             </div>

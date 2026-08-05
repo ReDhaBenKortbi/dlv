@@ -146,6 +146,9 @@ model PaymentRequest {
   plan               SubscriptionPlan @default(PRO)
   chargilyCheckoutId String?          @unique
   status             PaymentStatus    @default(PENDING)
+  // True when this request upgrades an already-active lower paid tier (e.g. PRO -> GOLD):
+  // amount is the price difference and the webhook must not reset subscriptionEndDate.
+  isUpgrade          Boolean          @default(false)
   createdAt          DateTime         @default(now())
   processedAt        DateTime?
 
