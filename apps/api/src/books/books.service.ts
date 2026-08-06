@@ -15,21 +15,40 @@ import { UpdateBookDto } from './dto/update-book.dto';
 export class BooksService {
   constructor(private prisma: PrismaService) {}
 
+  private readonly bookListSelect = {
+    id: true,
+    title: true,
+    author: true,
+    description: true,
+    coverURL: true,
+    bookTier: true,
+    groupKey: true,
+    targetLanguage: true,
+    focusSkill: true,
+    proficiencyLevel: true,
+    averageRating: true,
+    totalReviews: true,
+    createdAt: true,
+    // indexURL is only exposed on the single-book endpoint (guarded by subscription)
+  } as const;
+
   async findAll(filter: BooksFilterDto) {
     const {
       targetLanguage,
       focusSkill,
       proficiencyLevel,
       search,
+      raw = false,
       page = 1,
       limit = 20,
     } = filter;
-    const skip = (page - 1) * limit;
 
     const where = {
       ...(targetLanguage && { targetLanguage }),
-      ...(focusSkill && { focusSkill }),
-      ...(proficiencyLevel && { proficiencyLevel }),
+      ...(focusSkill?.length && { focusSkill: { in: focusSkill } }),
+      ...(proficiencyLevel?.length && {
+        proficiencyLevel: { in: proficiencyLevel },
+      }),
       ...(search && {
         OR: [
           { title: { contains: search, mode: 'insensitive' as const } },
@@ -38,31 +57,66 @@ export class BooksService {
       }),
     };
 
-    const [books, total] = await Promise.all([
-      this.prisma.book.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          title: true,
-          author: true,
-          description: true,
-          coverURL: true,
-          bookTier: true,
-          groupKey: true,
-          targetLanguage: true,
-          focusSkill: true,
-          proficiencyLevel: true,
-          averageRating: true,
-          totalReviews: true,
-          createdAt: true,
-          // indexURL is only exposed on the single-book endpoint (guarded by subscription)
-        },
-      }),
-      this.prisma.book.count({ where }),
-    ]);
+    if (raw) {
+      const skip = (page - 1) * limit;
+      const [books, total] = await Promise.all([
+        this.prisma.book.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy: { createdAt: 'desc' },
+          select: this.bookListSelect,
+        }),
+        this.prisma.book.count({ where }),
+      ]);
+      return { data: books, meta: { total, page, limit } };
+    }
+
+    // Group-aware pagination: multi-tier (FREE/PRO/GOLD) editions of the same
+    // title share `groupKey` and must land on the same page, in full, or a
+    // title's edition ladder could be split across a page boundary. Two
+    // queries share the same `orderBy` so the first-seen order in step 2
+    // matches the row order in step 3 — keep them in sync if either changes.
+    const orderBy = { createdAt: 'desc' as const };
+
+    const matches = await this.prisma.book.findMany({
+      where,
+      select: { id: true, groupKey: true, createdAt: true },
+      orderBy,
+    });
+
+    const seriesKeys: string[] = [];
+    const seen = new Set<string>();
+    for (const book of matches) {
+      const key = book.groupKey ?? book.id;
+      if (!seen.has(key)) {
+        seen.add(key);
+        seriesKeys.push(key);
+      }
+    }
+
+    const total = seriesKeys.length;
+    const pageKeys = seriesKeys.slice(
+      (page - 1) * limit,
+      (page - 1) * limit + limit,
+    );
+
+    // Every edition of a series kept on this page is included, regardless of
+    // whether it individually matches `where` — a series is shown in full
+    // once any of its editions match, so the card always has its complete
+    // access ladder (free sample, locked tiers, etc).
+    const books = pageKeys.length
+      ? await this.prisma.book.findMany({
+          where: {
+            OR: [
+              { groupKey: { in: pageKeys } },
+              { groupKey: null, id: { in: pageKeys } },
+            ],
+          },
+          orderBy,
+          select: this.bookListSelect,
+        })
+      : [];
 
     return { data: books, meta: { total, page, limit } };
   }

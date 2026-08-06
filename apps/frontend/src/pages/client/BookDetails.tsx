@@ -12,13 +12,11 @@ import { canAccessTier, groupBooksIntoSeries } from "../../lib/bookSeries";
 // review imports
 import ReviewList from "../../components/reviews/ReviewList";
 import ReviewForm from "../../components/reviews/ReviewForm";
-import { useReviews } from "../../hooks/reviews/useReviews";
 import RatingSummary from "../../components/reviews/RatingSummary";
 import { BackButton } from "../../components/common/BackButton";
 
 const BookDetails = () => {
   const { id } = useParams();
-  const { reviews } = useReviews(id!);
   const navigate = useNavigate();
   const { subscriptionPlan, isAdmin } = useAuth();
 
@@ -125,7 +123,10 @@ const BookDetails = () => {
             </h1>
 
             {/* ADD THIS LINE HERE */}
-            <RatingSummary reviews={reviews} />
+            <RatingSummary
+              averageRating={book.averageRating ?? 0}
+              totalReviews={book.totalReviews ?? 0}
+            />
 
             {/* AUTHOR */}
             <p className="text-lg text-primary font-semibold">

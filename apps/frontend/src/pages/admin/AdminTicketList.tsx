@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { CheckCircle, Clock } from "lucide-react";
 import LoadingScreen from "../../components/common/LoadingScreen";
+import Pagination from "../../components/common/Pagination";
+import { getTotalPages } from "../../lib/pagination";
 import { useTicketService } from "../../services/useTicketService";
 
 // This tells TypeScript what a Ticket looks like
@@ -11,7 +14,15 @@ interface Ticket {
 }
 
 const AdminTicketList = () => {
-  const { tickets, isLoading, handleResolve } = useTicketService();
+  const [page, setPage] = useState(1);
+  const { tickets, meta, isLoading, handleResolve } = useTicketService(page);
+  const totalPages = meta ? getTotalPages(meta.total, meta.limit) : 1;
+
+  // Fall back to the last valid page if the total shrinks — adjusted
+  // during render rather than via an effect.
+  if (meta && page > totalPages) {
+    setPage(totalPages);
+  }
 
   if (isLoading) return <LoadingScreen />;
 
@@ -57,6 +68,17 @@ const AdminTicketList = () => {
           ))
         )}
       </div>
+
+      {meta && (
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          total={meta.total}
+          limit={meta.limit}
+          className="mt-6"
+        />
+      )}
     </div>
   );
 };

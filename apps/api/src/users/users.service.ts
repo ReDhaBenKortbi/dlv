@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { SubscriptionPlan, SubscriptionStatus } from '@prisma/client';
+import { Role, SubscriptionPlan, SubscriptionStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { UsersFilterDto } from './dto/users-filter.dto';
 
 const PUBLIC_FIELDS = {
   id: true,
@@ -26,11 +27,32 @@ export class UsersService {
     });
   }
 
-  list() {
-    return this.prisma.user.findMany({
-      select: PUBLIC_FIELDS,
-      orderBy: { createdAt: 'desc' },
-    });
+  async list(filter: UsersFilterDto) {
+    const { search, page = 1, limit = 20 } = filter;
+    const skip = (page - 1) * limit;
+
+    const where = {
+      role: { not: Role.ADMIN },
+      ...(search && {
+        OR: [
+          { email: { contains: search, mode: 'insensitive' as const } },
+          { fullName: { contains: search, mode: 'insensitive' as const } },
+        ],
+      }),
+    };
+
+    const [users, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where,
+        select: PUBLIC_FIELDS,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+
+    return { data: users, meta: { total, page, limit } };
   }
 
   updateSubscription(userId: string, isSubscribed: boolean) {

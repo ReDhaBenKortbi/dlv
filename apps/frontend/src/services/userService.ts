@@ -3,7 +3,28 @@ import type { AuthUser } from "../context/AuthContext";
 
 export type UserProfile = AuthUser & { createdAt: string };
 
-export const getUsers = (): Promise<UserProfile[]> => api("/users");
+export interface UsersMeta {
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface UsersQuery {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+export const getUsers = (
+  query: UsersQuery = {},
+): Promise<{ data: UserProfile[]; meta: UsersMeta }> => {
+  const params = new URLSearchParams();
+  if (query.page) params.set("page", String(query.page));
+  if (query.limit) params.set("limit", String(query.limit));
+  if (query.search) params.set("search", query.search);
+  const qs = params.toString();
+  return api(`/users${qs ? `?${qs}` : ""}`);
+};
 
 export interface DashboardStats {
   users: number;

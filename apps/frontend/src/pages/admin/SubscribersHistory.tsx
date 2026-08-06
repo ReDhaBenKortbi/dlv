@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { usePaymentHistory } from "../../hooks/payments/usePaymentHistory";
+import Pagination from "../../components/common/Pagination";
+import { getTotalPages } from "../../lib/pagination";
 
 const STATUS_OPTIONS = ["", "PENDING", "APPROVED", "REJECTED"] as const;
 const PLAN_OPTIONS = ["", "PRO", "GOLD"] as const;
+const PAGE_SIZE = 20;
 
 const STATUS_BADGE: Record<string, string> = {
   PENDING: "badge-warning",
@@ -13,11 +16,27 @@ const STATUS_BADGE: Record<string, string> = {
 const SubscribersHistory = () => {
   const [statusFilter, setStatusFilter] = useState("");
   const [planFilter, setPlanFilter] = useState("");
+  const [page, setPage] = useState(1);
 
-  const { payments, isLoading, isError } = usePaymentHistory({
+  const { payments, meta, isLoading, isError } = usePaymentHistory({
     status: statusFilter || undefined,
     plan: planFilter || undefined,
+    page,
+    limit: PAGE_SIZE,
   });
+
+  const totalPages = meta ? getTotalPages(meta.total, meta.limit) : 1;
+
+  // Reset to page 1 when a filter changes, or fall back to the last valid
+  // page if the total shrinks — adjusted during render rather than via an effect.
+  const filterKey = `${statusFilter}|${planFilter}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey);
+    setPage(1);
+  } else if (meta && page > totalPages) {
+    setPage(totalPages);
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -105,6 +124,16 @@ const SubscribersHistory = () => {
           </table>
         )}
       </div>
+
+      {meta && (
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          total={meta.total}
+          limit={meta.limit}
+        />
+      )}
     </div>
   );
 };

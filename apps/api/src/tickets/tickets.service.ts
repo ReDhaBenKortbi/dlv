@@ -18,11 +18,18 @@ export class TicketsService {
     });
   }
 
-  listAll() {
-    return this.prisma.ticket.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: { user: { select: { id: true, email: true } } },
-    });
+  async listAll(page = 1, limit = 10) {
+    const skip = (page - 1) * limit;
+    const [tickets, total] = await Promise.all([
+      this.prisma.ticket.findMany({
+        orderBy: { createdAt: 'desc' },
+        include: { user: { select: { id: true, email: true } } },
+        skip,
+        take: limit,
+      }),
+      this.prisma.ticket.count(),
+    ]);
+    return { data: tickets, meta: { total, page, limit } };
   }
 
   async updateStatus(id: string, status: TicketStatus) {

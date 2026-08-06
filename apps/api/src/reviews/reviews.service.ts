@@ -12,12 +12,24 @@ import { PrismaService } from '../prisma/prisma.service';
 export class ReviewsService {
   constructor(private prisma: PrismaService) {}
 
-  async findByBook(bookId: string) {
-    return this.prisma.review.findMany({
-      where: { bookId },
-      include: { user: { select: { id: true, email: true } } },
-      orderBy: { createdAt: 'desc' },
-      take: 50,
+  async findByBook(bookId: string, page = 1, limit = 9) {
+    const skip = (page - 1) * limit;
+    const [reviews, total] = await Promise.all([
+      this.prisma.review.findMany({
+        where: { bookId },
+        include: { user: { select: { id: true, email: true } } },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.review.count({ where: { bookId } }),
+    ]);
+    return { data: reviews, meta: { total, page, limit } };
+  }
+
+  findMine(bookId: string, userId: string) {
+    return this.prisma.review.findUnique({
+      where: { userId_bookId: { userId, bookId } },
     });
   }
 

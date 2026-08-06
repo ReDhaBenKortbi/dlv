@@ -1,4 +1,7 @@
+import { useState } from "react";
 import { useReviews } from "../../hooks/reviews/useReviews";
+import Pagination from "../common/Pagination";
+import { getTotalPages } from "../../lib/pagination";
 import ReviewItem from "./ReviewItem";
 
 interface ListProps {
@@ -6,8 +9,17 @@ interface ListProps {
 }
 
 const ReviewList = ({ bookId }: ListProps) => {
-  const { reviews, isLoadingReviews, isDeleting, deleteReview } =
-    useReviews(bookId);
+  const [page, setPage] = useState(1);
+  const { reviews, meta, isLoadingReviews, isDeleting, deleteReview } =
+    useReviews(bookId, page);
+
+  const totalPages = meta ? getTotalPages(meta.total, meta.limit) : 1;
+
+  // Fall back to the last valid page if a deletion shrinks the total —
+  // adjusted during render rather than via an effect.
+  if (meta && page > totalPages) {
+    setPage(totalPages);
+  }
 
   const sortedReviews = [...reviews].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
@@ -47,15 +59,27 @@ const ReviewList = ({ bookId }: ListProps) => {
 
   /* ---------------- LIST ---------------- */
   return (
-    <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-      {sortedReviews.map((review) => (
-        <ReviewItem
-          key={review.id}
-          review={review}
-          onDelete={deleteReview}
-          isDeleting={isDeleting}
+    <div className="space-y-6">
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        {sortedReviews.map((review) => (
+          <ReviewItem
+            key={review.id}
+            review={review}
+            onDelete={deleteReview}
+            isDeleting={isDeleting}
+          />
+        ))}
+      </div>
+
+      {meta && (
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          total={meta.total}
+          limit={meta.limit}
         />
-      ))}
+      )}
     </div>
   );
 };

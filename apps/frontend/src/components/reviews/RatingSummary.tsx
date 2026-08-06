@@ -1,16 +1,15 @@
 import { Star } from "lucide-react";
-import type { Review } from "../../types/Review";
 
 interface Props {
-  reviews: Review[];
+  averageRating: number;
+  totalReviews: number;
 }
 
-const RatingSummary = ({ reviews }: Props) => {
-  if (reviews.length === 0) return null;
-
-  // Calculate average
-  const average =
-    reviews.reduce((acc, rev) => acc + rev.rating, 0) / reviews.length;
+// Reads the book's maintained aggregate fields rather than the (paginated)
+// reviews list, so the summary is always correct regardless of which page
+// of reviews happens to be loaded.
+const RatingSummary = ({ averageRating, totalReviews }: Props) => {
+  if (totalReviews === 0) return null;
 
   return (
     <div className="flex items-center gap-2 mt-1">
@@ -20,15 +19,15 @@ const RatingSummary = ({ reviews }: Props) => {
             key={star}
             size={16}
             className={`${
-              star <= Math.round(average)
+              star <= Math.round(averageRating)
                 ? "fill-warning text-warning"
                 : "text-base-300"
             }`}
           />
         ))}
       </div>
-      <span className="text-sm font-bold">{average.toFixed(1)}</span>
-      <span className="text-sm opacity-50">({reviews.length} reviews)</span>
+      <span className="text-sm font-bold">{averageRating.toFixed(1)}</span>
+      <span className="text-sm opacity-50">({totalReviews} reviews)</span>
     </div>
   );
 };

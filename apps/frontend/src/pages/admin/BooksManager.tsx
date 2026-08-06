@@ -1,15 +1,35 @@
+import { useState } from "react";
 import { Languages, GraduationCap, Target } from "lucide-react";
 import { FOCUS_SKILLS } from "../../constants/bookOptions";
 
 import { useBookMutations } from "../../hooks/books/useBookMutations";
-import { useBooks } from "../../hooks/books/useBooks";
+import { useBooksList } from "../../hooks/books/useBooksList";
 
 import LoadingScreen from "../../components/common/LoadingScreen";
+import Pagination from "../../components/common/Pagination";
+import { getTotalPages } from "../../lib/pagination";
 import { Link } from "react-router-dom";
 
+const PAGE_SIZE = 15;
+
 const BooksManager = () => {
-  // 2. Use the "Reader" hook for the list
-  const { books, isLoading: isFetching } = useBooks();
+  const [page, setPage] = useState(1);
+
+  // Raw (ungrouped) mode: each tier edition is its own row, since admins
+  // need to edit/delete a specific edition, not a collapsed series card.
+  const { books, meta, isLoading: isFetching } = useBooksList({
+    raw: true,
+    page,
+    limit: PAGE_SIZE,
+  });
+  const totalPages = meta ? getTotalPages(meta.total, meta.limit) : 1;
+
+  // If a deletion shrinks the total and the current page no longer exists,
+  // fall back to the last valid page (adjusted during render, React's
+  // recommended pattern, rather than via an effect).
+  if (meta && page > totalPages) {
+    setPage(totalPages);
+  }
 
   // 3. Use the "Writer" hook for the delete action
   const { remove, deletingId } = useBookMutations();
@@ -150,6 +170,17 @@ const BooksManager = () => {
             </tbody>
           </table>
         </div>
+
+        {meta && (
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            total={meta.total}
+            limit={meta.limit}
+            className="mt-6"
+          />
+        )}
       </div>
     </div>
   );

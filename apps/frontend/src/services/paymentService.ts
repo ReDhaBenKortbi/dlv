@@ -23,13 +23,23 @@ export interface PaymentHistoryItem {
   user: { fullName: string; email: string };
 }
 
+export interface PaymentHistoryMeta {
+  total: number;
+  page: number;
+  limit: number;
+}
+
 export const getPaymentHistory = (params?: {
   status?: string;
   plan?: string;
-}): Promise<PaymentHistoryItem[]> => {
+  page?: number;
+  limit?: number;
+}): Promise<{ data: PaymentHistoryItem[]; meta: PaymentHistoryMeta }> => {
   const query = new URLSearchParams();
   if (params?.status) query.set("status", params.status);
   if (params?.plan) query.set("plan", params.plan);
+  if (params?.page) query.set("page", String(params.page));
+  if (params?.limit) query.set("limit", String(params.limit));
   const qs = query.toString();
   return api(`/payments/history${qs ? `?${qs}` : ""}`);
 };

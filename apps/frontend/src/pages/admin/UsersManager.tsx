@@ -1,17 +1,41 @@
-import { useState } from "react";
-import { ADMIN_EMAIL } from "../../utils/constants";
+import { useEffect, useState } from "react";
 import { useUsers } from "../../hooks/users/useUsers";
 import LoadingScreen from "../../components/common/LoadingScreen";
+import Pagination from "../../components/common/Pagination";
+import { getTotalPages } from "../../lib/pagination";
+
+const PAGE_SIZE = 20;
 
 const UsersManager = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const { users, isLoading, toggleSubscription, pendingUserId } = useUsers();
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [page, setPage] = useState(1);
 
-  const filteredUsers = users.filter((u) => {
-    const term = searchTerm.toLowerCase();
-    const matchesSearch = u.email.toLowerCase().includes(term);
-    return matchesSearch && u.email !== ADMIN_EMAIL;
+  // Debounce the search box so we don't fire a request on every keystroke —
+  // a genuine effect (subscribing to a timer), unlike the state adjustments below.
+  useEffect(() => {
+    const timeout = setTimeout(() => setDebouncedSearch(searchTerm), 300);
+    return () => clearTimeout(timeout);
+  }, [searchTerm]);
+
+  const { users, meta, isLoading, toggleSubscription, pendingUserId } = useUsers({
+    page,
+    limit: PAGE_SIZE,
+    search: debouncedSearch || undefined,
   });
+
+  const totalPages = meta ? getTotalPages(meta.total, meta.limit) : 1;
+
+  // Reset to page 1 when the (debounced) search changes, or fall back to
+  // the last valid page if the total shrinks — adjusted during render
+  // rather than via an effect.
+  const [prevSearch, setPrevSearch] = useState(debouncedSearch);
+  if (debouncedSearch !== prevSearch) {
+    setPrevSearch(debouncedSearch);
+    setPage(1);
+  } else if (meta && page > totalPages) {
+    setPage(totalPages);
+  }
 
   if (isLoading) return <LoadingScreen />;
 
@@ -53,7 +77,7 @@ const UsersManager = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredUsers.map((user) => (
+                {users.map((user) => (
                   <tr
                     key={user.id}
                     className="hover:bg-base-100 transition-colors"
@@ -103,12 +127,23 @@ const UsersManager = () => {
               </tbody>
             </table>
 
-            {filteredUsers.length === 0 && (
+            {users.length === 0 && (
               <div className="p-10 text-center text-gray-400">
                 No users found.
               </div>
             )}
           </div>
+        )}
+
+        {meta && (
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            total={meta.total}
+            limit={meta.limit}
+            className="mt-6"
+          />
         )}
       </div>
     </div>

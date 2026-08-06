@@ -1,46 +1,60 @@
-import { useState, useMemo } from "react";
-import { useBooks } from "../../hooks/books/useBooks";
+import { useMemo, useState } from "react";
+import { useBooksList } from "../../hooks/books/useBooksList";
+import { useSearch } from "../../context/SearchContext";
 import { LibrarySidebar } from "../../components/library/LibrarySidebar";
 import { BookCard } from "../../components/library/BookCard";
 import LoadingScreen from "../../components/common/LoadingScreen";
+import Pagination from "../../components/common/Pagination";
+import { getTotalPages } from "../../lib/pagination";
 import { Filter } from "lucide-react";
 import { groupBooksIntoSeries } from "../../lib/bookSeries";
 
+const PAGE_SIZE = 24;
+
 const Library = () => {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
-  const { books, isLoading } = useBooks();
+  const { searchTerm } = useSearch();
 
   // --- FILTER STATE ---
   const [selectedLanguage, setSelectedLanguage] = useState<string>("");
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
+  const [page, setPage] = useState(1);
 
-  // --- FILTER LOGIC ---
-  const filteredBooks = useMemo(() => {
-    return books.filter((book) => {
-      const langMatch =
-        selectedLanguage === "" || book.targetLanguage === selectedLanguage;
-      const skillMatch =
-        selectedSkills.length === 0 ||
-        (book.focusSkill && selectedSkills.includes(book.focusSkill));
+  // Filters/search are sent to the backend, which also handles grouping
+  // multi-tier editions of the same title into one series per page.
+  const { books, meta, isLoading } = useBooksList({
+    page,
+    limit: PAGE_SIZE,
+    targetLanguage: selectedLanguage || undefined,
+    focusSkill: selectedSkills,
+    proficiencyLevel: selectedLevels,
+    search: searchTerm || undefined,
+  });
 
-      // --- ADD LEVEL MATCH ---
-      const levelMatch =
-        selectedLevels.length === 0 ||
-        (book.proficiencyLevel &&
-          selectedLevels.includes(book.proficiencyLevel));
+  // Any filter/search change invalidates the current page window — reset
+  // to page 1 during render (React's recommended pattern for adjusting
+  // state in response to a prop/derived-value change) rather than in an
+  // effect, which would cost an extra render-and-commit round trip.
+  const filterKey = `${selectedLanguage}|${selectedSkills.join(",")}|${selectedLevels.join(",")}|${searchTerm}`;
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  const totalPages = meta ? getTotalPages(meta.total, meta.limit) : 1;
 
-      return langMatch && skillMatch && levelMatch;
-    });
-  }, [books, selectedLanguage, selectedSkills, selectedLevels]);
+  if (filterKey !== prevFilterKey) {
+    // Filters/search just changed — always take priority over clamping,
+    // since `meta` still reflects the previous filter's stale totalPages.
+    setPrevFilterKey(filterKey);
+    setPage(1);
+  } else if (meta && page > totalPages) {
+    // Data shrank (e.g. a deletion) and the current page no longer exists —
+    // fall back to the last valid page.
+    setPage(totalPages);
+  }
 
   // Tier editions of the same title (linked via `groupKey`) collapse into a
-  // single card here — a series is kept if any of its editions match the
-  // filters above, so switching a filter never hides an otherwise-matching title.
-  const series = useMemo(
-    () => groupBooksIntoSeries(filteredBooks),
-    [filteredBooks],
-  );
+  // single card — the backend already guarantees every edition of a series
+  // shown on this page is present, so this is pure display grouping now.
+  const series = useMemo(() => groupBooksIntoSeries(books), [books]);
 
   const toggleSkill = (skillId: string) => {
     setSelectedSkills((prev) =>
@@ -88,7 +102,7 @@ const Library = () => {
               <div>
                 <h1 className="text-2xl font-bold">Explore Library</h1>
                 <p className="text-xs opacity-50 font-medium uppercase tracking-wider">
-                  {series.length} titles found
+                  {meta?.total ?? series.length} titles found
                 </p>
               </div>
 
@@ -124,6 +138,16 @@ const Library = () => {
                   Clear all filters
                 </button>
               </div>
+            )}
+
+            {meta && (
+              <Pagination
+                page={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                total={meta.total}
+                limit={meta.limit}
+              />
             )}
           </div>
         </main>

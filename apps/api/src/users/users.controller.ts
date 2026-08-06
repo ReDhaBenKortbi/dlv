@@ -4,12 +4,14 @@ import {
   Get,
   Param,
   Patch,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthenticatedRequest } from '../common/types';
+import { UsersFilterDto } from './dto/users-filter.dto';
 import { UsersService } from './users.service';
 
 @UseGuards(JwtAuthGuard)
@@ -24,8 +26,8 @@ export class UsersController {
 
   @UseGuards(AdminGuard)
   @Get()
-  list() {
-    return this.usersService.list();
+  list(@Query() filter: UsersFilterDto) {
+    return this.usersService.list(filter);
   }
 
   @UseGuards(AdminGuard)

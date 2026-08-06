@@ -1,15 +1,29 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import { api } from "../lib/api";
 import { notify } from "../utils/toast";
 import type { Ticket } from "../types/ticket";
 
-export const useTicketService = () => {
+interface TicketsMeta {
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export const useTicketService = (page = 1, limit = 10) => {
   const queryClient = useQueryClient();
 
-  const { data: tickets = [], isLoading } = useQuery<Ticket[]>({
-    queryKey: ["tickets"],
-    queryFn: () => api("/tickets"),
+  const { data, isLoading } = useQuery<{ data: Ticket[]; meta: TicketsMeta }>({
+    queryKey: ["tickets", page, limit],
+    queryFn: () => api(`/tickets?page=${page}&limit=${limit}`),
+    placeholderData: keepPreviousData,
   });
+  const tickets = data?.data ?? [];
+  const meta = data?.meta;
 
   const resolveMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -31,5 +45,5 @@ export const useTicketService = () => {
     });
   };
 
-  return { tickets, isLoading, handleResolve };
+  return { tickets, meta, isLoading, handleResolve };
 };

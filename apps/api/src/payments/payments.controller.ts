@@ -12,11 +12,18 @@ import {
 } from '@nestjs/common';
 import { PaymentStatus, SubscriptionPlan } from '@prisma/client';
 import { SkipThrottle } from '@nestjs/throttler';
+import { IsEnum, IsOptional } from 'class-validator';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthenticatedRequest } from '../common/types';
+import { PaginationQueryDto } from '../common/dto/pagination-query.dto';
 import { ChargilyService } from './chargily.service';
 import { CreateCheckoutDto } from './dto/create-checkout.dto';
+
+class PaymentsHistoryQueryDto extends PaginationQueryDto {
+  @IsEnum(PaymentStatus) @IsOptional() status?: PaymentStatus;
+  @IsEnum(SubscriptionPlan) @IsOptional() plan?: SubscriptionPlan;
+}
 
 @Controller('payments')
 export class PaymentsController {
@@ -44,11 +51,8 @@ export class PaymentsController {
 
   @UseGuards(JwtAuthGuard, AdminGuard)
   @Get('history')
-  getHistory(
-    @Query('status') status?: PaymentStatus,
-    @Query('plan') plan?: SubscriptionPlan,
-  ) {
-    return this.chargilyService.getPaymentHistory({ status, plan });
+  getHistory(@Query() query: PaymentsHistoryQueryDto) {
+    return this.chargilyService.getPaymentHistory(query);
   }
 
   @SkipThrottle()

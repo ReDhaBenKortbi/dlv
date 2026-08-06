@@ -1,13 +1,20 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import { getUsers, updateUserSubscription } from "../../services/userService";
+import type { UsersQuery } from "../../services/userService";
 import { notify } from "../../utils/toast"; // Import our adapter
 
-export const useUsers = () => {
+export const useUsers = (params: UsersQuery = {}) => {
   const queryClient = useQueryClient();
 
   const query = useQuery({
-    queryKey: ["users"],
-    queryFn: getUsers,
+    queryKey: ["users", params],
+    queryFn: () => getUsers(params),
+    placeholderData: keepPreviousData,
   });
 
   const mutation = useMutation({
@@ -34,7 +41,8 @@ export const useUsers = () => {
   };
 
   return {
-    users: query.data ?? [],
+    users: query.data?.data ?? [],
+    meta: query.data?.meta,
     isLoading: query.isLoading,
     isUpdating: mutation.isPending,
     // Id of the user currently being mutated, so only that row shows a spinner.

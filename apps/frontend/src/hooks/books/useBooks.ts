@@ -11,7 +11,7 @@ export const useBooks = (bookId?: string, currentBook?: Book) => {
 
   const allBooksQuery = useQuery({
     queryKey: ["books"],
-    queryFn: getBooks,
+    queryFn: () => getBooks(),
   });
 
   const singleBookQuery = useQuery({
