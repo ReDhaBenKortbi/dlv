@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import LoadingScreen from "../../components/common/LoadingScreen";
 import { useBooks } from "../../hooks/books/useBooks"; // Reader
 import { useBookMutations } from "../../hooks/books/useBookMutations"; // Writer
@@ -25,8 +25,13 @@ const EditBook = () => {
   // 1. Fetch current book data
   const { book, isLoading: fetching } = useBooks(bookId);
 
+  // 1b. Sibling tier editions of the same title (needs `book` to be loaded
+  // first to know its groupKey — same two-call pattern as BookDetails).
+  const { groupEditions } = useBooks(bookId, book);
+  const siblings = groupEditions.filter((e) => e.id !== bookId);
+
   // 2. Mutations hook
-  const { edit, isProcessing } = useBookMutations();
+  const { edit, editSilent, isProcessing } = useBookMutations();
 
   const [formData, setFormData] = useState<{
     title: string;
@@ -55,6 +60,10 @@ const EditBook = () => {
   const [newCoverFile, setNewCoverFile] = useState<File | null>(null);
   const [preview, setPreview] = useState("");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  // Editions of the same title normally share one cover image (see
+  // AddBook's "reuse cover" flow) — default to keeping them in sync
+  // whenever a new image is picked here, instead of silently forking it.
+  const [syncCoverToSiblings, setSyncCoverToSiblings] = useState(true);
 
   // 4. Sync Database Data to Form (Only runs once when 'book' arrives)
   useEffect(() => {
@@ -108,6 +117,16 @@ const EditBook = () => {
         groupKey: formData.groupKey.trim(),
       });
 
+      // Step B2: Push the new cover to sibling editions too, so the whole
+      // series keeps pointing at the same image instead of drifting apart.
+      if (success && newCoverFile && syncCoverToSiblings && siblings.length > 0) {
+        await Promise.all(
+          siblings.map((sibling) =>
+            editSilent(sibling.id, { coverURL: finalCoverURL }),
+          ),
+        );
+      }
+
       // Step C: Redirect only if the mutation was successful
       if (success) {
         navigate("/admin/manage-books");
@@ -125,7 +144,40 @@ const EditBook = () => {
 
   return (
     <div className="p-6 max-w-4xl mx-auto font-sans">
-      <h1 className="text-2xl font-bold mb-6">Edit: {formData.title}</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <h1 className="text-2xl font-bold">Edit: {formData.title}</h1>
+        <Link
+          to={`/admin/add-book?fromId=${bookId}`}
+          className="btn btn-sm btn-outline"
+        >
+          + Add another edition
+        </Link>
+      </div>
+
+      {siblings.length > 0 && (
+        <div className="bg-base-200 border border-base-300 rounded-xl p-4 mb-6">
+          <p className="text-xs font-bold uppercase tracking-widest opacity-60 mb-2">
+            Other editions of this title
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {siblings.map((sibling) => (
+              <Link
+                key={sibling.id}
+                to={`/admin/edit-book/${sibling.id}`}
+                className={`btn btn-xs ${
+                  sibling.bookTier === "GOLD"
+                    ? "btn-warning"
+                    : sibling.bookTier === "PRO"
+                      ? "btn-secondary"
+                      : "btn-outline"
+                }`}
+              >
+                {sibling.bookTier}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleUpdate} className="flex flex-col md:flex-row gap-8">
         {/* Left: Cover */}
@@ -138,6 +190,21 @@ const EditBook = () => {
               e.target.files && handleFileChange(e.target.files[0])
             }
           />
+          {newCoverFile && siblings.length > 0 && (
+            <label className="flex items-start gap-2 mt-3 text-xs bg-base-200 border border-base-300 rounded-lg p-3 cursor-pointer">
+              <input
+                type="checkbox"
+                className="checkbox checkbox-xs mt-0.5"
+                checked={syncCoverToSiblings}
+                onChange={(e) => setSyncCoverToSiblings(e.target.checked)}
+              />
+              <span>
+                Apply this cover to the other {siblings.length} edition
+                {siblings.length > 1 ? "s" : ""} of this title too, so they
+                stay in sync.
+              </span>
+            </label>
+          )}
         </div>
 
         {/* Right: Fields */}

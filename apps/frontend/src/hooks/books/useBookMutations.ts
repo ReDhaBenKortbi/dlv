@@ -49,6 +49,12 @@ export const useBookMutations = () => {
       });
     },
 
+    // Same as `edit`, but without its own toast — for bulk/background
+    // updates (e.g. syncing a cover across sibling editions) where one
+    // toast per row would just be noise around the primary save's toast.
+    editSilent: (id: string, updates: Partial<Book>) =>
+      editMutation.mutateAsync({ id, updates }),
+
     // Remove Book
     remove: async (id: string) => {
       return await notify.promise(deleteMutation.mutateAsync(id), {
