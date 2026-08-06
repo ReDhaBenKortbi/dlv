@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { uploadImageToCloudinary } from "../../services/cloudinaryService";
 import { BookPreview } from "../../components/admin/BookPreview";
 import { useBookMutations } from "../../hooks/books/useBookMutations";
+import { useBooks } from "../../hooks/books/useBooks";
 // New Pillars
 import {
   TARGET_LANGUAGES,
@@ -19,9 +20,25 @@ import type {
 } from "../../constants/bookOptions";
 import { toast } from "sonner";
 
+// Suggests the next tier up from the source edition, so cloning a FREE
+// edition defaults to PRO instead of another FREE (the common case).
+const NEXT_TIER: Record<BookTier, BookTier> = {
+  FREE: "PRO",
+  PRO: "GOLD",
+  GOLD: "GOLD",
+};
+
 const AddBook = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const fromId = searchParams.get("fromId") || undefined;
   const { add, isProcessing } = useBookMutations(); // Use our mutation hook
+
+  // When arriving via "+ Edition" on an existing book, fetch it so we can
+  // clone its shared fields (cover included) instead of asking the admin
+  // to re-enter and re-upload everything for what is the same title.
+  const { book: sourceBook, isLoading: isLoadingSource } = useBooks(fromId);
+  const isCloning = !!fromId;
 
   // --- NEW STATE FOR THE THREE PILLARS ---
   const [targetLanguage, setTargetLanguage] = useState<TargetLanguageCode | "">(
@@ -43,10 +60,35 @@ const AddBook = () => {
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
 
+  // When cloning, default to reusing the source edition's cover — no new
+  // Cloudinary upload, no duplicate image stored for what's the same book.
+  const [reuseCover, setReuseCover] = useState(false);
+
   // Status State - We only need this for the Cloudinary part now
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
-  // Handle local image preview
+  // Prefill shared fields from the source edition once it loads.
+  useEffect(() => {
+    if (!sourceBook) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setAuthor(sourceBook.author);
+    setDescription(sourceBook.description);
+    setTargetLanguage((sourceBook.targetLanguage as TargetLanguageCode) || "");
+    setFocusSkill((sourceBook.focusSkill as FocusSkillCode) || "");
+    setProficiencyLevel(
+      (sourceBook.proficiencyLevel as ProficiencyLevelCode) || "",
+    );
+    // Title stays editable but pre-filled — the DB requires a unique
+    // title+author pair, so it can't be an exact duplicate of the source.
+    setTitle(sourceBook.title);
+    // Anchor the new edition to the same series. If the source wasn't
+    // grouped yet, its own id becomes the shared groupKey going forward.
+    setGroupKey(sourceBook.groupKey || sourceBook.id);
+    setBookTier(NEXT_TIER[sourceBook.bookTier]);
+    setReuseCover(true);
+  }, [sourceBook]);
+
+  // Handle local image preview for a freshly-picked file
   useEffect(() => {
     if (!coverFile) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -58,11 +100,18 @@ const AddBook = () => {
     return () => URL.revokeObjectURL(objectUrl);
   }, [coverFile]);
 
+  // What the live preview should show: the newly-picked file, the reused
+  // source cover, or nothing yet.
+  const previewUrl =
+    imagePreview || (reuseCover ? sourceBook?.coverURL : "") || "";
+
   const handlePublish = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    const willReuseCover = reuseCover && !!sourceBook?.coverURL;
+
     // 1. Basic validation (Toasts are better than alerts!)
-    if (!coverFile || !flipbookURL) {
+    if ((!coverFile && !willReuseCover) || !flipbookURL) {
       toast.error("Please provide both a cover image and the Netlify URL.");
       return;
     }
@@ -70,8 +119,10 @@ const AddBook = () => {
     setIsUploadingImage(true);
 
     try {
-      // Step A: Upload to Cloudinary
-      const coverURL = await uploadImageToCloudinary(coverFile);
+      // Step A: Reuse the source edition's cover, or upload a new one
+      const coverURL = willReuseCover
+        ? sourceBook!.coverURL
+        : await uploadImageToCloudinary(coverFile!);
 
       // Step B: Use our mutation hook (which now handles the loading/success toasts)
       // Step B: Use our mutation hook
@@ -104,6 +155,21 @@ const AddBook = () => {
       <div className="flex flex-col lg:flex-row gap-10 items-start">
         {/* LEFT — FORM */}
         <div className="flex-1">
+          {isCloning && (
+            <div className="alert bg-primary/10 border border-primary/30 mb-6 text-sm">
+              {isLoadingSource ? (
+                <span>Loading source edition…</span>
+              ) : sourceBook ? (
+                <span>
+                  Creating a new tier edition of <strong>{sourceBook.title}</strong>.
+                  Shared details and the cover image were copied over — adjust
+                  the title, tier and Netlify URL below.
+                </span>
+              ) : (
+                <span>Source edition not found — filling out a blank form.</span>
+              )}
+            </div>
+          )}
           <div className="bg-base-100 rounded-2xl shadow-xl border border-base-200">
             <div className="p-6 sm:p-8">
               <form onSubmit={handlePublish} className="space-y-6">
@@ -249,15 +315,54 @@ const AddBook = () => {
                     <label className="text-xs font-bold text-base-content/60 uppercase">
                       Cover Image
                     </label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) =>
-                        setCoverFile(e.target.files?.[0] || null)
-                      }
-                      className="file-input file-input-bordered bg-base-100 border-base-300 mt-1 w-full"
-                      required
-                    />
+
+                    {isCloning && sourceBook && reuseCover ? (
+                      <div className="mt-1 flex items-center gap-3 bg-base-100 border border-base-300 rounded-lg p-3">
+                        <img
+                          src={sourceBook.coverURL}
+                          alt="Reused cover"
+                          className="w-12 h-16 object-cover rounded-md flex-none"
+                        />
+                        <div className="flex-1 text-xs">
+                          <p className="font-bold">Reusing this title's cover</p>
+                          <p className="opacity-60">
+                            No new image will be uploaded — this edition
+                            points at the same file.
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setReuseCover(false)}
+                          className="btn btn-xs btn-outline flex-none"
+                        >
+                          Use a different image
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) =>
+                            setCoverFile(e.target.files?.[0] || null)
+                          }
+                          className="file-input file-input-bordered bg-base-100 border-base-300 mt-1 w-full"
+                          required={!reuseCover}
+                        />
+                        {isCloning && sourceBook && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCoverFile(null);
+                              setReuseCover(true);
+                            }}
+                            className="btn btn-xs btn-ghost mt-1"
+                          >
+                            ← Reuse the original cover instead
+                          </button>
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -300,7 +405,7 @@ const AddBook = () => {
                     <button
                       type="submit"
                       className="btn btn-primary px-10 shadow-lg"
-                      disabled={isUploadingImage || isProcessing}
+                      disabled={isUploadingImage || isProcessing || isLoadingSource}
                     >
                       {isUploadingImage ? (
                         <span className="loading loading-spinner"></span>
@@ -320,7 +425,7 @@ const AddBook = () => {
           <BookPreview
             title={title}
             author={author}
-            previewUrl={imagePreview}
+            previewUrl={previewUrl}
             bookTier={bookTier}
           />
         </div>

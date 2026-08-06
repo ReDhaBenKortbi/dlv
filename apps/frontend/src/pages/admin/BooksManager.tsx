@@ -123,6 +123,13 @@ const BooksManager = () => {
                     <td className="text-right">
                       <div className="flex gap-2 justify-end">
                         <Link
+                          to={`/admin/add-book?fromId=${book.id}`}
+                          className="btn btn-xs btn-outline"
+                          title="Create another tier edition of this title, reusing its cover image"
+                        >
+                          + Edition
+                        </Link>
+                        <Link
                           to={`/admin/edit-book/${book.id}`}
                           className="btn btn-xs btn-outline btn-info"
                         >
