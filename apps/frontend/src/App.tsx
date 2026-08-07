@@ -27,6 +27,8 @@ const BookDetails = lazy(() => import("./pages/client/BookDetails"));
 const Reader = lazy(() => import("./pages/client/Reader"));
 const Profile = lazy(() => import("./pages/client/Profile"));
 const SupportPage = lazy(() => import("./pages/client/Support"));
+const Privacy = lazy(() => import("./pages/common/Privacy"));
+const Terms = lazy(() => import("./pages/common/Terms"));
 
 // Lazy load Admin components
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
@@ -102,6 +104,8 @@ const router = createBrowserRouter([
           </PublicRoute>
         ),
       },
+      { path: "/privacy", element: <Privacy /> },
+      { path: "/terms", element: <Terms /> },
     ],
   },
 ]);

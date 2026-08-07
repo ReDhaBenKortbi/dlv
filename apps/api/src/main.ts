@@ -1,11 +1,21 @@
+import './instrument';
+
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { rawBody: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    rawBody: true,
+  });
+
+  // Trust exactly one hop (the hosting platform's reverse proxy) so
+  // req.ip / X-Forwarded-For reflect the real client, not the proxy —
+  // required for the throttler to rate-limit per visitor correctly.
+  app.set('trust proxy', 1);
 
   app.use(helmet());
   app.use(cookieParser());

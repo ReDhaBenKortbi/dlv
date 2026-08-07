@@ -194,6 +194,18 @@ const Signup = () => {
                 Login here
               </Link>
             </div>
+
+            <p className="text-center text-xs opacity-50">
+              By signing up, you agree to our{" "}
+              <Link to="/terms" className="link link-primary">
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link to="/privacy" className="link link-primary">
+                Privacy Policy
+              </Link>
+              .
+            </p>
           </div>
         </div>
       </div>
