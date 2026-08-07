@@ -8,8 +8,8 @@ const apiOrigin = new URL(apiUrl).origin;
 const csp = [
   "default-src 'self'",
   "script-src 'self'",
-  "style-src 'self'",
-  `img-src 'self' data: https://res.cloudinary.com`,
+  "style-src 'self' 'unsafe-inline'",
+  `img-src 'self' data: blob: https://res.cloudinary.com`,
   "font-src 'self'",
   `connect-src 'self' ${apiOrigin} https://api.cloudinary.com`,
   `frame-src ${apiOrigin}`,
