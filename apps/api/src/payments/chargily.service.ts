@@ -10,17 +10,12 @@ import {
   SubscriptionPlan,
   SubscriptionStatus,
 } from '@prisma/client';
+import { PLAN_PRICING } from './plan-pricing';
 
 const CHARGILY_API =
   process.env.CHARGILY_MODE === 'live'
     ? 'https://pay.chargily.net/api/v2'
     : 'https://pay.chargily.net/test/api/v2';
-
-const PLAN_PRICES: Record<SubscriptionPlan, number> = {
-  FREE: 0,
-  PRO: 500,
-  GOLD: 900,
-};
 
 // Higher rank = more valuable plan; used to detect a same-cycle upgrade.
 const PLAN_RANK: Record<SubscriptionPlan, number> = {
@@ -59,10 +54,14 @@ export class ChargilyService {
       PLAN_RANK[plan] > PLAN_RANK[user.subscriptionPlan];
 
     const amount = isUpgrade
-      ? PLAN_PRICES[plan] - PLAN_PRICES[user.subscriptionPlan]
-      : PLAN_PRICES[plan];
+      ? PLAN_PRICING[plan].price - PLAN_PRICING[user.subscriptionPlan].price
+      : PLAN_PRICING[plan].price;
 
     return { amount, isUpgrade };
+  }
+
+  getPlanPricing() {
+    return PLAN_PRICING;
   }
 
   async createCheckout(
@@ -169,18 +168,33 @@ export class ChargilyService {
     return sigBuf.length === expBuf.length && timingSafeEqual(sigBuf, expBuf);
   }
 
-  getPaymentHistory(filters: {
+  async getPaymentHistory(filters: {
     status?: PaymentStatus;
     plan?: SubscriptionPlan;
+    page?: number;
+    limit?: number;
   }) {
-    return this.prisma.paymentRequest.findMany({
-      where: {
-        ...(filters.status ? { status: filters.status } : {}),
-        ...(filters.plan ? { plan: filters.plan } : {}),
-      },
-      orderBy: { createdAt: 'desc' },
-      include: { user: { select: { fullName: true, email: true } } },
-    });
+    const page = filters.page ?? 1;
+    const limit = filters.limit ?? 20;
+    const skip = (page - 1) * limit;
+
+    const where = {
+      ...(filters.status ? { status: filters.status } : {}),
+      ...(filters.plan ? { plan: filters.plan } : {}),
+    };
+
+    const [payments, total] = await Promise.all([
+      this.prisma.paymentRequest.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        include: { user: { select: { fullName: true, email: true } } },
+        skip,
+        take: limit,
+      }),
+      this.prisma.paymentRequest.count({ where }),
+    ]);
+
+    return { data: payments, meta: { total, page, limit } };
   }
 
   private static readonly FAILURE_EVENTS = new Set([

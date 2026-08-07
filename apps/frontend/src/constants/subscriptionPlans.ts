@@ -1,7 +1,6 @@
-export const SUBSCRIPTION_PLANS = {
-  FREE: { id: "FREE", label: "Free", price: 0 },
-  PRO: { id: "PRO", label: "Pro", price: 500 },
-  GOLD: { id: "GOLD", label: "Gold", price: 900 },
-} as const;
+// Pricing/labels are no longer hardcoded here — they're fetched at runtime
+// from GET /payments/plans (see usePlanPricing) so the frontend always
+// matches whatever the API will actually charge.
+export const SUBSCRIPTION_PLAN_IDS = ["FREE", "PRO", "GOLD"] as const;
 
-export type SubscriptionPlan = keyof typeof SUBSCRIPTION_PLANS;
+export type SubscriptionPlan = (typeof SUBSCRIPTION_PLAN_IDS)[number];

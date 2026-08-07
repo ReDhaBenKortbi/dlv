@@ -29,6 +29,11 @@ class PaymentsHistoryQueryDto extends PaginationQueryDto {
 export class PaymentsController {
   constructor(private chargilyService: ChargilyService) {}
 
+  @Get('plans')
+  getPlans() {
+    return this.chargilyService.getPlanPricing();
+  }
+
   @UseGuards(JwtAuthGuard)
   @Post('chargily/checkout')
   chargilyCheckout(

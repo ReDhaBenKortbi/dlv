@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import { CheckCircle, Zap, Star, Lock } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useChargilyCheckout } from "../../hooks/payments/useChargilyCheckout";
+import { usePlanPricing } from "../../hooks/payments/usePlanPricing";
 import { BackButton } from "../../components/common/BackButton";
-import { SUBSCRIPTION_PLANS } from "../../constants/subscriptionPlans";
 import type { SubscriptionPlan } from "../../constants/subscriptionPlans";
 import { cancelPendingPayment } from "../../services/paymentService";
 import { notify } from "../../utils/toast";
@@ -39,6 +39,7 @@ const PLAN_RANK: Record<SubscriptionPlan, number> = { FREE: 0, PRO: 1, GOLD: 2 }
 const Subscription = () => {
   const { subscriptionStatus, isSubscribed, subscriptionPlan, subscriptionUpdatedAt, refreshUser } = useAuth();
   const { startCheckout, loading: chargilyLoading } = useChargilyCheckout();
+  const { plans } = usePlanPricing();
 
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
   const [cancelling, setCancelling] = useState(false);
@@ -109,14 +110,22 @@ const Subscription = () => {
     );
   }
 
-  const planKeys = Object.keys(SUBSCRIPTION_PLANS) as SubscriptionPlan[];
+  if (!plans) {
+    return (
+      <div className="min-h-screen bg-base-200 flex items-center justify-center">
+        <span className="loading loading-spinner loading-lg text-primary" />
+      </div>
+    );
+  }
+
+  const planKeys = Object.keys(plans) as SubscriptionPlan[];
 
   // While upgrading, the price owed is only the difference vs. the plan
   // already paid for — matches the backend's isUpgrade pricing so what's
   // shown here is exactly what gets charged.
   const payablePrice = selectedPlan
-    ? SUBSCRIPTION_PLANS[selectedPlan].price -
-      (isUpgradeEligible ? SUBSCRIPTION_PLANS[subscriptionPlan].price : 0)
+    ? plans[selectedPlan].price -
+      (isUpgradeEligible ? plans[subscriptionPlan].price : 0)
     : 0;
 
   return (
@@ -132,7 +141,7 @@ const Subscription = () => {
           </h1>
           <p className="text-sm opacity-60">
             {isUpgradeEligible
-              ? `You're on ${SUBSCRIPTION_PLANS[subscriptionPlan].label} — upgrade to unlock more, you'll only pay the difference`
+              ? `You're on ${plans[subscriptionPlan].label} — upgrade to unlock more, you'll only pay the difference`
               : "Unlock more books by upgrading your subscription"}
           </p>
         </header>
@@ -140,7 +149,7 @@ const Subscription = () => {
         {/* PLAN CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {planKeys.map((key) => {
-            const plan = SUBSCRIPTION_PLANS[key];
+            const plan = plans[key];
             const styles = PLAN_STYLES[key];
             const isSelected = selectedPlan === key;
             const isFree = key === "FREE";
@@ -170,7 +179,7 @@ const Subscription = () => {
                       <span className="text-2xl font-bold">Free</span>
                     ) : isUpgradeTarget ? (
                       <span className="text-2xl font-bold">
-                        {plan.price - SUBSCRIPTION_PLANS[subscriptionPlan].price}{" "}
+                        {plan.price - plans[subscriptionPlan].price}{" "}
                         <span className="text-base font-normal opacity-60">DA to upgrade</span>
                       </span>
                     ) : (
@@ -216,8 +225,8 @@ const Subscription = () => {
           <div className="space-y-6">
             <div className="divider text-sm opacity-50">
               {isUpgradeEligible
-                ? `Upgrade to ${SUBSCRIPTION_PLANS[selectedPlan].label} — ${payablePrice} DA`
-                : `Pay for ${SUBSCRIPTION_PLANS[selectedPlan].label} — ${payablePrice} DA / month`}
+                ? `Upgrade to ${plans[selectedPlan].label} — ${payablePrice} DA`
+                : `Pay for ${plans[selectedPlan].label} — ${payablePrice} DA / month`}
             </div>
 
             <div className="card bg-base-100 border border-base-200 shadow-xl rounded-2xl max-w-lg mx-auto">

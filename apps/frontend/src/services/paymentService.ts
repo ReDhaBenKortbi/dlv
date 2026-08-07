@@ -1,4 +1,14 @@
 import { api } from "../lib/api";
+import type { SubscriptionPlan } from "../constants/subscriptionPlans";
+
+export interface PlanPricing {
+  price: number;
+  label: string;
+}
+
+export const getPlanPricing = (): Promise<
+  Record<SubscriptionPlan, PlanPricing>
+> => api("/payments/plans");
 
 export const createChargilyCheckout = (
   plan: string,
