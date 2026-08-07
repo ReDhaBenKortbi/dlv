@@ -19,3 +19,17 @@ export const loginUser = async (email: string, password: string) => {
   });
   setAccessToken(accessToken);
 };
+
+export const requestPasswordReset = async (email: string) => {
+  await api("/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+};
+
+export const resetPassword = async (token: string, newPassword: string) => {
+  await api("/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify({ token, newPassword }),
+  });
+};

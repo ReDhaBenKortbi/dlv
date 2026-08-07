@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { SUPPORT_EMAIL } from "../../constants/contact";
 
 const Section = ({
   title,
@@ -69,10 +70,10 @@ const Terms = () => {
                 <li>
                   Refunds are considered on a case-by-case basis — contact{" "}
                   <a
-                    href="mailto:ridhabenkortbi@gmail.com"
+                    href={`mailto:${SUPPORT_EMAIL}`}
                     className="link link-primary"
                   >
-                    ridhabenkortbi@gmail.com
+                    {SUPPORT_EMAIL}
                   </a>{" "}
                   if you believe you were charged in error.
                 </li>
@@ -135,10 +136,10 @@ const Terms = () => {
               <p>
                 Questions about these terms? Email{" "}
                 <a
-                  href="mailto:ridhabenkortbi@gmail.com"
+                  href={`mailto:${SUPPORT_EMAIL}`}
                   className="link link-primary"
                 >
-                  ridhabenkortbi@gmail.com
+                  {SUPPORT_EMAIL}
                 </a>
                 .
               </p>

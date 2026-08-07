@@ -10,7 +10,7 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./routes/AdminRoute";
 import UserLayout from "./layouts/UserLayout";
 import AdminLayout from "./layouts/AdminLayout";
-import NotFound from "./pages/common/NotFound";
+import RouteError from "./pages/common/RouteError";
 
 // Eager load critical auth pages
 import Signup from "./pages/auth/Signup";
@@ -29,6 +29,8 @@ const Profile = lazy(() => import("./pages/client/Profile"));
 const SupportPage = lazy(() => import("./pages/client/Support"));
 const Privacy = lazy(() => import("./pages/common/Privacy"));
 const Terms = lazy(() => import("./pages/common/Terms"));
+const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
 
 // Lazy load Admin components
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
@@ -45,7 +47,7 @@ const SubscribersHistory = lazy(() => import("./pages/admin/SubscribersHistory")
 const router = createBrowserRouter([
   {
     element: <RootWrapper />,
-    errorElement: <NotFound />,
+    errorElement: <RouteError />,
     children: [
       {
         element: <ProtectedRoute />,
@@ -106,6 +108,22 @@ const router = createBrowserRouter([
       },
       { path: "/privacy", element: <Privacy /> },
       { path: "/terms", element: <Terms /> },
+      {
+        path: "/forgot-password",
+        element: (
+          <PublicRoute>
+            <ForgotPassword />
+          </PublicRoute>
+        ),
+      },
+      {
+        path: "/reset-password",
+        element: (
+          <PublicRoute>
+            <ResetPassword />
+          </PublicRoute>
+        ),
+      },
     ],
   },
 ]);

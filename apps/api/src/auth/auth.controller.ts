@@ -15,6 +15,8 @@ import type { Request as ExpressRequest, Response } from 'express';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import type { AuthenticatedRequest } from '../common/types';
 import { REFRESH_COOKIE_NAME, refreshCookieOptions } from './refresh-cookie';
@@ -79,5 +81,22 @@ export class AuthController {
     ];
     if (token) await this.authService.logout(token);
     res.clearCookie(REFRESH_COOKIE_NAME, refreshCookieOptions());
+  }
+
+  @Throttle(AUTH_THROTTLE)
+  @HttpCode(HttpStatus.OK)
+  @Post('forgot-password')
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    await this.authService.forgotPassword(dto.email);
+    // Same response whether or not the email is registered.
+    return { message: 'If that email exists, a reset link has been sent.' };
+  }
+
+  @Throttle(AUTH_THROTTLE)
+  @HttpCode(HttpStatus.OK)
+  @Post('reset-password')
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    await this.authService.resetPassword(dto.token, dto.newPassword);
+    return { message: 'Password updated successfully.' };
   }
 }

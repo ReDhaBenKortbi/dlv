@@ -25,4 +25,7 @@ export const envValidationSchema = Joi.object({
   CHARGILY_FAILURE_URL: Joi.string().uri().required(),
 
   SENTRY_DSN: Joi.string().uri().optional().allow(''),
+
+  RESEND_API_KEY: Joi.string().optional().allow(''),
+  RESEND_FROM_EMAIL: Joi.string().optional().allow(''),
 }).unknown(true);

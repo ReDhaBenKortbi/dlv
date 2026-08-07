@@ -2,11 +2,13 @@ import { useState } from "react";
 import { loginUser } from "../../services/authService";
 import { useAuth } from "../../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
+import { PasswordVisibilityToggle } from "../../components/common/PasswordVisibilityToggle";
 import logo from "../../assets/logo/logo.svg";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { refreshUser, isAdmin } = useAuth();
@@ -98,19 +100,31 @@ const Login = () => {
 
               {/* PASSWORD */}
               <div className="form-control">
-                <label className="label">
+                <label className="label justify-between">
                   <span className="label-text text-xs uppercase tracking-wide opacity-70 font-semibold">
                     Password
                   </span>
+                  <Link
+                    to="/forgot-password"
+                    className="label-text-alt text-primary hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
                 </label>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  className="input input-bordered focus:input-primary w-full"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                <label className="input input-bordered focus-within:input-primary w-full">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    className="grow"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <PasswordVisibilityToggle
+                    visible={showPassword}
+                    onToggle={() => setShowPassword((v) => !v)}
+                  />
+                </label>
               </div>
 
               {/* BUTTON */}

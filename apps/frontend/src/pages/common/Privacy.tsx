@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { SUPPORT_EMAIL } from "../../constants/contact";
 
 const Section = ({
   title,
@@ -34,10 +35,10 @@ const Privacy = () => {
                 website and the account you create on it. For any privacy
                 question, correction, or deletion request, contact us at{" "}
                 <a
-                  href="mailto:ridhabenkortbi@gmail.com"
+                  href={`mailto:${SUPPORT_EMAIL}`}
                   className="link link-primary"
                 >
-                  ridhabenkortbi@gmail.com
+                  {SUPPORT_EMAIL}
                 </a>
                 .
               </p>
@@ -127,10 +128,10 @@ const Privacy = () => {
                 You can ask us to access, correct, or delete your personal
                 data at any time by emailing{" "}
                 <a
-                  href="mailto:ridhabenkortbi@gmail.com"
+                  href={`mailto:${SUPPORT_EMAIL}`}
                   className="link link-primary"
                 >
-                  ridhabenkortbi@gmail.com
+                  {SUPPORT_EMAIL}
                 </a>
                 . You can also update your name and password directly from
                 your Profile page.

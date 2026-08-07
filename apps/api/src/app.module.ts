@@ -2,11 +2,13 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { SentryModule } from '@sentry/nestjs/setup';
 import { SentryGlobalFilter } from '@sentry/nestjs/setup';
 import { envValidationSchema } from './env.validation';
 import { PrismaModule } from './prisma/prisma.module';
 import { HealthModule } from './health/health.module';
+import { MailModule } from './mail/mail.module';
 import { AuthModule } from './auth/auth.module';
 import { BooksModule } from './books/books.module';
 import { UsersModule } from './users/users.module';
@@ -27,8 +29,10 @@ import { ReviewsModule } from './reviews/reviews.module';
     // Global baseline rate limit: 100 requests / minute / IP.
     // Auth routes tighten this further with a per-route @Throttle override.
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 100 }]),
+    ScheduleModule.forRoot(),
     PrismaModule,
     HealthModule,
+    MailModule,
     AuthModule,
     BooksModule,
     UsersModule,

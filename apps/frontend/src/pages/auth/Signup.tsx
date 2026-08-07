@@ -2,12 +2,14 @@ import { useState } from "react";
 import { registerUser } from "../../services/authService";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
+import { PasswordVisibilityToggle } from "../../components/common/PasswordVisibilityToggle";
 import logo from "../../assets/logo/logo.svg";
 
 const Signup = () => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { refreshUser } = useAuth();
@@ -153,7 +155,7 @@ const Signup = () => {
                     </g>
                   </svg>
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     required
                     placeholder="Password"
                     minLength={8}
@@ -162,6 +164,10 @@ const Signup = () => {
                     disabled={isLoading}
                     pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
                     title="Must be more than 8 characters, including number, lowercase letter, uppercase letter"
+                  />
+                  <PasswordVisibilityToggle
+                    visible={showPassword}
+                    onToggle={() => setShowPassword((v) => !v)}
                   />
                 </label>
                 <p className="validator-hint hidden">

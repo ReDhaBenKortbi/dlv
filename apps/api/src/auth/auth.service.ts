@@ -8,8 +8,11 @@ import { JwtService } from '@nestjs/jwt';
 import { compare, hash } from 'bcryptjs';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
+import { MailService } from '../mail/mail.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+
+const PASSWORD_RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 @Injectable()
 export class AuthService {
@@ -17,6 +20,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwt: JwtService,
     private config: ConfigService,
+    private mail: MailService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -64,6 +68,55 @@ export class AuthService {
 
   async logout(token: string) {
     await this.prisma.refreshToken.deleteMany({ where: { token } });
+  }
+
+  // Always resolves successfully regardless of whether the email exists,
+  // so callers can't use this endpoint to enumerate registered accounts.
+  async forgotPassword(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) return;
+
+    // Invalidate any earlier unused reset link before issuing a new one.
+    await this.prisma.passwordResetToken.deleteMany({
+      where: { userId: user.id },
+    });
+
+    const token = randomBytes(32).toString('hex');
+    await this.prisma.passwordResetToken.create({
+      data: {
+        token,
+        userId: user.id,
+        expiresAt: new Date(Date.now() + PASSWORD_RESET_TOKEN_TTL_MS),
+      },
+    });
+
+    const frontendUrl = this.config.getOrThrow<string>('FRONTEND_URL');
+    const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
+    await this.mail.sendPasswordResetEmail(user.email, resetUrl);
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    const stored = await this.prisma.passwordResetToken.findUnique({
+      where: { token },
+    });
+    if (!stored || stored.expiresAt < new Date()) {
+      throw new BadRequestException('Invalid or expired reset link');
+    }
+
+    const passwordHash = await hash(newPassword, 12);
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: stored.userId },
+        data: { passwordHash },
+      }),
+      this.prisma.passwordResetToken.deleteMany({
+        where: { userId: stored.userId },
+      }),
+      // Force re-login on every device once the password changes.
+      this.prisma.refreshToken.deleteMany({
+        where: { userId: stored.userId },
+      }),
+    ]);
   }
 
   private async issueTokens(userId: string, email: string, role: string) {

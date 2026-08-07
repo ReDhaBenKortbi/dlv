@@ -5,6 +5,7 @@ import App from "./App";
 import "./index.css";
 import { AuthProvider } from "./context/AuthContext";
 import { SearchProvider } from "./context/SearchContext";
+import ErrorBoundary from "./components/common/ErrorBoundary";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,12 +19,14 @@ const queryClient = new QueryClient({
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <SearchProvider>
-          <App />
-        </SearchProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <SearchProvider>
+            <App />
+          </SearchProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   </React.StrictMode>,
 );

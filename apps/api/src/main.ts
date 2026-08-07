@@ -32,6 +32,11 @@ async function bootstrap() {
     credentials: true,
   });
 
+  // Let in-flight requests finish and close DB connections cleanly when
+  // the host sends a shutdown signal (e.g. on redeploy), instead of
+  // killing the process mid-request.
+  app.enableShutdownHooks();
+
   await app.listen(process.env.PORT ?? 3000);
 }
 void bootstrap();
