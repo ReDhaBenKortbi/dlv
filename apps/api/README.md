@@ -1,98 +1,100 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# DLV API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+NestJS 11 REST API for the DLV language-learning book platform. Handles
+accounts, the book catalog, tiered access, reviews, support tickets, and
+Chargily subscription payments, backed by PostgreSQL via Prisma.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+See the [root README](../../README.md) for how this fits into the whole
+project, and [`docs/API.md`](../../docs/API.md) / [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md)
+in the repo root for the full endpoint list and how auth/tiers/payments work.
 
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
+## Setup
 
 ```bash
-$ npm install
+npm install                 # from the repo root, installs all workspaces
+cp .env.example .env        # then fill in the values (see table below)
+npm run prisma:migrate      # creates the database tables
+npm run start:dev           # starts the API on http://localhost:3000
 ```
 
-## Compile and run the project
+Routes are served under the `/api` prefix, e.g. `http://localhost:3000/api/books`.
+
+## Commands
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm run start:dev        # watch mode
+npm run start:prod       # run the compiled build (dist/src/main.js)
+npm run build             # compile with nest build
+npm run lint              # ESLint --fix, must pass clean before committing
+npm run test               # unit tests (jest) — currently minimal coverage
+npm run test:e2e           # end-to-end tests
+npm run prisma:generate    # regenerate the Prisma client after a schema change
+npm run prisma:migrate     # create + apply a migration in dev
+npm run prisma:deploy      # apply existing migrations in production
+npm run prisma:studio      # open Prisma's DB browser GUI
 ```
 
-## Run tests
+## Environment variables
 
-```bash
-# unit tests
-$ npm run test
+| Variable | Required | What it's for |
+|---|---|---|
+| `DATABASE_URL` | yes | Pooled Postgres connection (Neon, port 6543) — used at runtime |
+| `DIRECT_URL` | yes | Direct Postgres connection (port 5432) — used for migrations |
+| `JWT_SECRET` | yes | Signs access tokens (32+ chars, random) |
+| `JWT_REFRESH_SECRET` | yes | Signs refresh tokens (32+ chars, random, different from above) |
+| `NODE_ENV` | yes | `production` on the deployed API — controls the refresh cookie's `Secure`/`SameSite=None` flags |
+| `PORT` | no | Defaults to `3000` |
+| `FRONTEND_URL` | yes | CORS origin + the reader endpoint's referer check |
+| `SENTRY_DSN` | no | Leave blank to disable error tracking |
+| `RESEND_API_KEY` | no | Leave blank to disable password-reset emails (they get logged to the console instead) |
+| `RESEND_FROM_EMAIL` | no | Must be on a domain verified with Resend — a Gmail/Outlook address won't work |
+| `CHARGILY_API_KEY` | yes* | Chargily API key (*required once payments are enabled) |
+| `CHARGILY_MODE` | yes* | `test` or `live` |
+| `CHARGILY_SECRET` | yes* | Used both as the Chargily API bearer token and to verify webhook signatures |
+| `CHARGILY_SUCCESS_URL` / `CHARGILY_FAILURE_URL` | yes* | Where Chargily redirects the user after checkout |
 
-# e2e tests
-$ npm run test:e2e
+Full list with comments: [`.env.example`](.env.example).
 
-# test coverage
-$ npm run test:cov
+## Project layout
+
+```
+src/
+├── auth/       Login, register, refresh, password reset, JWT strategy + guards
+├── books/      Catalog, tier gating, the in-app reader proxy
+├── users/      Admin user management, "who am I" endpoint
+├── payments/   Chargily checkout + webhook handling
+├── reviews/    Per-book ratings/comments
+├── tickets/    Support tickets (user-submitted, admin-managed)
+├── health/     Liveness check used by the hosting platform
+├── prisma/     Global PrismaService wrapping the Prisma client
+└── common/     Shared types (e.g. AuthenticatedRequest) and DTOs (e.g. pagination)
 ```
 
-## Deployment
+Each feature module follows the same shape: a `*.controller.ts` (routes), a
+`*.service.ts` (logic + DB access), and a `dto/` folder (request validation
+via `class-validator`).
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### Guards
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+- `JwtAuthGuard` — requires a valid access token.
+- `OptionalJwtGuard` — attaches the user if a token is present, otherwise
+  lets the request through anonymously (used where public + gated content
+  share an endpoint, like the book list).
+- `AdminGuard` — requires `req.user.role === 'ADMIN'`.
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+### Database
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Schema lives in [`prisma/schema.prisma`](prisma/schema.prisma). Key models:
+`User`, `Book`, `Review`, `PaymentRequest`, `Ticket`, `RefreshToken`,
+`PasswordResetToken`. After changing the schema, run `npm run prisma:migrate`
+to create a migration and regenerate the client.
 
-## Resources
+## Known gaps
 
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- No meaningful test suite yet. If you're adding tests, prioritize the
+  payment webhook, the `canAccess` tier check in `books.service.ts`, and the
+  auth flows — they're the highest-risk, least-covered paths.
+- Refresh tokens and password-reset tokens aren't garbage-collected; expired
+  rows just accumulate in the DB. A cleanup job would help.
+- Make sure the production host actually sets `NODE_ENV=production` — the
+  refresh cookie silently stops working cross-origin otherwise.
