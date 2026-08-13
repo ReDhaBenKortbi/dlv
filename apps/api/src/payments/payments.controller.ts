@@ -49,6 +49,7 @@ export class PaymentsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Post('chargily/cancel-pending')
   cancelPending(@Req() req: AuthenticatedRequest) {
     return this.chargilyService.cancelPendingSubscription(req.user.id);
