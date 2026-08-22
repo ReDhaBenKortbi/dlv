@@ -1,0 +1,189 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum SubscriptionStatus {
+  NONE
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PaymentMethod {
+  CHARGILY
+}
+
+enum TicketStatus {
+  NEW
+  READ
+  RESOLVED
+}
+
+enum TargetLanguage {
+  AR
+  EN
+  FR
+}
+
+enum FocusSkill {
+  GRAMMAR
+  VOCABULARY
+  READING
+  LISTENING
+  SPEAKING
+  ALL_IN_ONE
+}
+
+enum ProficiencyLevel {
+  A1
+  A2
+  B1
+  B2
+  C1
+  C2
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+  GOLD
+}
+
+enum BookTier {
+  FREE
+  PRO
+  GOLD
+}
+
+// ---------------------------------------------------------------------------
+// Models
+// ---------------------------------------------------------------------------
+
+model User {
+  id                  String             @id @default(cuid())
+  fullName            String
+  email               String             @unique
+  passwordHash        String
+  role                Role               @default(USER)
+  isSubscribed        Boolean            @default(false)
+  subscriptionStatus  SubscriptionStatus @default(NONE)
+  subscriptionPlan    SubscriptionPlan   @default(FREE)
+  subscriptionEndDate DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  reviews             Review[]
+  paymentRequests     PaymentRequest[]
+  tickets             Ticket[]
+  refreshTokens       RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
+}
+
+model Book {
+  id               String           @id @default(cuid())
+  title            String
+  author           String
+  description      String
+  coverURL         String
+  indexURL         String
+  bookTier         BookTier         @default(FREE)
+  // Links tier editions of the same title together (e.g. Free/Pro/Gold
+  // editions of one course). Books with the same groupKey render as one
+  // library card with an edition switcher; null means a standalone title.
+  groupKey         String?
+  targetLanguage   TargetLanguage?
+  focusSkill       FocusSkill?
+  proficiencyLevel ProficiencyLevel?
+  averageRating    Float            @default(0)
+  totalReviews     Int              @default(0)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  reviews Review[]
+
+  @@unique([title, author])
+  @@index([groupKey])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  body      String?
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bookId String
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId])
+}
+
+model PaymentRequest {
+  id                 String           @id @default(cuid())
+  fullName           String
+  amount             String
+  paymentMethod      PaymentMethod    @default(CHARGILY)
+  plan               SubscriptionPlan @default(PRO)
+  chargilyCheckoutId String?          @unique
+  status             PaymentStatus    @default(PENDING)
+  // True when this request upgrades an already-active lower paid tier (e.g. PRO -> GOLD):
+  // amount is the price difference and the webhook must not reset subscriptionEndDate.
+  isUpgrade          Boolean          @default(false)
+  createdAt          DateTime         @default(now())
+  processedAt        DateTime?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Ticket {
+  id        String       @id @default(cuid())
+  subject   String
+  message   String
+  status    TicketStatus @default(NEW)
+  createdAt DateTime     @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
