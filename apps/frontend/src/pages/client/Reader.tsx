@@ -38,17 +38,19 @@ const Reader = () => {
 
   if (isLoading) return <LoadingScreen />;
   if (isError || !book) return <ErrorView onBack={() => navigate("/")} />;
-  const canAccess = book.bookTier === "FREE"
-    || isAdmin
-    || (book.bookTier === "PRO" && (subscriptionPlan === "PRO" || subscriptionPlan === "GOLD"))
-    || (book.bookTier === "GOLD" && subscriptionPlan === "GOLD");
+  const canAccess =
+    book.bookTier === "FREE" ||
+    isAdmin ||
+    (book.bookTier === "PRO" &&
+      (subscriptionPlan === "PRO" || subscriptionPlan === "GOLD")) ||
+    (book.bookTier === "GOLD" && subscriptionPlan === "GOLD");
 
   if (!canAccess) return <Navigate to="/subscription" replace />;
 
   return (
     <div className="h-screen w-full bg-base-100 flex flex-col overflow-hidden">
       {/* Top Bar */}
-      <header className="px-4 py-3 bg-base-200/70 backdrop-blur-md flex justify-between items-center border-b border-base-300 z-20">
+      <header className="px-4 bg-base-200/70 backdrop-blur-md flex justify-between items-center border-b border-base-300 z-20">
         <button
           onClick={() => navigate("/")}
           className="btn btn-sm btn-ghost gap-2 normal-case"
