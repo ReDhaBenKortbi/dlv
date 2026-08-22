@@ -158,7 +158,7 @@ const SupportPage = () => {
                 ) : (
                   <>
                     <LuSend size={18} />
-                    <span>LuSend Ticket</span>
+                    <span>Send Ticket</span>
                   </>
                 )}
               </button>

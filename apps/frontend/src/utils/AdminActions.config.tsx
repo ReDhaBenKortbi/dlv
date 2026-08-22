@@ -4,7 +4,7 @@ export const ACTION_CARDS_CONFIG = [
   {
     title: "User Management",
     description: "View all users and manually edit their status.",
-    linkText: "Manage LuUsers",
+    linkText: "Manage Users",
     to: "/admin/users",
     icon: <LuUsers className="h-10 w-10" />,
     colorClass:

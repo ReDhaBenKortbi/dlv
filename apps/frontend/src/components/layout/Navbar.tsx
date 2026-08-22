@@ -45,12 +45,12 @@ const Navbar = () => {
         </Link>
         {/* Right Controls */}
         <div className="flex items-center gap-2 md:gap-3">
-          {/* LuSearch */}
+          {/* Search */}
           <div className="hidden sm:flex items-center gap-2 bg-base-200/60 px-3 h-9 rounded-xl border border-base-200">
             <LuSearch className="h-4 w-4 opacity-60" />
             <input
               type="text"
-              placeholder="LuSearch for a book..."
+              placeholder="Search for a book..."
               className="bg-transparent outline-none text-sm w-32 md:w-40"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}

@@ -107,7 +107,7 @@ const Library = () => {
                 </p>
               </div>
 
-              {/* Mobile LuFilter Button (Hidden on Desktop) */}
+              {/* Mobile Filter Button (Hidden on Desktop) */}
               <button
                 onClick={() => setShowMobileFilters(!showMobileFilters)}
                 className="btn btn-primary btn-sm lg:hidden flex gap-2"

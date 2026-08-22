@@ -50,7 +50,7 @@ const ActionCard: React.FC<ActionCardProps> = ({
               {linkText}
             </span>
 
-            {/* Swapped SVG for Lucide LuArrowRight */}
+            {/* Swapped SVG for Lucide ArrowRight */}
             <LuArrowRight
               size={16}
               className="transform group-hover:translate-x-1 transition-transform text-gray-700 dark:text-gray-200"

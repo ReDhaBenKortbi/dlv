@@ -18,7 +18,7 @@ const BASE_STATS_CONFIG: {
 }[] = [
   {
     key: "users",
-    title: "Total LuUsers",
+    title: "Total Users",
     desc: "Registered accounts",
     icon: LuUsers,
     iconBgClass: "bg-indigo-50 dark:bg-indigo-900",

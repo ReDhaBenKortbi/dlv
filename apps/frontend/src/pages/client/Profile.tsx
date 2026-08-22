@@ -1,7 +1,6 @@
 import { useMemo } from "react"; // Added for optimization
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { LuInfo } from "react-icons/lu";
 
 import { toast } from "sonner";
 import { TierBadge } from "../../components/common/TierBadge";
@@ -81,12 +80,14 @@ const Profile = () => {
             <div className="flex flex-col sm:flex-row sm:items-center gap-6">
               {/* Avatar */}
               <div className="avatar">
-                <div className={`w-20 rounded-full text-primary-content flex items-center justify-center text-2xl font-bold shadow-lg ring-offset-2 ${subscriptionPlan === "GOLD" ? "bg-gradient-to-br from-amber-400 to-amber-600 ring-4 ring-amber-400" : subscriptionPlan === "PRO" ? "bg-gradient-to-br from-secondary/90 to-secondary/60 ring-4 ring-secondary/60" : "bg-gradient-to-br from-primary/90 to-secondary/80 ring ring-base-100"}`}>
+                <div
+                  className={`w-20 rounded-full text-primary-content flex items-center justify-center text-2xl font-bold shadow-lg ring-offset-2 ${subscriptionPlan === "GOLD" ? "bg-gradient-to-br from-amber-400 to-amber-600 ring-4 ring-amber-400" : subscriptionPlan === "PRO" ? "bg-gradient-to-br from-secondary/90 to-secondary/60 ring-4 ring-secondary/60" : "bg-gradient-to-br from-primary/90 to-secondary/80 ring ring-base-100"}`}
+                >
                   {user?.email?.charAt(0).toUpperCase()}
                 </div>
               </div>
 
-              {/* User LuInfo */}
+              {/* User Info */}
               <div className="flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-2xl font-extrabold">
@@ -126,7 +127,9 @@ const Profile = () => {
                     <p className="text-sm mt-1">
                       Valid until{" "}
                       <span className="font-semibold">
-                        {subscriptionEndDate ? new Date(subscriptionEndDate).toLocaleDateString() : ""}
+                        {subscriptionEndDate
+                          ? new Date(subscriptionEndDate).toLocaleDateString()
+                          : ""}
                       </span>
                     </p>
                   </div>
@@ -172,28 +175,6 @@ const Profile = () => {
               >
                 Logout
               </button>
-            </div>
-          </div>
-        </div>
-
-        {/* SUPPORT SECTION */}
-        <div className="card bg-base-100 shadow-md border border-base-300 rounded-2xl">
-          <div className="card-body p-6">
-            <div className="mt-6 p-4 bg-base-100 dark:bg-base-200 rounded-2xl flex items-center gap-4 border border-base-300 dark:border-base-400 shadow-sm transition-colors duration-300">
-              {/* Icon Box */}
-              <div className="bg-primary/10 dark:bg-primary/20 p-3 rounded-xl text-primary flex-shrink-0">
-                <LuInfo size={24} />
-              </div>
-
-              {/* Text Content */}
-              <div>
-                <h4 className="text-sm font-bold text-gray-800 dark:text-gray-100">
-                  Need Help?
-                </h4>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Contact us at support@dz-books.com
-                </p>
-              </div>
             </div>
           </div>
         </div>

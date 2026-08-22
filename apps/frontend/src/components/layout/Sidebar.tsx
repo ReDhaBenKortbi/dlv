@@ -39,7 +39,7 @@ const Sidebar = () => {
       icon: <LuCreditCard className="h-4 w-4" />,
     },
     {
-      name: "LuUsers",
+      name: "Users",
       path: "/admin/users",
       icon: <LuUsers className="h-4 w-4" />,
     },

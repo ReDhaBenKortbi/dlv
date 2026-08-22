@@ -58,7 +58,7 @@ const ReviewItem = ({ review, onDelete, isDeleting }: ItemProps) => {
         )}
       </div>
 
-      {/* LuStar Rating Section */}
+      {/* Star Rating Section */}
       <div className="flex gap-0.5 mt-3">
         {[1, 2, 3, 4, 5].map((s) => (
           <LuStar
