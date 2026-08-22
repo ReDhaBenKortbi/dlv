@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react"; // Import Lucide icon
+import { LuArrowRight } from "react-icons/lu";
+ // Import Lucide icon
 
 interface ActionCardProps {
   title: string;
@@ -49,8 +50,8 @@ const ActionCard: React.FC<ActionCardProps> = ({
               {linkText}
             </span>
 
-            {/* Swapped SVG for Lucide ArrowRight */}
-            <ArrowRight
+            {/* Swapped SVG for Lucide LuArrowRight */}
+            <LuArrowRight
               size={16}
               className="transform group-hover:translate-x-1 transition-transform text-gray-700 dark:text-gray-200"
             />

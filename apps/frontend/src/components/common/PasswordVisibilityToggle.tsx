@@ -1,4 +1,4 @@
-import { Eye, EyeOff } from "lucide-react";
+import { LuEye, LuEyeOff } from "react-icons/lu";
 
 interface Props {
   visible: boolean;
@@ -13,6 +13,6 @@ export const PasswordVisibilityToggle = ({ visible, onToggle }: Props) => (
     className="opacity-50 hover:opacity-80"
     aria-label={visible ? "Hide password" : "Show password"}
   >
-    {visible ? <EyeOff className="h-[1em]" /> : <Eye className="h-[1em]" />}
+    {visible ? <LuEyeOff className="h-[1em]" /> : <LuEye className="h-[1em]" />}
   </button>
 );

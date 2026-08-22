@@ -1,4 +1,5 @@
-import { Star, Trash2, User } from "lucide-react";
+import { LuStar, LuTrash2, LuUser } from "react-icons/lu";
+
 import type { Review } from "../../types/Review";
 import { useAuth } from "../../context/AuthContext";
 
@@ -51,16 +52,16 @@ const ReviewItem = ({ review, onDelete, isDeleting }: ItemProps) => {
             {isDeleting ? (
               <span className="loading loading-spinner loading-xs"></span>
             ) : (
-              <Trash2 size={16} />
+              <LuTrash2 size={16} />
             )}
           </button>
         )}
       </div>
 
-      {/* Star Rating Section */}
+      {/* LuStar Rating Section */}
       <div className="flex gap-0.5 mt-3">
         {[1, 2, 3, 4, 5].map((s) => (
-          <Star
+          <LuStar
             key={s}
             size={14}
             className={`${
@@ -81,7 +82,7 @@ const ReviewItem = ({ review, onDelete, isDeleting }: ItemProps) => {
 
       {/* Subtle Mobile Tag */}
       <div className="absolute bottom-3 right-5 opacity-0 group-hover:opacity-20 transition-opacity hidden md:block">
-        <User size={12} />
+        <LuUser size={12} />
       </div>
     </div>
   );

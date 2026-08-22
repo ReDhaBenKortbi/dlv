@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { LuArrowLeft } from "react-icons/lu";
 
 interface BackButtonProps {
   label?: string;
@@ -21,7 +21,7 @@ export const BackButton = ({
       }
       className={`btn btn-ghost btn-sm gap-2 group hover:bg-transparent px-0 ${className}`}
     >
-      <ArrowLeft
+      <LuArrowLeft
         size={18}
         className="transition-transform group-hover:-translate-x-1"
       />

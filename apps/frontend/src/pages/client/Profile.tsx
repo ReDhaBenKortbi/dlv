@@ -1,7 +1,8 @@
 import { useMemo } from "react"; // Added for optimization
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Info } from "lucide-react";
+import { LuInfo } from "react-icons/lu";
+
 import { toast } from "sonner";
 import { TierBadge } from "../../components/common/TierBadge";
 
@@ -85,7 +86,7 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* User Info */}
+              {/* User LuInfo */}
               <div className="flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h2 className="text-2xl font-extrabold">
@@ -181,7 +182,7 @@ const Profile = () => {
             <div className="mt-6 p-4 bg-base-100 dark:bg-base-200 rounded-2xl flex items-center gap-4 border border-base-300 dark:border-base-400 shadow-sm transition-colors duration-300">
               {/* Icon Box */}
               <div className="bg-primary/10 dark:bg-primary/20 p-3 rounded-xl text-primary flex-shrink-0">
-                <Info size={24} strokeWidth={2} />
+                <LuInfo size={24} />
               </div>
 
               {/* Text Content */}

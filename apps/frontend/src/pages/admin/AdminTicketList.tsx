@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { CheckCircle, Clock } from "lucide-react";
+import { LuCircleCheckBig, LuClock } from "react-icons/lu";
+
 import LoadingScreen from "../../components/common/LoadingScreen";
 import Pagination from "../../components/common/Pagination";
 import { getTotalPages } from "../../lib/pagination";
@@ -46,7 +47,7 @@ const AdminTicketList = () => {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   {ticket.status !== "resolved" && (
-                    <Clock size={14} className="text-warning" />
+                    <LuClock size={14} className="text-warning" />
                   )}
                   <h3 className="font-bold">{ticket.subject}</h3>
                 </div>
@@ -60,7 +61,7 @@ const AdminTicketList = () => {
                     className="btn btn-square btn-sm btn-success outline-none"
                     title="Resolve"
                   >
-                    <CheckCircle size={18} />
+                    <LuCircleCheckBig size={18} />
                   </button>
                 )}
               </div>

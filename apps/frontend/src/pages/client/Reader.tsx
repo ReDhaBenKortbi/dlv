@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
-import { ArrowLeft, Lock, Loader2, ShieldCheck } from "lucide-react";
+import { LuArrowLeft, LuLock, LuLoaderCircle, LuShieldCheck } from "react-icons/lu";
+
 import { useAuth } from "../../context/AuthContext";
 import { useBooks } from "../../hooks/books/useBooks";
 import LoadingScreen from "../../components/common/LoadingScreen";
@@ -55,7 +56,7 @@ const Reader = () => {
           onClick={() => navigate("/")}
           className="btn btn-sm btn-ghost gap-2 normal-case"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <LuArrowLeft className="w-4 h-4" />
           <span className="hidden sm:inline">Library</span>
         </button>
 
@@ -70,13 +71,13 @@ const Reader = () => {
 
         <div className="flex items-center gap-2">
           <div className="hidden sm:flex badge badge-outline gap-1.5 py-3 opacity-70">
-            <ShieldCheck className="w-3 h-3 text-success" />
+            <LuShieldCheck className="w-3 h-3 text-success" />
             <span className="text-[10px] uppercase font-bold">
               Secure Reader
             </span>
           </div>
           <div className="sm:hidden">
-            <Lock className="w-4 h-4 opacity-50" />
+            <LuLock className="w-4 h-4 opacity-50" />
           </div>
         </div>
       </header>
@@ -86,7 +87,7 @@ const Reader = () => {
         {/* Spinner: Visible until iframe finishes loading */}
         {(isIframeLoading || !proxyUrl) && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-base-200">
-            <Loader2 className="w-10 h-10 text-primary animate-spin" />
+            <LuLoaderCircle className="w-10 h-10 text-primary animate-spin" />
             <p className="mt-4 text-xs font-medium opacity-50 animate-pulse uppercase tracking-tighter">
               Verifying Permissions...
             </p>
@@ -113,7 +114,7 @@ const Reader = () => {
 const ErrorView = ({ onBack }: { onBack: () => void }) => (
   <div className="flex h-screen items-center justify-center bg-black text-white p-4">
     <div className="text-center">
-      <Lock className="w-12 h-12 mx-auto mb-4 opacity-20" />
+      <LuLock className="w-12 h-12 mx-auto mb-4 opacity-20" />
       <p className="mb-4 opacity-70">Unauthorized access or session expired.</p>
       <button onClick={onBack} className="btn btn-primary btn-sm px-8">
         Return Home

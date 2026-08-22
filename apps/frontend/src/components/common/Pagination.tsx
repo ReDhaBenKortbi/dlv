@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
 
 interface PaginationProps {
   page: number;
@@ -59,7 +59,7 @@ export const Pagination = ({
           onClick={() => onPageChange(page - 1)}
           aria-label="Previous page"
         >
-          <ChevronLeft size={16} />
+          <LuChevronLeft size={16} />
         </button>
 
         {pageList.map((p, i) =>
@@ -92,7 +92,7 @@ export const Pagination = ({
           onClick={() => onPageChange(page + 1)}
           aria-label="Next page"
         >
-          <ChevronRight size={16} />
+          <LuChevronRight size={16} />
         </button>
       </div>
     </div>

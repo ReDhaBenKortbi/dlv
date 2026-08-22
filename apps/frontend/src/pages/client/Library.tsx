@@ -6,7 +6,8 @@ import { BookCard } from "../../components/library/BookCard";
 import LoadingScreen from "../../components/common/LoadingScreen";
 import Pagination from "../../components/common/Pagination";
 import { getTotalPages } from "../../lib/pagination";
-import { Filter } from "lucide-react";
+import { LuFilter } from "react-icons/lu";
+
 import { groupBooksIntoSeries } from "../../lib/bookSeries";
 
 const PAGE_SIZE = 24;
@@ -106,12 +107,12 @@ const Library = () => {
                 </p>
               </div>
 
-              {/* Mobile Filter Button (Hidden on Desktop) */}
+              {/* Mobile LuFilter Button (Hidden on Desktop) */}
               <button
                 onClick={() => setShowMobileFilters(!showMobileFilters)}
                 className="btn btn-primary btn-sm lg:hidden flex gap-2"
               >
-                <Filter size={16} />
+                <LuFilter size={16} />
                 {showMobileFilters ? "Hide Filters" : "Filters"}
               </button>
             </div>

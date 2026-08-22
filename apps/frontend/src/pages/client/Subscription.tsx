@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { CheckCircle, Zap, Star, Lock } from "lucide-react";
+import { LuCircleCheckBig, LuZap, LuStar, LuLock } from "react-icons/lu";
+
 import { useAuth } from "../../context/AuthContext";
 import { useChargilyCheckout } from "../../hooks/payments/useChargilyCheckout";
 import { usePlanPricing } from "../../hooks/payments/usePlanPricing";
@@ -21,9 +22,9 @@ const PLAN_FEATURES: Record<SubscriptionPlan, string[]> = {
 };
 
 const PLAN_ICONS: Record<SubscriptionPlan, React.ReactNode> = {
-  FREE: <Lock className="w-5 h-5" />,
-  PRO: <Zap className="w-5 h-5" />,
-  GOLD: <Star className="w-5 h-5" />,
+  FREE: <LuLock className="w-5 h-5" />,
+  PRO: <LuZap className="w-5 h-5" />,
+  GOLD: <LuStar className="w-5 h-5" />,
 };
 
 const PLAN_STYLES: Record<SubscriptionPlan, { card: string; badge: string; btn: string }> = {
@@ -171,7 +172,7 @@ const Subscription = () => {
                       {PLAN_ICONS[key]}
                       {plan.label}
                     </div>
-                    {isSelected && <CheckCircle className="w-5 h-5 text-primary" />}
+                    {isSelected && <LuCircleCheckBig className="w-5 h-5 text-primary" />}
                   </div>
 
                   <div>
@@ -192,7 +193,7 @@ const Subscription = () => {
                   <ul className="space-y-2">
                     {PLAN_FEATURES[key].map((feature) => (
                       <li key={feature} className="flex items-start gap-2 text-sm">
-                        <CheckCircle className="w-4 h-4 text-success mt-0.5 shrink-0" />
+                        <LuCircleCheckBig className="w-4 h-4 text-success mt-0.5 shrink-0" />
                         {feature}
                       </li>
                     ))}

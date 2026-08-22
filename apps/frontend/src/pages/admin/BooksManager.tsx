@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Languages, GraduationCap, Target } from "lucide-react";
+import { LuLanguages, LuGraduationCap, LuTarget } from "react-icons/lu";
+
 import { FOCUS_SKILLS } from "../../constants/bookOptions";
 
 import { useBookMutations } from "../../hooks/books/useBookMutations";
@@ -108,13 +109,13 @@ const BooksManager = () => {
                     <td>
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-1 text-[10px] font-bold text-primary uppercase">
-                          <Languages size={12} /> {book.targetLanguage || "N/A"}
+                          <LuLanguages size={12} /> {book.targetLanguage || "N/A"}
                         </div>
                         {skillInfo && (
                           <div
                             className={`badge ${skillInfo.color} badge-xs text-[9px] border-none font-bold gap-1`}
                           >
-                            <Target size={10} />
+                            <LuTarget size={10} />
                             {skillInfo.label}
                           </div>
                         )}
@@ -124,7 +125,7 @@ const BooksManager = () => {
                     <td className="text-center">
                       {book.proficiencyLevel ? (
                         <div className="badge badge-ghost border-base-300 gap-1 font-bold">
-                          <GraduationCap size={12} className="opacity-60" />
+                          <LuGraduationCap size={12} className="opacity-60" />
                           {book.proficiencyLevel}
                         </div>
                       ) : (

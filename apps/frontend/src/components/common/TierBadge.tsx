@@ -1,4 +1,5 @@
-import { Crown, Shield } from "lucide-react";
+import { LuCrown, LuShield } from "react-icons/lu";
+
 import type { SubscriptionPlan } from "../../constants/subscriptionPlans";
 
 interface TierBadgeProps {
@@ -15,7 +16,7 @@ export const TierBadge = ({ plan, size = "md" }: TierBadgeProps) => {
   if (plan === "GOLD") {
     return (
       <span className={`inline-flex items-center gap-1 ${textClass} rounded-full bg-amber-500/20 text-amber-500 border border-amber-500/30 font-bold uppercase`}>
-        <Crown size={iconSize} />
+        <LuCrown size={iconSize} />
         Gold
       </span>
     );
@@ -23,7 +24,7 @@ export const TierBadge = ({ plan, size = "md" }: TierBadgeProps) => {
 
   return (
     <span className={`inline-flex items-center gap-1 ${textClass} rounded-full bg-secondary/20 text-secondary border border-secondary/30 font-bold uppercase`}>
-      <Shield size={iconSize} />
+      <LuShield size={iconSize} />
       Pro
     </span>
   );

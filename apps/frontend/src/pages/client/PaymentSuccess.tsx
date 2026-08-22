@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { CheckCircle, Loader } from "lucide-react";
+import { LuCircleCheckBig, LuLoader } from "react-icons/lu";
+
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
@@ -34,13 +35,13 @@ const PaymentSuccess = () => {
       <div className="card w-full max-w-md bg-base-100 shadow-2xl text-center p-10 space-y-4">
         {isApproved ? (
           <>
-            <CheckCircle className="w-16 h-16 text-success mx-auto" />
+            <LuCircleCheckBig className="w-16 h-16 text-success mx-auto" />
             <h2 className="text-2xl font-bold">Subscription Activated!</h2>
             <p className="text-base-content/70">Your plan is now active. Enjoy your books.</p>
           </>
         ) : timedOut ? (
           <>
-            <CheckCircle className="w-16 h-16 text-warning mx-auto" />
+            <LuCircleCheckBig className="w-16 h-16 text-warning mx-auto" />
             <h2 className="text-2xl font-bold">Payment Received</h2>
             <p className="text-base-content/70">
               Your payment was processed. Activation may take a few moments — check back shortly.
@@ -48,7 +49,7 @@ const PaymentSuccess = () => {
           </>
         ) : (
           <>
-            <Loader className="w-16 h-16 text-primary mx-auto animate-spin" />
+            <LuLoader className="w-16 h-16 text-primary mx-auto animate-spin" />
             <h2 className="text-2xl font-bold">Activating Subscription…</h2>
             <p className="text-base-content/70">Please wait while we confirm your payment.</p>
           </>

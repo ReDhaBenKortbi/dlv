@@ -1,13 +1,5 @@
 // lucid icons
-import {
-  LayoutDashboard,
-  PlusCircle,
-  CreditCard,
-  Users,
-  BookOpen,
-  LogOut,
-  HelpCircle,
-} from "lucide-react";
+import { LuLayoutDashboard, LuCirclePlus, LuCreditCard, LuUsers, LuBookOpen, LuLogOut, LuCircleHelp } from "react-icons/lu";
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -34,32 +26,32 @@ const Sidebar = () => {
     {
       name: "Dashboard",
       path: "/admin",
-      icon: <LayoutDashboard className="h-4 w-4" />,
+      icon: <LuLayoutDashboard className="h-4 w-4" />,
     },
     {
       name: "Add Book",
       path: "/admin/add-book",
-      icon: <PlusCircle className="h-4 w-4" />,
+      icon: <LuCirclePlus className="h-4 w-4" />,
     },
     {
       name: "Subscribers",
       path: "/admin/subscribers-history",
-      icon: <CreditCard className="h-4 w-4" />,
+      icon: <LuCreditCard className="h-4 w-4" />,
     },
     {
-      name: "Users",
+      name: "LuUsers",
       path: "/admin/users",
-      icon: <Users className="h-4 w-4" />,
+      icon: <LuUsers className="h-4 w-4" />,
     },
     {
       name: "Manage Books",
       path: "/admin/manage-books",
-      icon: <BookOpen className="h-4 w-4" />,
+      icon: <LuBookOpen className="h-4 w-4" />,
     },
     {
       name: "Support Tickets",
       path: "/admin/support-tickets",
-      icon: <HelpCircle className="h-4 w-4" />,
+      icon: <LuCircleHelp className="h-4 w-4" />,
     },
   ];
 
@@ -132,7 +124,7 @@ const Sidebar = () => {
             onClick={handleLogout}
             className="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-sm text-error hover:bg-error/10 transition-colors"
           >
-            <LogOut className="h-4 w-4" />
+            <LuLogOut className="h-4 w-4" />
             Logout
           </button>
         </div>

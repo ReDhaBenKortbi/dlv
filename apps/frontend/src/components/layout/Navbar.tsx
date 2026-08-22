@@ -1,5 +1,6 @@
 // lucid icons
-import { Search, User, LogOut, Crown } from "lucide-react";
+import { LuSearch, LuUser, LuLogOut, LuCrown } from "react-icons/lu";
+
 import logo from "../../assets/logo/logo.svg";
 // search context
 import { useSearch } from "../../context/SearchContext";
@@ -44,12 +45,12 @@ const Navbar = () => {
         </Link>
         {/* Right Controls */}
         <div className="flex items-center gap-2 md:gap-3">
-          {/* Search */}
+          {/* LuSearch */}
           <div className="hidden sm:flex items-center gap-2 bg-base-200/60 px-3 h-9 rounded-xl border border-base-200">
-            <Search className="h-4 w-4 opacity-60" />
+            <LuSearch className="h-4 w-4 opacity-60" />
             <input
               type="text"
-              placeholder="Search for a book..."
+              placeholder="LuSearch for a book..."
               className="bg-transparent outline-none text-sm w-32 md:w-40"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -62,7 +63,7 @@ const Navbar = () => {
               to="/subscription"
               className="hidden md:flex btn btn-warning btn-sm rounded-full gap-2 normal-case"
             >
-              <Crown className="h-4 w-4" />
+              <LuCrown className="h-4 w-4" />
               Get Premium
             </Link>
           )}
@@ -75,7 +76,7 @@ const Navbar = () => {
                   {user.email?.charAt(0).toUpperCase()}
                   {subscriptionPlan !== "FREE" && (
                     <span className={`absolute -bottom-1 -right-1 rounded-full p-0.5 ${subscriptionPlan === "GOLD" ? "bg-amber-500" : "bg-secondary"}`}>
-                      {subscriptionPlan === "GOLD" ? <Crown size={8} className="text-white" /> : <Crown size={8} className="text-white" />}
+                      {subscriptionPlan === "GOLD" ? <LuCrown size={8} className="text-white" /> : <LuCrown size={8} className="text-white" />}
                     </span>
                   )}
                 </div>
@@ -98,7 +99,7 @@ const Navbar = () => {
 
                 <li>
                   <Link to="/profile" className="flex items-center gap-2">
-                    <User className="h-4 w-4 opacity-70" />
+                    <LuUser className="h-4 w-4 opacity-70" />
                     My Profile
                   </Link>
                 </li>
@@ -109,7 +110,7 @@ const Navbar = () => {
                       to="/subscription"
                       className="flex items-center gap-2 text-warning"
                     >
-                      <Crown className="h-4 w-4" />
+                      <LuCrown className="h-4 w-4" />
                       Go Premium
                     </Link>
                   </li>
@@ -120,7 +121,7 @@ const Navbar = () => {
                     onClick={handleLogout}
                     className="flex items-center gap-2 text-error"
                   >
-                    <LogOut className="h-4 w-4" />
+                    <LuLogOut className="h-4 w-4" />
                     Logout
                   </button>
                 </li>

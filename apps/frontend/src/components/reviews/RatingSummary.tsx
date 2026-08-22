@@ -1,4 +1,4 @@
-import { Star } from "lucide-react";
+import { LuStar } from "react-icons/lu";
 
 interface Props {
   averageRating: number;
@@ -15,7 +15,7 @@ const RatingSummary = ({ averageRating, totalReviews }: Props) => {
     <div className="flex items-center gap-2 mt-1">
       <div className="flex gap-0.5">
         {[1, 2, 3, 4, 5].map((star) => (
-          <Star
+          <LuStar
             key={star}
             size={16}
             className={`${

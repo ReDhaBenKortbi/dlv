@@ -1,5 +1,5 @@
-import { Book, Search } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+import type { IconType } from "react-icons";
+import { LuBook, LuSearch } from "react-icons/lu";
 
 interface EmptyStateProps {
   title: string;
@@ -16,9 +16,9 @@ interface EmptyStateProps {
  * ICON_MAP: A centralized dictionary for our icons.
  * This keeps the JSX clean and the logic separated.
  */
-const ICON_MAP: Record<string, LucideIcon> = {
-  books: Book,
-  search: Search,
+const ICON_MAP: Record<string, IconType> = {
+  books: LuBook,
+  search: LuSearch,
 };
 
 export const EmptyState = ({
@@ -29,16 +29,13 @@ export const EmptyState = ({
   icon = "books",
 }: EmptyStateProps) => {
   // Grab the component from our map based on the prop
-  const IconComponent = ICON_MAP[icon] || Book;
+  const IconComponent = ICON_MAP[icon] || LuBook;
 
   return (
     <div className="flex flex-col items-center justify-center p-10 text-center animate-fadeIn">
       {/* Icon Circle */}
       <div className="bg-gray-100 dark:bg-base-300 p-6 rounded-full mb-6 flex items-center justify-center">
-        <IconComponent
-          className="h-12 w-12 text-gray-400 dark:text-gray-500"
-          strokeWidth={1.5}
-        />
+        <IconComponent className="h-12 w-12 text-gray-400 dark:text-gray-500" />
       </div>
 
       {/* Textual Content */}

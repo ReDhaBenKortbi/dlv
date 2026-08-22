@@ -1,4 +1,5 @@
-import { Languages, GraduationCap, Target, CheckCircle } from "lucide-react";
+import { LuLanguages, LuGraduationCap, LuTarget, LuCircleCheckBig } from "react-icons/lu";
+
 import { FOCUS_SKILLS, TARGET_LANGUAGES } from "../../constants/bookOptions";
 
 import { useParams, useNavigate } from "react-router-dom";
@@ -93,7 +94,7 @@ const BookDetails = () => {
               {/* Language Badge */}
               {langInfo && (
                 <div className="badge badge-outline gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider">
-                  <Languages size={14} className="text-primary" />
+                  <LuLanguages size={14} className="text-primary" />
                   {langInfo.label}
                 </div>
               )}
@@ -101,7 +102,7 @@ const BookDetails = () => {
               {/* Level Badge */}
               {book.proficiencyLevel && (
                 <div className="badge badge-neutral gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider">
-                  <GraduationCap size={14} />
+                  <LuGraduationCap size={14} />
                   Level {book.proficiencyLevel}
                 </div>
               )}
@@ -111,7 +112,7 @@ const BookDetails = () => {
                 <div
                   className={`badge ${skillInfo.color} border-none gap-2 py-3 px-4 text-xs font-bold uppercase tracking-wider`}
                 >
-                  <Target size={14} />
+                  <LuTarget size={14} />
                   {skillInfo.label}
                 </div>
               )}
@@ -221,7 +222,7 @@ const BookDetails = () => {
                 <div className="flex flex-col gap-4">
                   {book.bookTier !== "FREE" && !isAdmin && (
                     <div className="flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
-                      <CheckCircle size={16} />
+                      <LuCircleCheckBig size={16} />
                       <span>Included in your</span>
                       <TierBadge plan={subscriptionPlan} size="sm" />
                       <span>plan</span>

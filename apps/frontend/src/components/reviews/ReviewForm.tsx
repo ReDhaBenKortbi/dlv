@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Star, PenLine } from "lucide-react";
+import { LuStar, LuPenLine } from "react-icons/lu";
+
 import { useReviews } from "../../hooks/reviews/useReviews";
 
 interface Props {
@@ -17,7 +18,7 @@ const ReviewForm = ({ bookId }: Props) => {
     return (
       <div className="bg-base-100 border border-base-300 rounded-xl p-4 flex items-center gap-3 shadow-sm">
         <div className="bg-success/20 text-success p-2 rounded-full">
-          <Star size={16} className="fill-current" />
+          <LuStar size={16} className="fill-current" />
         </div>
         <p className="text-sm font-medium">Review submitted. Thanks!</p>
       </div>
@@ -37,7 +38,7 @@ const ReviewForm = ({ bookId }: Props) => {
   return (
     <div className="bg-base-100 border border-base-300 p-5 rounded-xl shadow-sm">
       <div className="flex items-center gap-2 mb-4">
-        <PenLine size={18} className="text-primary" />
+        <LuPenLine size={18} className="text-primary" />
         <h3 className="font-bold text-base">Write a Review</h3>
       </div>
 
@@ -57,14 +58,13 @@ const ReviewForm = ({ bookId }: Props) => {
                   onMouseEnter={() => setHover(star)}
                   onMouseLeave={() => setHover(0)}
                 >
-                  <Star
+                  <LuStar
                     size={26}
                     className={`transition-all duration-200 ${
                       isActive
                         ? "fill-warning text-warning drop-shadow-[0_0_3px_rgba(250,204,21,0.4)]"
                         : "text-base-content/20 hover:text-base-content/40"
                     }`}
-                    strokeWidth={isActive ? 1.5 : 1}
                   />
                 </button>
               );

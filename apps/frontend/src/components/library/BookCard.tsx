@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { Star, Crown, Languages } from "lucide-react";
+import { LuStar, LuCrown, LuLanguages } from "react-icons/lu";
+
 import type { Book } from "../../types/book";
 import { FOCUS_SKILLS } from "../../constants/bookOptions";
 import { useAuth } from "../../context/AuthContext";
@@ -52,7 +53,7 @@ export const BookCard = ({ book, editions }: BookCardProps) => {
         {/* TOP RIGHT: locked-tier indicator, only when nothing in the series is accessible yet */}
         {access.status === "locked" && (
           <div className="absolute top-2 right-2 backdrop-blur-md border rounded-md px-1.5 py-0.5 flex items-center gap-1 shadow-lg bg-black/40 border-white/10">
-            <Crown
+            <LuCrown
               size={10}
               className={
                 seriesEditions[seriesEditions.length - 1].bookTier === "GOLD"
@@ -73,7 +74,7 @@ export const BookCard = ({ book, editions }: BookCardProps) => {
         <div className="flex items-center gap-2 mb-1">
           {display.targetLanguage && (
             <span className="text-[10px] font-bold text-primary uppercase flex items-center gap-1">
-              <Languages size={10} /> {display.targetLanguage}
+              <LuLanguages size={10} /> {display.targetLanguage}
             </span>
           )}
           {skillInfo && (
@@ -93,7 +94,7 @@ export const BookCard = ({ book, editions }: BookCardProps) => {
         <div className="flex items-center gap-1 mt-0.5">
           {rating > 0 ? (
             <>
-              <Star size={12} className="fill-warning text-warning" />
+              <LuStar size={12} className="fill-warning text-warning" />
               <span className="text-xs font-bold">{rating.toFixed(1)}</span>
               <span className="text-[10px] opacity-40">({totalReviews})</span>
             </>

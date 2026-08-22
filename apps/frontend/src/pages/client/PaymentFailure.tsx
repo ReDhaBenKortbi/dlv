@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { XCircle } from "lucide-react";
+import { LuCircleX } from "react-icons/lu";
+
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { cancelPendingPayment } from "../../services/paymentService";
@@ -18,7 +19,7 @@ const PaymentFailure = () => {
   return (
     <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
       <div className="card w-full max-w-md bg-base-100 shadow-2xl text-center p-10 space-y-4">
-        <XCircle className="w-16 h-16 text-error mx-auto" />
+        <LuCircleX className="w-16 h-16 text-error mx-auto" />
         <h2 className="text-2xl font-bold">Payment Failed</h2>
         <p className="text-base-content/70">
           Something went wrong with your payment. You were not charged.

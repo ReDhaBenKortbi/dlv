@@ -1,12 +1,6 @@
 import { useState } from "react";
-import {
-  MessageCircle,
-  X,
-  Facebook,
-  Instagram,
-  Mail,
-  HelpCircle,
-} from "lucide-react";
+import { LuMessageCircle, LuX, LuMail, LuCircleHelp } from "react-icons/lu";
+import { SiFacebook, SiInstagram } from "react-icons/si";
 import { Link } from "react-router-dom";
 
 const SupportFab = () => {
@@ -17,17 +11,17 @@ const SupportFab = () => {
   // Replace with actual client links
   const socialLinks = [
     {
-      icon: <Facebook size={20} />,
+      icon: <SiFacebook size={18} />,
       href: "https://facebook.com",
       color: "bg-[#1877F2]",
     },
     {
-      icon: <Instagram size={20} />,
+      icon: <SiInstagram size={18} />,
       href: "https://instagram.com",
       color: "bg-[#E4405F]",
     },
     {
-      icon: <Mail size={20} />,
+      icon: <LuMail size={20} />,
       href: "mailto:contact@example.com",
       color: "bg-gray-600",
     },
@@ -46,7 +40,7 @@ const SupportFab = () => {
           className="flex items-center gap-3 bg-primary text-primary-content px-4 py-2 rounded-full shadow-lg hover:bg-primary-focus transition-colors"
         >
           <span className="font-bold text-sm">Need Help?</span>
-          <HelpCircle size={20} />
+          <LuCircleHelp size={20} />
         </Link>
 
         {/* Social Icons */}
@@ -70,7 +64,7 @@ const SupportFab = () => {
         onClick={toggleOpen}
         className={`btn btn-circle btn-lg shadow-xl border-none transition-all duration-300 pointer-events-auto ${isOpen ? "btn-error rotate-90" : "btn-neutral"}`}
       >
-        {isOpen ? <X size={32} /> : <MessageCircle size={32} />}
+        {isOpen ? <LuX size={32} /> : <LuMessageCircle size={32} />}
       </button>
     </div>
   );

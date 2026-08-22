@@ -3,7 +3,7 @@ import {
   FOCUS_SKILLS,
   PROFICIENCY_LEVELS,
 } from "../../constants/bookOptions";
-import { Filter, GraduationCap } from "lucide-react";
+import { LuFilter, LuGraduationCap } from "react-icons/lu";
 
 interface LibrarySidebarProps {
   selectedLanguage: string;
@@ -29,7 +29,7 @@ export const LibrarySidebar = ({
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="flex items-center gap-2 font-bold text-lg">
-          <Filter size={18} /> Filters
+          <LuFilter size={18} /> Filters
         </h2>
         <button
           onClick={onClearFilters}
@@ -87,7 +87,7 @@ export const LibrarySidebar = ({
       {/* 3. PROFICIENCY LEVEL (Multiple Choice) */}
       <div>
         <h3 className="text-xs font-black uppercase tracking-widest opacity-40 mb-4 flex items-center gap-2">
-          <GraduationCap size={14} /> Proficiency Level
+          <LuGraduationCap size={14} /> Proficiency Level
         </h3>
         <div className="grid grid-cols-3 gap-2">
           {PROFICIENCY_LEVELS.map((level) => {

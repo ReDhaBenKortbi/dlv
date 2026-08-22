@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { api } from "../../lib/api";
 import { notify } from "../../utils/toast";
-import { Send, CheckCircle, ShieldAlert } from "lucide-react";
+import { LuSend, LuCircleCheckBig, LuShieldAlert } from "react-icons/lu";
+
 import { BackButton } from "../../components/common/BackButton";
 
 const SupportPage = () => {
@@ -75,7 +76,7 @@ const SupportPage = () => {
           <div className="text-center py-4 animate-in fade-in slide-in-from-bottom-4">
             <div className="flex justify-center mb-4">
               <div className="bg-warning/10 text-warning p-4 rounded-full">
-                <ShieldAlert size={40} />
+                <LuShieldAlert size={40} />
               </div>
             </div>
             <h2 className="text-xl font-bold">Cooldown Active</h2>
@@ -92,7 +93,7 @@ const SupportPage = () => {
           <div className="text-center py-6 animate-in zoom-in duration-300">
             <div className="flex justify-center mb-4">
               <div className="bg-success/10 text-success p-4 rounded-full">
-                <CheckCircle size={40} />
+                <LuCircleCheckBig size={40} />
               </div>
             </div>
             <h2 className="text-2xl font-bold">All Set!</h2>
@@ -156,8 +157,8 @@ const SupportPage = () => {
                   <span className="loading loading-spinner loading-sm"></span>
                 ) : (
                   <>
-                    <Send size={18} />
-                    <span>Send Ticket</span>
+                    <LuSend size={18} />
+                    <span>LuSend Ticket</span>
                   </>
                 )}
               </button>

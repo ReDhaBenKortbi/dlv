@@ -1,4 +1,5 @@
-import { Users, BookOpen, Crown } from "lucide-react";
+import { LuUsers, LuBookOpen, LuCrown } from "react-icons/lu";
+
 import MetricDisplayCard from "./MetricDisplayCard";
 import type { DashboardStats } from "../../services/adminService";
 
@@ -17,9 +18,9 @@ const BASE_STATS_CONFIG: {
 }[] = [
   {
     key: "users",
-    title: "Total Users",
+    title: "Total LuUsers",
     desc: "Registered accounts",
-    icon: Users,
+    icon: LuUsers,
     iconBgClass: "bg-indigo-50 dark:bg-indigo-900",
     iconColorClass: "text-indigo-500 dark:text-indigo-300",
   },
@@ -27,7 +28,7 @@ const BASE_STATS_CONFIG: {
     key: "activeSubscribers",
     title: "Active Subscribers",
     desc: "Currently subscribed",
-    icon: Crown,
+    icon: LuCrown,
     iconBgClass: "bg-emerald-50 dark:bg-emerald-900",
     iconColorClass: "text-emerald-500 dark:text-emerald-300",
   },
@@ -35,7 +36,7 @@ const BASE_STATS_CONFIG: {
     key: "books",
     title: "Total Books",
     desc: "In the library",
-    icon: BookOpen,
+    icon: LuBookOpen,
     iconBgClass: "bg-purple-50 dark:bg-purple-900",
     iconColorClass: "text-purple-500 dark:text-purple-300",
   },
