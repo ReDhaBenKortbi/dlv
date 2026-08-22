@@ -15,9 +15,8 @@ const SupportFab = () => {
       color: "bg-[#1877F2]",
     },
     {
-      // TODO: replace with the actual WhatsApp link/number
       icon: <SiWhatsapp size={18} />,
-      href: "https://wa.me/",
+      href: "https://wa.me/213655197011",
       color: "bg-[#25D366]",
     },
     {
