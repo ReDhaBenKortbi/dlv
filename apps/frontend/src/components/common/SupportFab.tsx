@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { LuMessageCircle, LuX, LuMail, LuCircleHelp } from "react-icons/lu";
-import { SiFacebook, SiInstagram } from "react-icons/si";
+import { SiFacebook, SiWhatsapp } from "react-icons/si";
 import { Link } from "react-router-dom";
 
 const SupportFab = () => {
@@ -16,9 +16,9 @@ const SupportFab = () => {
       color: "bg-[#1877F2]",
     },
     {
-      icon: <SiInstagram size={18} />,
-      href: "https://instagram.com",
-      color: "bg-[#E4405F]",
+      icon: <SiWhatsapp size={18} />,
+      href: "https://wa.me/",
+      color: "bg-[#25D366]",
     },
     {
       icon: <LuMail size={20} />,
