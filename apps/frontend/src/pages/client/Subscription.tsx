@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { LuCircleCheckBig, LuZap, LuStar, LuLock } from "react-icons/lu";
 
@@ -52,6 +52,26 @@ const Subscription = () => {
   const isUpgradeEligible = isEffectivelySubscribed && PLAN_RANK[subscriptionPlan] < PLAN_RANK.GOLD;
 
   const [isStalePending, setIsStalePending] = useState(false);
+
+  // Publishes the sticky pay bar's real height so other fixed elements
+  // (e.g. SupportFab) can offset above it instead of overlapping it.
+  // A callback ref (not useRef + useEffect) because the bar mounts late —
+  // only after `plans` finishes loading — so a mount-only effect would
+  // miss it entirely.
+  const payBarObserver = useRef<ResizeObserver | null>(null);
+  const payBarRef = useCallback((el: HTMLDivElement | null) => {
+    payBarObserver.current?.disconnect();
+    if (!el) {
+      document.documentElement.style.removeProperty("--sticky-bottom-bar-height");
+      return;
+    }
+    const publishHeight = () => {
+      document.documentElement.style.setProperty("--sticky-bottom-bar-height", `${el.offsetHeight}px`);
+    };
+    publishHeight();
+    payBarObserver.current = new ResizeObserver(publishHeight);
+    payBarObserver.current.observe(el);
+  }, []);
 
   useEffect(() => {
     if (!isWaiting || !subscriptionUpdatedAt) return;
@@ -129,15 +149,17 @@ const Subscription = () => {
       (isUpgradeEligible ? plans[subscriptionPlan].price : 0)
     : 0;
 
+  const canPay = selectedPlan && selectedPlan !== "FREE";
+
   return (
-    <div className="min-h-screen bg-base-200 pb-16 px-4">
+    <div className="min-h-screen bg-base-200 px-4 pb-28">
       <div className="max-w-6xl mx-auto px-4 pt-6">
         <BackButton className="mb-2" />
       </div>
 
-      <div className="max-w-4xl mx-auto space-y-10">
-        <header className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-primary">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <header className="text-center space-y-1">
+          <h1 className="text-2xl md:text-3xl font-bold text-primary">
             {isUpgradeEligible ? "Upgrade Your Plan" : "Choose Your Plan"}
           </h1>
           <p className="text-sm opacity-60">
@@ -147,7 +169,7 @@ const Subscription = () => {
           </p>
         </header>
 
-        {/* PLAN CARDS */}
+        {/* PLAN CARDS — click a card to select it, no separate action button */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {planKeys.map((key) => {
             const plan = plans[key];
@@ -166,7 +188,7 @@ const Subscription = () => {
                   isSelected ? "ring-2 ring-offset-2 ring-primary shadow-xl scale-[1.02]" : ""
                 } ${!isDisabled ? "cursor-pointer hover:shadow-lg" : "opacity-70"}`}
               >
-                <div className="card-body p-6 space-y-4">
+                <div className="card-body p-5 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className={`badge ${styles.badge} gap-1`}>
                       {PLAN_ICONS[key]}
@@ -190,7 +212,7 @@ const Subscription = () => {
                     )}
                   </div>
 
-                  <ul className="space-y-2">
+                  <ul className="space-y-1.5">
                     {PLAN_FEATURES[key].map((feature) => (
                       <li key={feature} className="flex items-start gap-2 text-sm">
                         <LuCircleCheckBig className="w-4 h-4 text-success mt-0.5 shrink-0" />
@@ -199,63 +221,55 @@ const Subscription = () => {
                     ))}
                   </ul>
 
-                  {isFree ? (
-                    <div className="btn btn-neutral btn-sm w-full pointer-events-none opacity-50">
-                      Current Default
-                    </div>
-                  ) : isCurrentPlan ? (
-                    <div className="btn btn-neutral btn-sm w-full pointer-events-none opacity-50">
-                      Current Plan
-                    </div>
-                  ) : (
-                    <button
-                      className={`btn ${styles.btn} btn-sm w-full`}
-                      onClick={(e) => { e.stopPropagation(); setSelectedPlan(key); }}
-                    >
-                      {isSelected ? "Selected" : isUpgradeTarget ? `Upgrade to ${plan.label}` : `Choose ${plan.label}`}
-                    </button>
-                  )}
+                  <div className="text-xs font-medium text-center pt-1">
+                    {isFree ? (
+                      <span className="opacity-50">Current Default</span>
+                    ) : isCurrentPlan ? (
+                      <span className="opacity-50">Current Plan</span>
+                    ) : isSelected ? (
+                      <span className="text-primary">Selected</span>
+                    ) : (
+                      <span className="opacity-60">
+                        {isUpgradeTarget ? "Tap to upgrade" : "Tap to select"}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             );
           })}
         </div>
+      </div>
 
-        {/* PAYMENT SECTION — only shown when a paid plan is selected */}
-        {selectedPlan && selectedPlan !== "FREE" && (
-          <div className="space-y-6">
-            <div className="divider text-sm opacity-50">
-              {isUpgradeEligible
-                ? `Upgrade to ${plans[selectedPlan].label} — ${payablePrice} DA`
-                : `Pay for ${plans[selectedPlan].label} — ${payablePrice} DA / month`}
-            </div>
-
-            <div className="card bg-base-100 border border-base-200 shadow-xl rounded-2xl max-w-lg mx-auto">
-              <div className="card-body space-y-6">
-                <div>
-                  <h2 className="font-semibold text-lg">Pay with Chargily</h2>
-                  <p className="text-sm text-base-content/60 mt-1">
-                    Secure online payment via CIB / EDAHABIA card. You will be redirected to the Chargily payment page.
-                  </p>
-                </div>
-
-                <button
-                  className={`btn btn-primary w-full font-semibold ${chargilyLoading ? "loading" : ""}`}
-                  disabled={chargilyLoading}
-                  onClick={() => startCheckout(selectedPlan)}
-                >
-                  {chargilyLoading ? "Redirecting..." : `Pay ${payablePrice} DA`}
-                </button>
-
-                <div className="bg-base-200 rounded-xl p-4 text-xs opacity-70">
-                  {isUpgradeEligible
-                    ? "You're only charged the difference — your subscription end date stays the same."
-                    : "Your subscription is activated automatically after a successful payment."}
-                </div>
+      {/* STICKY PAY BAR — always visible on screen, no scrolling required to find it */}
+      <div
+        ref={payBarRef}
+        className="fixed bottom-0 inset-x-0 z-40 bg-base-100 border-t border-base-300 shadow-[0_-4px_16px_rgba(0,0,0,0.08)]"
+      >
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+          {canPay ? (
+            <>
+              <div className="min-w-0">
+                <p className="text-xs opacity-60 truncate">
+                  {isUpgradeEligible ? `Upgrade to ${plans[selectedPlan].label}` : plans[selectedPlan].label}
+                </p>
+                <p className="text-lg font-bold text-primary leading-tight">
+                  {payablePrice} DA
+                  {!isUpgradeEligible && <span className="text-xs font-normal opacity-60"> / month</span>}
+                </p>
               </div>
-            </div>
-          </div>
-        )}
+              <button
+                className={`btn btn-primary font-semibold shrink-0 ${chargilyLoading ? "loading" : ""}`}
+                disabled={chargilyLoading}
+                onClick={() => startCheckout(selectedPlan)}
+              >
+                {chargilyLoading ? "Redirecting..." : `Pay ${payablePrice} DA`}
+              </button>
+            </>
+          ) : (
+            <p className="text-sm opacity-50 w-full text-center py-2">Select a plan above to continue</p>
+          )}
+        </div>
       </div>
     </div>
   );
