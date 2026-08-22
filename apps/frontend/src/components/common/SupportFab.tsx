@@ -34,10 +34,10 @@ const SupportFab = () => {
   ];
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 pointer-events-none">
       {/* Expanded Actions */}
       <div
-        className={`flex flex-col gap-3 transition-all duration-300 ${isOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"}`}
+        className={`flex flex-col gap-3 transition-all duration-300 ${isOpen ? "opacity-100 translate-y-0 pointer-events-auto" : "opacity-0 translate-y-10 pointer-events-none"}`}
       >
         {/* Help / Support Page Button */}
         <Link
@@ -68,7 +68,7 @@ const SupportFab = () => {
       {/* Main Toggle Button */}
       <button
         onClick={toggleOpen}
-        className={`btn btn-circle btn-lg shadow-xl border-none transition-all duration-300 ${isOpen ? "btn-error rotate-90" : "btn-neutral"}`}
+        className={`btn btn-circle btn-lg shadow-xl border-none transition-all duration-300 pointer-events-auto ${isOpen ? "btn-error rotate-90" : "btn-neutral"}`}
       >
         {isOpen ? <X size={32} /> : <MessageCircle size={32} />}
       </button>
