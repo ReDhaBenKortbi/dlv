@@ -16,9 +16,23 @@ import { notify } from "../../utils/toast";
 const STALE_PENDING_MS = 3 * 60 * 1000;
 
 const PLAN_FEATURES: Record<SubscriptionPlan, string[]> = {
-  FREE: ["Access to all free books", "Basic library browsing", "Book ratings & reviews"],
-  PRO: ["Everything in Free", "Access to all Pro books", "Priority support"],
-  GOLD: ["Everything in Pro", "Access to all Gold books", "Exclusive content"],
+  FREE: [
+    "Access to all free books",
+    "Sample chapters",
+    "Basic library browsing",
+  ],
+  PRO: [
+    "Access to all Pro books",
+    "Unlock full book content",
+    "Annotation features",
+  ],
+  GOLD: [
+    "Access to all Gold books",
+    "Work, Student & Teacher editions",
+    "Video books included",
+    "Interactive digital activities",
+    "Exclusive content",
+  ],
 };
 
 const PLAN_ICONS: Record<SubscriptionPlan, React.ReactNode> = {
@@ -27,29 +41,50 @@ const PLAN_ICONS: Record<SubscriptionPlan, React.ReactNode> = {
   GOLD: <LuStar className="w-5 h-5" />,
 };
 
-const PLAN_STYLES: Record<SubscriptionPlan, { card: string; badge: string; btn: string }> = {
+const PLAN_STYLES: Record<
+  SubscriptionPlan,
+  { card: string; badge: string; btn: string }
+> = {
   FREE: { card: "border-base-300", badge: "badge-neutral", btn: "btn-neutral" },
-  PRO: { card: "border-secondary", badge: "badge-secondary", btn: "btn-secondary" },
+  PRO: {
+    card: "border-secondary",
+    badge: "badge-secondary",
+    btn: "btn-secondary",
+  },
   GOLD: { card: "border-warning", badge: "badge-warning", btn: "btn-warning" },
 };
 
 // Higher rank = more valuable plan; mirrors the backend's upgrade detection
 // in chargily.service.ts so the price shown here matches what gets charged.
-const PLAN_RANK: Record<SubscriptionPlan, number> = { FREE: 0, PRO: 1, GOLD: 2 };
+const PLAN_RANK: Record<SubscriptionPlan, number> = {
+  FREE: 0,
+  PRO: 1,
+  GOLD: 2,
+};
 
 const Subscription = () => {
-  const { subscriptionStatus, isSubscribed, subscriptionPlan, subscriptionUpdatedAt, refreshUser } = useAuth();
+  const {
+    subscriptionStatus,
+    isSubscribed,
+    subscriptionPlan,
+    subscriptionUpdatedAt,
+    refreshUser,
+  } = useAuth();
   const { startCheckout, loading: chargilyLoading } = useChargilyCheckout();
   const { plans } = usePlanPricing();
 
-  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(
+    null,
+  );
   const [cancelling, setCancelling] = useState(false);
 
-  const isEffectivelySubscribed = isSubscribed && subscriptionStatus === "APPROVED";
+  const isEffectivelySubscribed =
+    isSubscribed && subscriptionStatus === "APPROVED";
   const isWaiting = subscriptionStatus === "PENDING";
   // A user on an active paid plan with room to go higher (PRO -> GOLD today)
   // gets an upgrade flow instead of the "already subscribed" dead end.
-  const isUpgradeEligible = isEffectivelySubscribed && PLAN_RANK[subscriptionPlan] < PLAN_RANK.GOLD;
+  const isUpgradeEligible =
+    isEffectivelySubscribed && PLAN_RANK[subscriptionPlan] < PLAN_RANK.GOLD;
 
   const [isStalePending, setIsStalePending] = useState(false);
 
@@ -62,11 +97,16 @@ const Subscription = () => {
   const payBarRef = useCallback((el: HTMLDivElement | null) => {
     payBarObserver.current?.disconnect();
     if (!el) {
-      document.documentElement.style.removeProperty("--sticky-bottom-bar-height");
+      document.documentElement.style.removeProperty(
+        "--sticky-bottom-bar-height",
+      );
       return;
     }
     const publishHeight = () => {
-      document.documentElement.style.setProperty("--sticky-bottom-bar-height", `${el.offsetHeight}px`);
+      document.documentElement.style.setProperty(
+        "--sticky-bottom-bar-height",
+        `${el.offsetHeight}px`,
+      );
     };
     publishHeight();
     payBarObserver.current = new ResizeObserver(publishHeight);
@@ -98,7 +138,9 @@ const Subscription = () => {
     return (
       <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
         <div className="card w-full max-w-md bg-base-100 shadow-2xl text-center p-10">
-          <div className={`badge ${isWaiting ? "badge-warning" : "badge-success"} mb-4`}>
+          <div
+            className={`badge ${isWaiting ? "badge-warning" : "badge-success"} mb-4`}
+          >
             {isWaiting ? "Processing" : "Active"}
           </div>
           <h2 className="text-2xl font-bold">
@@ -177,7 +219,8 @@ const Subscription = () => {
             const isSelected = selectedPlan === key;
             const isFree = key === "FREE";
             const isCurrentPlan = isUpgradeEligible && key === subscriptionPlan;
-            const isUpgradeTarget = isUpgradeEligible && PLAN_RANK[key] > PLAN_RANK[subscriptionPlan];
+            const isUpgradeTarget =
+              isUpgradeEligible && PLAN_RANK[key] > PLAN_RANK[subscriptionPlan];
             const isDisabled = isFree || isCurrentPlan;
 
             return (
@@ -185,7 +228,9 @@ const Subscription = () => {
                 key={key}
                 onClick={() => !isDisabled && setSelectedPlan(key)}
                 className={`card bg-base-100 border-2 shadow-md rounded-2xl transition-all duration-200 ${styles.card} ${
-                  isSelected ? "ring-2 ring-offset-2 ring-primary shadow-xl scale-[1.02]" : ""
+                  isSelected
+                    ? "ring-2 ring-offset-2 ring-primary shadow-xl scale-[1.02]"
+                    : ""
                 } ${!isDisabled ? "cursor-pointer hover:shadow-lg" : "opacity-70"}`}
               >
                 <div className="card-body p-5 space-y-3">
@@ -194,7 +239,9 @@ const Subscription = () => {
                       {PLAN_ICONS[key]}
                       {plan.label}
                     </div>
-                    {isSelected && <LuCircleCheckBig className="w-5 h-5 text-primary" />}
+                    {isSelected && (
+                      <LuCircleCheckBig className="w-5 h-5 text-primary" />
+                    )}
                   </div>
 
                   <div>
@@ -203,18 +250,26 @@ const Subscription = () => {
                     ) : isUpgradeTarget ? (
                       <span className="text-2xl font-bold">
                         {plan.price - plans[subscriptionPlan].price}{" "}
-                        <span className="text-base font-normal opacity-60">DA to upgrade</span>
+                        <span className="text-base font-normal opacity-60">
+                          DA to upgrade
+                        </span>
                       </span>
                     ) : (
                       <span className="text-2xl font-bold">
-                        {plan.price} <span className="text-base font-normal opacity-60">DA / month</span>
+                        {plan.price}{" "}
+                        <span className="text-base font-normal opacity-60">
+                          DA / month
+                        </span>
                       </span>
                     )}
                   </div>
 
                   <ul className="space-y-1.5">
                     {PLAN_FEATURES[key].map((feature) => (
-                      <li key={feature} className="flex items-start gap-2 text-sm">
+                      <li
+                        key={feature}
+                        className="flex items-start gap-2 text-sm"
+                      >
                         <LuCircleCheckBig className="w-4 h-4 text-success mt-0.5 shrink-0" />
                         {feature}
                       </li>
@@ -251,11 +306,18 @@ const Subscription = () => {
             <>
               <div className="min-w-0">
                 <p className="text-xs opacity-60 truncate">
-                  {isUpgradeEligible ? `Upgrade to ${plans[selectedPlan].label}` : plans[selectedPlan].label}
+                  {isUpgradeEligible
+                    ? `Upgrade to ${plans[selectedPlan].label}`
+                    : plans[selectedPlan].label}
                 </p>
                 <p className="text-lg font-bold text-primary leading-tight">
                   {payablePrice} DA
-                  {!isUpgradeEligible && <span className="text-xs font-normal opacity-60"> / month</span>}
+                  {!isUpgradeEligible && (
+                    <span className="text-xs font-normal opacity-60">
+                      {" "}
+                      / month
+                    </span>
+                  )}
                 </p>
               </div>
               <button
@@ -267,7 +329,9 @@ const Subscription = () => {
               </button>
             </>
           ) : (
-            <p className="text-sm opacity-50 w-full text-center py-2">Select a plan above to continue</p>
+            <p className="text-sm opacity-50 w-full text-center py-2">
+              Select a plan above to continue
+            </p>
           )}
         </div>
       </div>
