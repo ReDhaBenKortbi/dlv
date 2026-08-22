@@ -8,21 +8,21 @@ const SupportFab = () => {
 
   const toggleOpen = () => setIsOpen(!isOpen);
 
-  // Replace with actual client links
   const socialLinks = [
     {
       icon: <SiFacebook size={18} />,
-      href: "https://facebook.com",
+      href: "https://www.facebook.com/profile.php?id=61591205601164",
       color: "bg-[#1877F2]",
     },
     {
+      // TODO: replace with the actual WhatsApp link/number
       icon: <SiWhatsapp size={18} />,
       href: "https://wa.me/",
       color: "bg-[#25D366]",
     },
     {
       icon: <LuMail size={20} />,
-      href: "mailto:contact@example.com",
+      href: "mailto:digitallearningvault.dz@gmail.com",
       color: "bg-gray-600",
     },
   ];
