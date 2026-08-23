@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { getUsers, updateUserSubscription } from "../../services/userService";
 import type { UsersQuery } from "../../services/userService";
+import type { SubscriptionPlan } from "../../constants/subscriptionPlans";
 import { notify } from "../../utils/toast"; // Import our adapter
 
 export const useUsers = (params: UsersQuery = {}) => {
@@ -25,19 +26,15 @@ export const useUsers = (params: UsersQuery = {}) => {
   });
 
   // Wrapped logic with Toast support
-  const toggleSubscription = async (userId: string, currentStatus: boolean) => {
-    const newStatus = !currentStatus;
-
-    return await notify.promise(
-      mutation.mutateAsync({ userId, isSubscribed: newStatus }),
-      {
-        loading: "Updating user permissions...",
-        success: newStatus
-          ? "Premium access granted! ✨"
-          : "Access revoked successfully.",
-        error: "Failed to update user status.",
-      },
-    );
+  const updateTier = async (userId: string, plan: SubscriptionPlan) => {
+    return await notify.promise(mutation.mutateAsync({ userId, plan }), {
+      loading: "Updating user permissions...",
+      success:
+        plan === "FREE"
+          ? "Access revoked successfully."
+          : `${plan === "GOLD" ? "Gold" : "Pro"} access granted! ✨`,
+      error: "Failed to update user status.",
+    });
   };
 
   return {
@@ -47,6 +44,6 @@ export const useUsers = (params: UsersQuery = {}) => {
     isUpdating: mutation.isPending,
     // Id of the user currently being mutated, so only that row shows a spinner.
     pendingUserId: mutation.isPending ? mutation.variables?.userId : undefined,
-    toggleSubscription, // Now returns a promise with a toast
+    updateTier, // Now returns a promise with a toast
   };
 };

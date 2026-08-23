@@ -55,10 +55,11 @@ export class UsersService {
     return { data: users, meta: { total, page, limit } };
   }
 
-  updateSubscription(userId: string, isSubscribed: boolean) {
-    // A manual admin grant unlocks all tiers (GOLD); revoking resets to FREE.
-    // The plan must be set here — access control gates on subscriptionPlan,
-    // so toggling isSubscribed alone would grant nothing.
+  updateSubscription(userId: string, plan: SubscriptionPlan) {
+    // Manual admin override — bypasses the billing cycle entirely, so the
+    // end date is always cleared. Only the Chargily webhook sets a real
+    // subscriptionEndDate.
+    const isSubscribed = plan !== SubscriptionPlan.FREE;
     return this.prisma.user.update({
       where: { id: userId },
       data: {
@@ -66,9 +67,7 @@ export class UsersService {
         subscriptionStatus: isSubscribed
           ? SubscriptionStatus.APPROVED
           : SubscriptionStatus.NONE,
-        subscriptionPlan: isSubscribed
-          ? SubscriptionPlan.GOLD
-          : SubscriptionPlan.FREE,
+        subscriptionPlan: plan,
         subscriptionEndDate: null,
       },
       select: PUBLIC_FIELDS,
