@@ -11,6 +11,7 @@ import {
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import type { AuthenticatedRequest } from '../common/types';
+import { UpdateUserTierDto } from './dto/update-user-tier.dto';
 import { UsersFilterDto } from './dto/users-filter.dto';
 import { UsersService } from './users.service';
 
@@ -38,10 +39,7 @@ export class UsersController {
 
   @UseGuards(AdminGuard)
   @Patch(':id/subscription')
-  updateSubscription(
-    @Param('id') id: string,
-    @Body('isSubscribed') isSubscribed: boolean,
-  ) {
-    return this.usersService.updateSubscription(id, isSubscribed);
+  updateSubscription(@Param('id') id: string, @Body() dto: UpdateUserTierDto) {
+    return this.usersService.updateSubscription(id, dto.plan);
   }
 }

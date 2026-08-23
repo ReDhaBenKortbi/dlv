@@ -3,8 +3,14 @@ import { useUsers } from "../../hooks/users/useUsers";
 import LoadingScreen from "../../components/common/LoadingScreen";
 import Pagination from "../../components/common/Pagination";
 import { getTotalPages } from "../../lib/pagination";
+import { BOOK_TIERS } from "../../constants/bookOptions";
+import type { SubscriptionPlan } from "../../constants/subscriptionPlans";
 
 const PAGE_SIZE = 20;
+
+const TIER_BADGE_COLOR = Object.fromEntries(
+  BOOK_TIERS.map((tier) => [tier.id, tier.color]),
+) as Record<SubscriptionPlan, string>;
 
 const UsersManager = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -18,7 +24,7 @@ const UsersManager = () => {
     return () => clearTimeout(timeout);
   }, [searchTerm]);
 
-  const { users, meta, isLoading, toggleSubscription, pendingUserId } = useUsers({
+  const { users, meta, isLoading, updateTier, pendingUserId } = useUsers({
     page,
     limit: PAGE_SIZE,
     search: debouncedSearch || undefined,
@@ -73,6 +79,7 @@ const UsersManager = () => {
                 <tr>
                   <th className="py-4 text-left">Email</th>
                   <th>Status</th>
+                  <th>Tier</th>
                   <th className="text-right">Actions</th>
                 </tr>
               </thead>
@@ -85,40 +92,54 @@ const UsersManager = () => {
                     <td className="font-medium text-gray-700">{user.email}</td>
                     <td>
                       {user.isSubscribed ? (
-                        <span className="badge badge-success badge-sm font-bold">
-                          PREMIUM
+                        <span className="badge badge-soft badge-info badge-sm font-bold">
+                          subscribed
                         </span>
                       ) : (
-                        <span className="badge badge-outline badge-sm font-bold opacity-60">
-                          FREE
+                        <span className="badge badge-soft badge-error badge-sm font-bold">
+                          not subscribed
                         </span>
                       )}
                     </td>
-                    <td className="flex justify-end gap-2">
+                    <td>
+                      <span
+                        className={`badge badge-soft badge-sm font-bold ${
+                          TIER_BADGE_COLOR[user.subscriptionPlan]
+                        }`}
+                      >
+                        {user.subscriptionPlan}
+                      </span>
+                    </td>
+                    <td className="flex justify-end items-center gap-2">
                       {(() => {
                         const isRowUpdating = pendingUserId === user.id;
                         return (
-                          <button
-                            onClick={() =>
-                              toggleSubscription(user.id, user.isSubscribed)
-                            }
-                            // Disable only this row while it is mutating
-                            disabled={isRowUpdating}
-                            className={`btn btn-sm ${
-                              user.isSubscribed
-                                ? "btn-outline btn-error"
-                                : "btn-primary text-white"
-                            }`}
-                          >
-                            {/* Show a mini spinner if this specific button is working */}
-                            {isRowUpdating ? (
+                          <>
+                            {isRowUpdating && (
                               <span className="loading loading-spinner loading-xs"></span>
-                            ) : user.isSubscribed ? (
-                              "Revoke Access"
-                            ) : (
-                              "Grant Premium"
                             )}
-                          </button>
+                            <label className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                              Set tier
+                              <select
+                                aria-label={`Change tier for ${user.email}`}
+                                className="select select-bordered select-sm"
+                                value={user.subscriptionPlan}
+                                disabled={isRowUpdating}
+                                onChange={(e) =>
+                                  updateTier(
+                                    user.id,
+                                    e.target.value as SubscriptionPlan,
+                                  )
+                                }
+                              >
+                                {BOOK_TIERS.map((tier) => (
+                                  <option key={tier.id} value={tier.id}>
+                                    {tier.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                          </>
                         );
                       })()}
                     </td>
