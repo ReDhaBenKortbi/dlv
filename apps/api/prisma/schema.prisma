@@ -120,7 +120,7 @@ model Book {
 
   reviews Review[]
 
-  @@unique([title, author])
+  @@unique([indexURL])
   @@index([groupKey])
 }
 

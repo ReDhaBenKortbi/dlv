@@ -1,10 +1,11 @@
 import {
+  ConflictException,
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { Role, User } from '@prisma/client';
+import { Prisma, Role, User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { canAccess } from './access.util';
 import { BooksFilterDto } from './dto/books-filter.dto';
@@ -141,7 +142,19 @@ export class BooksService {
   }
 
   async create(dto: CreateBookDto) {
-    return this.prisma.book.create({ data: dto });
+    try {
+      return await this.prisma.book.create({ data: dto });
+    } catch (e) {
+      if (
+        e instanceof Prisma.PrismaClientKnownRequestError &&
+        e.code === 'P2002'
+      ) {
+        throw new ConflictException(
+          'A book with this content URL already exists',
+        );
+      }
+      throw e;
+    }
   }
 
   async update(id: string, dto: UpdateBookDto) {
