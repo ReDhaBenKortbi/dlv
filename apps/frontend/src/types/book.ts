@@ -29,6 +29,3 @@ export interface Book {
   createdAt: string;
   updatedAt?: string;
 }
-
-// For creating a new book, we don't need the id or timestamps
-export type NewBook = Omit<Book, "id" | "createdAt" | "updatedAt">;

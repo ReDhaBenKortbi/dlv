@@ -3,6 +3,7 @@ import { useReviews } from "../../hooks/reviews/useReviews";
 import Pagination from "../common/Pagination";
 import { getTotalPages } from "../../lib/pagination";
 import ReviewItem from "./ReviewItem";
+import { EmptyState } from "../common/EmptyState";
 
 interface ListProps {
   bookId: string;
@@ -48,12 +49,11 @@ const ReviewList = ({ bookId }: ListProps) => {
   /* ---------------- EMPTY ---------------- */
   if (!sortedReviews.length) {
     return (
-      <div className="p-10 text-center">
-        <p className="font-medium">No reviews yet</p>
-        <p className="text-sm opacity-60 mt-1">
-          Be the first to share your experience.
-        </p>
-      </div>
+      <EmptyState
+        icon="reviews"
+        title="No reviews yet"
+        message="Be the first to share your experience."
+      />
     );
   }
 

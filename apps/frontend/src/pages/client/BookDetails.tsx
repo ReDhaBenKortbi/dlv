@@ -7,6 +7,7 @@ import { useAuth } from "../../context/AuthContext";
 import { TierBadge } from "../../components/common/TierBadge";
 import LoadingScreen from "../../components/common/LoadingScreen";
 import { BookCard } from "../../components/library/BookCard";
+import { EmptyState } from "../../components/common/EmptyState";
 import { useBook } from "../../hooks/books/useBook";
 import { useBookEditions } from "../../hooks/books/useBookEditions";
 import { useRelatedBooks } from "../../hooks/books/useRelatedBooks";
@@ -327,9 +328,12 @@ const BookDetails = () => {
               />
             ))
           ) : (
-            <div className="col-span-full py-12 text-center text-base-content/40 italic">
-              No related books found. Try exploring the library for more
-              options!
+            <div className="col-span-full">
+              <EmptyState
+                icon="books"
+                title="No related books yet"
+                message="Explore the library to find more titles like this one."
+              />
             </div>
           )}
         </div>

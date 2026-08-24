@@ -1,7 +1,7 @@
 import { LuUsers, LuBookOpen, LuCrown } from "react-icons/lu";
 
 import MetricDisplayCard from "./MetricDisplayCard";
-import type { DashboardStats } from "../../services/adminService";
+import type { DashboardStats } from "../../services/userService";
 
 interface Props {
   stats: DashboardStats;

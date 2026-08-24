@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useUsers } from "../../hooks/users/useUsers";
 import LoadingScreen from "../../components/common/LoadingScreen";
 import Pagination from "../../components/common/Pagination";
+import { EmptyState } from "../../components/common/EmptyState";
 import { getTotalPages } from "../../lib/pagination";
 import { BOOK_TIERS } from "../../constants/bookOptions";
 import type { SubscriptionPlan } from "../../constants/subscriptionPlans";
@@ -149,9 +150,12 @@ const UsersManager = () => {
             </table>
 
             {users.length === 0 && (
-              <div className="p-10 text-center text-gray-400">
-                No users found.
-              </div>
+              <EmptyState
+                size="sm"
+                icon="users"
+                title="No users found"
+                message="No accounts match this search."
+              />
             )}
           </div>
         )}

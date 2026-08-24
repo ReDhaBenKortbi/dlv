@@ -1,13 +1,8 @@
 import AdminMetricsGrid from "../../components/admin/AdminMetricsGrid";
-
-// admineService
-// Import existing components
 import ActionCard from "../../components/admin/ActionCard";
 import LoadingScreen from "../../components/common/LoadingScreen";
 import { ACTION_CARDS_CONFIG } from "../../utils/AdminActions.config";
 import { useDashboardMetrics } from "../../hooks/admin_dashboard/useDashboardMetrics";
-
-// Stat Cards Config
 
 const AdminDashboard: React.FC = () => {
   const { data: stats, isLoading, isError } = useDashboardMetrics();
