@@ -18,10 +18,9 @@ export const useBookMutations = () => {
   const editMutation = useMutation({
     mutationFn: ({ id, updates }: { id: string; updates: Partial<Book> }) =>
       updateBook(id, updates),
-    onSuccess: (_, variables) => {
-      invalidate();
-      queryClient.invalidateQueries({ queryKey: ["books", variables.id] });
-    },
+    // `invalidate()` already clears the whole "books" prefix, which covers the
+    // detail/editions/related queries too.
+    onSuccess: invalidate,
   });
 
   const deleteMutation = useMutation({

@@ -23,7 +23,8 @@ interface AuthContextType {
   isAdmin: boolean;
   loading: boolean;
   logout: () => Promise<void>;
-  refreshUser: () => Promise<void>;
+  /** Re-reads /users/me and returns the loaded user, or null if unauthenticated. */
+  refreshUser: () => Promise<AuthUser | null>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -32,13 +33,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const refreshUser = useCallback(async () => {
+  // Returns the user rather than only storing it: callers that navigate
+  // immediately after (login, signup) would otherwise read `user`/`isAdmin`
+  // from the context value captured in the render *before* this ran, and so
+  // always see the pre-login state.
+  const refreshUser = useCallback(async (): Promise<AuthUser | null> => {
     try {
       const data = await api<AuthUser>("/users/me");
       setUser(data);
+      return data;
     } catch {
       setUser(null);
       setAccessToken(null);
+      return null;
     }
   }, []);
 

@@ -7,8 +7,10 @@ import { useAuth } from "../../context/AuthContext";
 import { TierBadge } from "../../components/common/TierBadge";
 import LoadingScreen from "../../components/common/LoadingScreen";
 import { BookCard } from "../../components/library/BookCard";
-import { useBooks } from "../../hooks/books/useBooks";
-import { canAccessTier, groupBooksIntoSeries } from "../../lib/bookSeries";
+import { useBook } from "../../hooks/books/useBook";
+import { useBookEditions } from "../../hooks/books/useBookEditions";
+import { useRelatedBooks } from "../../hooks/books/useRelatedBooks";
+import { canAccessTier } from "../../lib/bookSeries";
 
 // review imports
 import ReviewList from "../../components/reviews/ReviewList";
@@ -21,12 +23,12 @@ const BookDetails = () => {
   const navigate = useNavigate();
   const { subscriptionPlan, isAdmin } = useAuth();
 
-  // STEP 1: Fetch the main book data
-  const { book, isLoading, isError } = useBooks(id);
+  const { book, isLoading, isError } = useBook(id);
 
-  // STEP 2: Fetch related books that share the same target language, plus
-  // sibling tier editions of this same title (if any)
-  const { relatedBooks, groupEditions } = useBooks(id, book);
+  // Both depend on `book` being loaded first (for its groupKey / language),
+  // so they stay idle until it arrives.
+  const { editions: groupEditions } = useBookEditions(book);
+  const { relatedSeries } = useRelatedBooks(book);
 
   // STEP 3: Guard clause (This stops TypeScript from complaining)
   if (isLoading) return <LoadingScreen />;
@@ -58,7 +60,6 @@ const BookDetails = () => {
   // More than one tier edition of this title exists — show the full access
   // ladder (design doc variant 1d) instead of a single tier's CTA.
   const hasEditionLadder = groupEditions.length > 1;
-  const relatedSeries = groupBooksIntoSeries(relatedBooks);
 
   return (
     <div className="min-h-screen bg-base-200 pb-24">

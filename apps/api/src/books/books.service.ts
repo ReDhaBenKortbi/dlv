@@ -39,12 +39,14 @@ export class BooksService {
       focusSkill,
       proficiencyLevel,
       search,
+      groupKey,
       raw = false,
       page = 1,
       limit = 20,
     } = filter;
 
     const where = {
+      ...(groupKey && { groupKey }),
       ...(targetLanguage && { targetLanguage }),
       ...(focusSkill?.length && { focusSkill: { in: focusSkill } }),
       ...(proficiencyLevel?.length && {
@@ -58,7 +60,9 @@ export class BooksService {
       }),
     };
 
-    if (raw) {
+    // Asking for one title's editions means the caller wants the ladder, not a
+    // series card — so a groupKey query always takes the ungrouped path.
+    if (raw || groupKey) {
       const skip = (page - 1) * limit;
       const [books, total] = await Promise.all([
         this.prisma.book.findMany({

@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { uploadImageToCloudinary } from "../../services/cloudinaryService";
 import { BookPreview } from "../../components/admin/BookPreview";
 import { useBookMutations } from "../../hooks/books/useBookMutations";
-import { useBooks } from "../../hooks/books/useBooks";
+import { useBook } from "../../hooks/books/useBook";
 // New Pillars
 import {
   TARGET_LANGUAGES,
@@ -37,7 +37,7 @@ const AddBook = () => {
   // When arriving via "+ Edition" on an existing book, fetch it so we can
   // clone its shared fields (cover included) instead of asking the admin
   // to re-enter and re-upload everything for what is the same title.
-  const { book: sourceBook, isLoading: isLoadingSource } = useBooks(fromId);
+  const { book: sourceBook, isLoading: isLoadingSource } = useBook(fromId);
   const isCloning = !!fromId;
 
   // --- NEW STATE FOR THE THREE PILLARS ---

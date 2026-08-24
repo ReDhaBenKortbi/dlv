@@ -39,6 +39,13 @@ export class BooksFilterDto {
   @IsOptional()
   search?: string;
 
+  // Fetch every tier edition of one title. Series-grouped pagination would
+  // collapse them back into a single card, so a groupKey query is always
+  // served ungrouped (see findAll).
+  @IsString()
+  @IsOptional()
+  groupKey?: string;
+
   // Raw (ungrouped) row-level pagination — used by the admin book table,
   // which lists individual tier editions as separate, editable rows. The
   // default (false) groups multi-tier editions of the same title into one

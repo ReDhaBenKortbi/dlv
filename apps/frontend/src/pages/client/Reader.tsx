@@ -3,7 +3,7 @@ import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { LuArrowLeft, LuLock, LuLoaderCircle, LuShieldCheck } from "react-icons/lu";
 
 import { useAuth } from "../../context/AuthContext";
-import { useBooks } from "../../hooks/books/useBooks";
+import { useBook } from "../../hooks/books/useBook";
 import LoadingScreen from "../../components/common/LoadingScreen";
 import { getAccessToken } from "../../lib/api";
 import { API_URL } from "../../config/env";
@@ -12,9 +12,7 @@ const Reader = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { subscriptionPlan, isAdmin } = useAuth();
-  const { book, isLoading, isError } = useBooks(id);
-
-  const [isIframeLoading, setIsIframeLoading] = useState(true);
+  const { book, isLoading, isError } = useBook(id);
 
   // Increments every 14 min to re-derive proxyUrl with a fresh access token
   const [tick, setTick] = useState(0);
@@ -29,6 +27,12 @@ const Reader = () => {
     return `${API_URL}/books/${id}/read?token=${encodeURIComponent(token)}`;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, tick]); // tick intentionally triggers re-derivation of the access token
+
+  // A new proxyUrl remounts the iframe, so show the loader again until it
+  // reports back. Note the token refresh also drops the reader's page
+  // position — an accepted trade-off of passing the token in the URL.
+  const [loadedUrl, setLoadedUrl] = useState("");
+  const isIframeLoading = loadedUrl !== proxyUrl;
 
   useEffect(() => {
     const preventAction = (e: MouseEvent) => e.preventDefault();
@@ -100,7 +104,7 @@ const Reader = () => {
             className={`w-full h-full border-none transition-opacity duration-700 ${
               isIframeLoading ? "opacity-0" : "opacity-100"
             }`}
-            onLoad={() => setIsIframeLoading(false)}
+            onLoad={() => setLoadedUrl(proxyUrl)}
             sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
             allowFullScreen
           />

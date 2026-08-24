@@ -11,7 +11,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { refreshUser, isAdmin } = useAuth();
+  const { refreshUser } = useAuth();
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -21,8 +21,8 @@ const Login = () => {
 
     try {
       await loginUser(email, password);
-      await refreshUser();
-      navigate(isAdmin ? "/admin" : "/", { replace: true });
+      const loggedIn = await refreshUser();
+      navigate(loggedIn?.role === "ADMIN" ? "/admin" : "/", { replace: true });
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Invalid email or password.");
       setLoading(false);

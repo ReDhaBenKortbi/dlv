@@ -1,8 +1,6 @@
-// src/utils/toast.ts
 import { toast as sonnerToast } from "sonner";
 import type { ExternalToast } from "sonner";
 
-// Define a flexible type for the messages
 type PromiseMessages<T = unknown> = {
   loading: string | React.ReactNode;
   success: string | React.ReactNode | ((data: T) => React.ReactNode);
@@ -10,31 +8,34 @@ type PromiseMessages<T = unknown> = {
 };
 
 export const notify = {
-  // ... success/error/info helpers remain the same ...
   success: (message: string) => sonnerToast.success(message),
   error: (message: string) => sonnerToast.error(message),
 
   /**
-   * WRAPPER FIX:
-   * 1. We use a generic <T> to preserve the Promise type.
-   * 2. We return the 'promise' itself, not the result of sonnerToast.promise().
-   * This allows 'await notify.promise(...)' to actually wait for the upload.
+   * Shows loading/success/error toasts for `promise` and resolves to whether
+   * it succeeded, so callers can gate follow-up work (navigation, cascading
+   * writes) on the result.
+   *
+   * `sonnerToast.promise()` does NOT return a promise — it returns a toast
+   * handle carrying an `unwrap()`. Awaiting the handle directly resolves
+   * immediately, which is why this used to return `true` unconditionally and
+   * never actually waited. `unwrap()` returns the real promise and rethrows
+   * on rejection.
    */
-  // Look for the 'promise' function and replace it with this:
   promise: async <T>(
     promise: Promise<T>,
     messages: PromiseMessages<T>,
     options?: ExternalToast,
   ): Promise<boolean> => {
     try {
-      // We 'await' the toast to finish
-      await sonnerToast.promise(promise, {
-        loading: messages.loading,
-        success: messages.success,
-        error: messages.error,
-        ...options,
-      });
-      // If it reaches here, it succeeded! We return true.
+      await sonnerToast
+        .promise(promise, {
+          loading: messages.loading,
+          success: messages.success,
+          error: messages.error,
+          ...options,
+        })
+        .unwrap();
       return true;
     } catch {
       return false;

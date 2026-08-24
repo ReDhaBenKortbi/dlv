@@ -22,8 +22,8 @@ const Signup = () => {
 
     try {
       await registerUser(fullName, email, password);
-      await refreshUser();
-      navigate("/", { replace: true });
+      const registered = await refreshUser();
+      navigate(registered?.role === "ADMIN" ? "/admin" : "/", { replace: true });
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Registration failed. Try again.");
     } finally {

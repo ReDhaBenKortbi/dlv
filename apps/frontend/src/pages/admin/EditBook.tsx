@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import { useObjectUrl } from "../../hooks/useObjectUrl";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import LoadingScreen from "../../components/common/LoadingScreen";
-import { useBooks } from "../../hooks/books/useBooks"; // Reader
-import { useBookMutations } from "../../hooks/books/useBookMutations"; // Writer
+import { useBook } from "../../hooks/books/useBook";
+import { useBookEditions } from "../../hooks/books/useBookEditions";
+import { useBookMutations } from "../../hooks/books/useBookMutations";
 import { uploadImageToCloudinary } from "../../services/cloudinaryService";
 
 import {
@@ -22,13 +24,12 @@ const EditBook = () => {
   const { bookId } = useParams();
   const navigate = useNavigate();
 
-  // 1. Fetch current book data
-  const { book, isLoading: fetching } = useBooks(bookId);
+  const { book, isLoading: fetching } = useBook(bookId);
 
-  // 1b. Sibling tier editions of the same title (needs `book` to be loaded
-  // first to know its groupKey — same two-call pattern as BookDetails).
-  const { groupEditions } = useBooks(bookId, book);
-  const siblings = groupEditions.filter((e) => e.id !== bookId);
+  // Sibling tier editions of the same title, so a cover change can be pushed
+  // across the whole series.
+  const { editions } = useBookEditions(book);
+  const siblings = editions.filter((e) => e.id !== bookId);
 
   // 2. Mutations hook
   const { edit, editSilent, isProcessing } = useBookMutations();
@@ -58,7 +59,9 @@ const EditBook = () => {
   });
 
   const [newCoverFile, setNewCoverFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState("");
+  // Blob URL for a freshly-picked file; falls back to the stored cover.
+  const newCoverPreview = useObjectUrl(newCoverFile);
+  const preview = newCoverPreview || formData.coverURL;
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   // Editions of the same title normally share one cover image (see
   // AddBook's "reuse cover" flow) — default to keeping them in sync
@@ -81,14 +84,8 @@ const EditBook = () => {
         bookTier: book.bookTier ?? "FREE",
         groupKey: book.groupKey || "",
       });
-      setPreview(book.coverURL);
     }
   }, [book]);
-
-  const handleFileChange = (file: File) => {
-    setNewCoverFile(file);
-    setPreview(URL.createObjectURL(file));
-  };
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -186,9 +183,7 @@ const EditBook = () => {
           <input
             type="file"
             className="file-input file-input-bordered w-full"
-            onChange={(e) =>
-              e.target.files && handleFileChange(e.target.files[0])
-            }
+            onChange={(e) => setNewCoverFile(e.target.files?.[0] ?? null)}
           />
           {newCoverFile && siblings.length > 0 && (
             <label className="flex items-start gap-2 mt-3 text-xs bg-base-200 border border-base-300 rounded-lg p-3 cursor-pointer">
