@@ -14,7 +14,7 @@ export class TicketsService {
   mine(userId: string) {
     return this.prisma.ticket.findMany({
       where: { userId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
     });
   }
 
@@ -22,7 +22,7 @@ export class TicketsService {
     const skip = (page - 1) * limit;
     const [tickets, total] = await Promise.all([
       this.prisma.ticket.findMany({
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         include: { user: { select: { id: true, email: true } } },
         skip,
         take: limit,

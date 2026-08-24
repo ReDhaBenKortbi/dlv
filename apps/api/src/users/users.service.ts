@@ -45,7 +45,7 @@ export class UsersService {
       this.prisma.user.findMany({
         where,
         select: PUBLIC_FIELDS,
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         skip,
         take: limit,
       }),
