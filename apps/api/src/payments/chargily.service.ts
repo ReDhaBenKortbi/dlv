@@ -137,7 +137,7 @@ export class ChargilyService {
 
     const pendingRequest = await this.prisma.paymentRequest.findFirst({
       where: { userId, status: 'PENDING' },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
     });
 
     await this.prisma.$transaction([
@@ -186,7 +186,7 @@ export class ChargilyService {
     const [payments, total] = await Promise.all([
       this.prisma.paymentRequest.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         include: { user: { select: { fullName: true, email: true } } },
         skip,
         take: limit,
