@@ -40,5 +40,7 @@ export const useBookEditions = (book: Book | undefined) => {
     return merged.sort((a, b) => TIER_RANK[a.bookTier] - TIER_RANK[b.bookTier]);
   }, [book, groupKey, query.data]);
 
-  return { editions, isLoading: query.isLoading };
+  // Explicit rather than leaning on query.isLoading being false for a disabled
+  // query: an ungrouped book never fetches, so it is never "loading".
+  return { editions, isLoading: !!groupKey && query.isLoading };
 };
