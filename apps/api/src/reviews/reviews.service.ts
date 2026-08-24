@@ -12,24 +12,52 @@ import { PrismaService } from '../prisma/prisma.service';
 export class ReviewsService {
   constructor(private prisma: PrismaService) {}
 
+  /**
+   * Ids of every edition of the same title, so reviews read across the series.
+   * A reader reviews the book, not the tier they happened to open it at, and
+   * reviews written against one edition must be visible from all of them.
+   * Falls back to the book's own id when it isn't part of a series.
+   */
+  private async siblingBookIds(bookId: string): Promise<string[]> {
+    const book = await this.prisma.book.findUnique({
+      where: { id: bookId },
+      select: { groupKey: true },
+    });
+    if (!book?.groupKey) return [bookId];
+
+    const siblings = await this.prisma.book.findMany({
+      where: { groupKey: book.groupKey },
+      select: { id: true },
+    });
+    return siblings.length ? siblings.map((s) => s.id) : [bookId];
+  }
+
   async findByBook(bookId: string, page = 1, limit = 9) {
     const skip = (page - 1) * limit;
+    const where = { bookId: { in: await this.siblingBookIds(bookId) } };
+
     const [reviews, total] = await Promise.all([
       this.prisma.review.findMany({
-        where: { bookId },
+        where,
         include: { user: { select: { id: true, email: true } } },
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
       }),
-      this.prisma.review.count({ where: { bookId } }),
+      this.prisma.review.count({ where }),
     ]);
     return { data: reviews, meta: { total, page, limit } };
   }
 
-  findMine(bookId: string, userId: string) {
-    return this.prisma.review.findUnique({
-      where: { userId_bookId: { userId, bookId } },
+  /**
+   * The user's review of this title, from whichever edition they wrote it
+   * against — so having reviewed the free sample, the paid edition correctly
+   * shows as already reviewed instead of offering a second form.
+   */
+  async findMine(bookId: string, userId: string) {
+    return this.prisma.review.findFirst({
+      where: { userId, bookId: { in: await this.siblingBookIds(bookId) } },
+      orderBy: { createdAt: 'desc' },
     });
   }
 

@@ -4,7 +4,7 @@ import { LuStar, LuCrown, LuLanguages } from "react-icons/lu";
 import type { Book } from "../../types/book";
 import { FOCUS_SKILLS } from "../../constants/bookOptions";
 import { useAuth } from "../../context/AuthContext";
-import { getSeriesAccess } from "../../lib/bookSeries";
+import { getSeriesAccess, getSeriesRating } from "../../lib/bookSeries";
 
 interface BookCardProps {
   book: Book;
@@ -24,8 +24,9 @@ export const BookCard = ({ book, editions }: BookCardProps) => {
 
   const goToTarget = () => navigate(`/book/${access.targetEdition.id}`);
 
-  const rating = display.averageRating || 0;
-  const totalReviews = display.totalReviews || 0;
+  // Across every edition — `display` is the lowest tier, which is usually the
+  // free sample and often carries none of the title's reviews.
+  const { averageRating: rating, totalReviews } = getSeriesRating(seriesEditions);
 
   // Helper to find the color for the skill badge
   const skillInfo = FOCUS_SKILLS.find((s) => s.id === display.focusSkill);

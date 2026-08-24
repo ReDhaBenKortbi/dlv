@@ -119,3 +119,35 @@ export function getSeriesAccess(
     targetEdition: editions[0],
   };
 }
+
+export interface SeriesRating {
+  averageRating: number;
+  totalReviews: number;
+}
+
+/**
+ * A title's rating across all of its tier editions.
+ *
+ * Reviews attach to whichever edition the reader had open, and each Book row
+ * keeps its own aggregates — so reading one row (the card used the lowest tier)
+ * reports a title reviewed on its PRO edition as unrated.
+ *
+ * Weighted by review count, not a mean of the per-edition means, which would
+ * let an edition with a single review outweigh one with twenty.
+ */
+export function getSeriesRating(editions: Book[]): SeriesRating {
+  let weighted = 0;
+  let totalReviews = 0;
+
+  for (const edition of editions) {
+    const count = edition.totalReviews ?? 0;
+    if (count <= 0) continue;
+    weighted += (edition.averageRating ?? 0) * count;
+    totalReviews += count;
+  }
+
+  return {
+    averageRating: totalReviews > 0 ? weighted / totalReviews : 0,
+    totalReviews,
+  };
+}

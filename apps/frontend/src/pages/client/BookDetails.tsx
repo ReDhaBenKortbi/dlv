@@ -11,7 +11,7 @@ import { EmptyState } from "../../components/common/EmptyState";
 import { useBook } from "../../hooks/books/useBook";
 import { useBookEditions } from "../../hooks/books/useBookEditions";
 import { useRelatedBooks } from "../../hooks/books/useRelatedBooks";
-import { canAccessTier } from "../../lib/bookSeries";
+import { canAccessTier, getSeriesRating } from "../../lib/bookSeries";
 
 // review imports
 import ReviewList from "../../components/reviews/ReviewList";
@@ -127,10 +127,7 @@ const BookDetails = () => {
             </h1>
 
             {/* ADD THIS LINE HERE */}
-            <RatingSummary
-              averageRating={book.averageRating ?? 0}
-              totalReviews={book.totalReviews ?? 0}
-            />
+            <RatingSummary {...getSeriesRating(groupEditions)} />
 
             {/* AUTHOR */}
             <p className="text-lg text-primary font-semibold">
