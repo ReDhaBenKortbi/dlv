@@ -6,8 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useBooks } from "../../hooks/books/useBooks";
 import LoadingScreen from "../../components/common/LoadingScreen";
 import { getAccessToken } from "../../lib/api";
-
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000/api";
+import { API_URL } from "../../config/env";
 
 const Reader = () => {
   const { id } = useParams<{ id: string }>();

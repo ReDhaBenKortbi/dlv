@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api';
+import { API_URL } from '../config/env';
 
 // Access token lives in memory only — never persisted (localStorage/sessionStorage
 // are readable by any injected script). The refresh token lives in an httpOnly

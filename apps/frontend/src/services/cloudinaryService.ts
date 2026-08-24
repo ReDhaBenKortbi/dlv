@@ -1,7 +1,7 @@
 import {
   CLOUDINARY_UPLOAD_PRESET,
   CLOUDINARY_CLOUD_NAME,
-} from "../utils/constants";
+} from "../config/env";
 
 export const uploadImageToCloudinary = async (file: File): Promise<string> => {
   const formData = new FormData();
