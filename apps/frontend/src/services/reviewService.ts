@@ -1,18 +1,14 @@
 import { api } from "../lib/api";
+import { buildQuery } from "../lib/qs";
 import type { Review, NewReviewData } from "../types/Review";
-
-export interface ReviewsMeta {
-  total: number;
-  page: number;
-  limit: number;
-}
+import type { Paginated } from "../types/pagination";
 
 export const getReviewsByBookId = (
   bookId: string,
   page = 1,
   limit = 9,
-): Promise<{ data: Review[]; meta: ReviewsMeta }> =>
-  api(`/books/${bookId}/reviews?page=${page}&limit=${limit}`);
+): Promise<Paginated<Review>> =>
+  api(`/books/${bookId}/reviews${buildQuery({ page, limit })}`);
 
 export const addReview = (reviewData: NewReviewData): Promise<Review> =>
   api(`/books/${reviewData.bookId}/reviews`, {

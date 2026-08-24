@@ -28,7 +28,8 @@ const BookDetails = () => {
 
   // Both depend on `book` being loaded first (for its groupKey / language),
   // so they stay idle until it arrives.
-  const { editions: groupEditions } = useBookEditions(book);
+  const { editions: groupEditions, isLoading: isLoadingEditions } =
+    useBookEditions(book);
   const { relatedSeries } = useRelatedBooks(book);
 
   // STEP 3: Guard clause (This stops TypeScript from complaining)
@@ -150,7 +151,16 @@ const BookDetails = () => {
 
             {/* ACTION AREA */}
             <div className="pt-8 border-t border-base-300">
-              {hasEditionLadder ? (
+              {isLoadingEditions ? (
+                // Until the sibling editions land we don't yet know whether
+                // this title has a ladder, and guessing renders the wrong CTA
+                // for a moment before swapping it out.
+                <div className="flex flex-col gap-3" aria-busy="true">
+                  <div className="h-4 w-40 rounded bg-base-300 animate-pulse" />
+                  <div className="h-20 rounded-2xl bg-base-300 animate-pulse" />
+                  <div className="h-20 rounded-2xl bg-base-300 animate-pulse" />
+                </div>
+              ) : hasEditionLadder ? (
                 <div className="flex flex-col gap-3">
                   <h3 className="text-sm font-bold uppercase tracking-wider text-base-content/40">
                     How you can read it

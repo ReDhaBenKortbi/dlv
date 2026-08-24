@@ -1,5 +1,6 @@
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getPaymentHistory } from "../../services/paymentService";
+import { queryKeys } from "../../lib/queryKeys";
 
 export const usePaymentHistory = (filters: {
   status?: string;
@@ -8,7 +9,7 @@ export const usePaymentHistory = (filters: {
   limit?: number;
 }) => {
   const query = useQuery({
-    queryKey: ["payment-history", filters],
+    queryKey: queryKeys.payments.history(filters),
     queryFn: () => getPaymentHistory(filters),
     placeholderData: keepPreviousData,
   });

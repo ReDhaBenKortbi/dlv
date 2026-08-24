@@ -2,13 +2,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateBook, deleteBook, createBook } from "../../services/bookService";
 import type { Book } from "../../types/book";
 import { notify } from "../../utils/toast";
+import { queryKeys } from "../../lib/queryKeys";
 import { toErrorMessage } from "../../lib/errorMessage";
 
 export const useBookMutations = () => {
   const queryClient = useQueryClient();
 
   const invalidate = () =>
-    queryClient.invalidateQueries({ queryKey: ["books"] });
+    queryClient.invalidateQueries({ queryKey: queryKeys.books.all });
 
   const addMutation = useMutation({
     mutationFn: createBook,

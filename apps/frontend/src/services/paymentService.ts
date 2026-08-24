@@ -1,4 +1,6 @@
 import { api } from "../lib/api";
+import { buildQuery } from "../lib/qs";
+import type { Paginated } from "../types/pagination";
 import type { SubscriptionPlan } from "../constants/subscriptionPlans";
 
 export interface PlanPricing {
@@ -33,23 +35,14 @@ export interface PaymentHistoryItem {
   user: { fullName: string; email: string };
 }
 
-export interface PaymentHistoryMeta {
-  total: number;
-  page: number;
-  limit: number;
-}
-
-export const getPaymentHistory = (params?: {
+export interface PaymentHistoryQuery {
   status?: string;
   plan?: string;
   page?: number;
   limit?: number;
-}): Promise<{ data: PaymentHistoryItem[]; meta: PaymentHistoryMeta }> => {
-  const query = new URLSearchParams();
-  if (params?.status) query.set("status", params.status);
-  if (params?.plan) query.set("plan", params.plan);
-  if (params?.page) query.set("page", String(params.page));
-  if (params?.limit) query.set("limit", String(params.limit));
-  const qs = query.toString();
-  return api(`/payments/history${qs ? `?${qs}` : ""}`);
-};
+}
+
+export const getPaymentHistory = (
+  params: PaymentHistoryQuery = {},
+): Promise<Paginated<PaymentHistoryItem>> =>
+  api(`/payments/history${buildQuery(params)}`);
