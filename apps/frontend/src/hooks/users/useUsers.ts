@@ -7,7 +7,8 @@ import {
 import { getUsers, updateUserSubscription } from "../../services/userService";
 import type { UsersQuery } from "../../services/userService";
 import type { SubscriptionPlan } from "../../constants/subscriptionPlans";
-import { notify } from "../../utils/toast"; // Import our adapter
+import { notify } from "../../utils/toast";
+import { toErrorMessage } from "../../lib/errorMessage";
 
 export const useUsers = (params: UsersQuery = {}) => {
   const queryClient = useQueryClient();
@@ -33,7 +34,7 @@ export const useUsers = (params: UsersQuery = {}) => {
         plan === "FREE"
           ? "Access revoked successfully."
           : `${plan === "GOLD" ? "Gold" : "Pro"} access granted! ✨`,
-      error: "Failed to update user status.",
+      error: (err) => toErrorMessage(err, "Failed to update user status."),
     });
   };
 

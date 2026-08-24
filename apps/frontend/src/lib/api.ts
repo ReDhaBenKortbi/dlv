@@ -62,8 +62,15 @@ export async function api<T = unknown>(path: string, options: RequestInit = {}):
   if (res.status === 204) return null as T;
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ message: res.statusText }));
-    throw new Error(err.message ?? res.statusText);
+    const err = await res.json().catch(() => null);
+    // Nest sends a plain string for HttpExceptions but an array of strings for
+    // class-validator failures; flatten both to one readable line.
+    const message = Array.isArray(err?.message)
+      ? err.message.join(". ")
+      : err?.message;
+    throw new Error(
+      typeof message === "string" && message.trim() ? message : res.statusText,
+    );
   }
 
   return res.json() as Promise<T>;

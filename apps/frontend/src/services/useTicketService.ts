@@ -6,6 +6,7 @@ import {
 } from "@tanstack/react-query";
 import { api } from "../lib/api";
 import { notify } from "../utils/toast";
+import { toErrorMessage } from "../lib/errorMessage";
 import type { Ticket } from "../types/ticket";
 
 interface TicketsMeta {
@@ -41,7 +42,7 @@ export const useTicketService = (page = 1, limit = 10) => {
     notify.promise(resolveMutation.mutateAsync(id), {
       loading: "Resolving ticket...",
       success: "Ticket resolved & removed!",
-      error: "Could not update ticket.",
+      error: (err) => toErrorMessage(err, "Could not update ticket."),
     });
   };
 
