@@ -5,6 +5,7 @@ import { LibrarySidebar } from "../../components/library/LibrarySidebar";
 import { BookCard } from "../../components/library/BookCard";
 import LoadingScreen from "../../components/common/LoadingScreen";
 import Pagination from "../../components/common/Pagination";
+import { EmptyState } from "../../components/common/EmptyState";
 import { getTotalPages } from "../../lib/pagination";
 import { LuFilter } from "react-icons/lu";
 
@@ -57,6 +58,12 @@ const Library = () => {
   // shown on this page is present, so this is pure display grouping now.
   const series = useMemo(() => groupBooksIntoSeries(books), [books]);
 
+  const clearFilters = () => {
+    setSelectedLanguage("");
+    setSelectedSkills([]);
+    setSelectedLevels([]);
+  };
+
   const toggleSkill = (skillId: string) => {
     setSelectedSkills((prev) =>
       prev.includes(skillId)
@@ -87,11 +94,7 @@ const Library = () => {
                   : [...prev, lvlId],
               )
             }
-            onClearFilters={() => {
-              setSelectedLanguage("");
-              setSelectedSkills([]);
-              setSelectedLevels([]);
-            }}
+            onClearFilters={clearFilters}
           />
         </aside>
 
@@ -125,19 +128,14 @@ const Library = () => {
                 ))}
               </div>
             ) : (
-              <div className="py-20 text-center bg-base-100 rounded-3xl border border-dashed border-base-300">
-                <p className="opacity-40 italic">
-                  No books match these filters.
-                </p>
-                <button
-                  onClick={() => {
-                    setSelectedLanguage("");
-                    setSelectedSkills([]);
-                  }}
-                  className="btn btn-link btn-sm mt-2"
-                >
-                  Clear all filters
-                </button>
+              <div className="bg-base-100 rounded-3xl border border-dashed border-base-300">
+                <EmptyState
+                  icon="search"
+                  title="No books match these filters"
+                  message="Try widening your search, or clear the filters to see the whole library."
+                  actionLabel="Clear all filters"
+                  onAction={clearFilters}
+                />
               </div>
             )}
 

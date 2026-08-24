@@ -1,58 +1,81 @@
 import type { IconType } from "react-icons";
-import { LuBook, LuSearch } from "react-icons/lu";
+import {
+  LuBook,
+  LuSearch,
+  LuMessageSquare,
+  LuUsers,
+  LuCreditCard,
+} from "react-icons/lu";
+
+export type EmptyStateIcon =
+  | "books"
+  | "search"
+  | "reviews"
+  | "users"
+  | "payments";
+
+const ICONS: Record<EmptyStateIcon, IconType> = {
+  books: LuBook,
+  search: LuSearch,
+  reviews: LuMessageSquare,
+  users: LuUsers,
+  payments: LuCreditCard,
+};
 
 interface EmptyStateProps {
   title: string;
-  message: string;
+  message?: string;
   actionLabel?: string;
   onAction?: () => void;
-  /** * Adding types here makes it easy to add more icons later
-   * e.g., "favorites" | "error"
-   */
-  icon?: "books" | "search";
+  icon?: EmptyStateIcon;
+  /** `sm` for inline contexts like a table footer; `md` (default) for full-page. */
+  size?: "sm" | "md";
 }
 
 /**
- * ICON_MAP: A centralized dictionary for our icons.
- * This keeps the JSX clean and the logic separated.
+ * The "nothing here yet" state, shared by every list in the app so the wording,
+ * spacing and iconography stay consistent.
+ *
+ * Renders no border or background of its own — callers own the container.
  */
-const ICON_MAP: Record<string, IconType> = {
-  books: LuBook,
-  search: LuSearch,
-};
-
 export const EmptyState = ({
   title,
   message,
   actionLabel,
   onAction,
   icon = "books",
+  size = "md",
 }: EmptyStateProps) => {
-  // Grab the component from our map based on the prop
-  const IconComponent = ICON_MAP[icon] || LuBook;
+  const Icon = ICONS[icon];
+  const isSm = size === "sm";
 
   return (
-    <div className="flex flex-col items-center justify-center p-10 text-center animate-fadeIn">
-      {/* Icon Circle */}
-      <div className="bg-gray-100 dark:bg-base-300 p-6 rounded-full mb-6 flex items-center justify-center">
-        <IconComponent className="h-12 w-12 text-gray-400 dark:text-gray-500" />
+    <div
+      className={`flex flex-col items-center justify-center text-center ${isSm ? "p-6" : "p-10"}`}
+    >
+      <div
+        className={`bg-base-200 rounded-full flex items-center justify-center ${isSm ? "p-3 mb-3" : "p-6 mb-6"}`}
+      >
+        <Icon
+          className={`text-base-content/40 ${isSm ? "h-6 w-6" : "h-12 w-12"}`}
+        />
       </div>
 
-      {/* Textual Content */}
-      <div className="space-y-2">
-        <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">
-          {title}
-        </h3>
-        <p className="text-gray-500 dark:text-gray-400 mt-2 max-w-sm mx-auto">
+      <h3 className={`font-bold text-base-content ${isSm ? "text-sm" : "text-xl"}`}>
+        {title}
+      </h3>
+      {message && (
+        <p
+          className={`text-base-content/60 max-w-sm mx-auto ${isSm ? "text-xs mt-1" : "mt-2"}`}
+        >
           {message}
         </p>
-      </div>
+      )}
 
-      {/* Optional Action Button */}
       {actionLabel && onAction && (
         <button
           onClick={onAction}
-          className="btn btn-primary mt-8 px-10 shadow-sm hover:shadow-md transition-all"
+          className={`btn btn-primary ${isSm ? "btn-sm mt-4" : "mt-8 px-10"}`}
         >
           {actionLabel}
         </button>

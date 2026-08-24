@@ -78,8 +78,8 @@ const AddBook = () => {
     setProficiencyLevel(
       (sourceBook.proficiencyLevel as ProficiencyLevelCode) || "",
     );
-    // Title stays editable but pre-filled — the DB requires a unique
-    // title+author pair, so it can't be an exact duplicate of the source.
+    // Pre-filled but editable. Uniqueness is keyed on indexURL, so the title
+    // may repeat across editions — only the content URL has to differ.
     setTitle(sourceBook.title);
     // Anchor the new edition to the same series. If the source wasn't
     // grouped yet, its own id becomes the shared groupKey going forward.
@@ -110,7 +110,6 @@ const AddBook = () => {
 
     const willReuseCover = reuseCover && !!sourceBook?.coverURL;
 
-    // 1. Basic validation (Toasts are better than alerts!)
     if ((!coverFile && !willReuseCover) || !flipbookURL) {
       toast.error("Please provide both a cover image and the Netlify URL.");
       return;
@@ -119,13 +118,11 @@ const AddBook = () => {
     setIsUploadingImage(true);
 
     try {
-      // Step A: Reuse the source edition's cover, or upload a new one
+      // Reuse the source edition's cover, or upload a new one
       const coverURL = willReuseCover
         ? sourceBook!.coverURL
         : await uploadImageToCloudinary(coverFile!);
 
-      // Step B: Use our mutation hook (which now handles the loading/success toasts)
-      // Step B: Use our mutation hook
       const success = await add({
         title: title.trim(),
         author: author.trim(),
@@ -139,7 +136,7 @@ const AddBook = () => {
         proficiencyLevel: proficiencyLevel as ProficiencyLevelCode,
       });
 
-      // Step C: Only navigate if the save actually worked
+      // Only navigate if the save actually worked
       if (success) {
         navigate("/admin/manage-books");
       }

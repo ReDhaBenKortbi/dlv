@@ -6,7 +6,6 @@ export const useReviews = (bookId: string, page = 1, limit = 9) => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
-  // 1. Fetch this page of reviews for this book
   const {
     data: reviewsData,
     isLoading: isLoadingReviews,
@@ -25,7 +24,6 @@ export const useReviews = (bookId: string, page = 1, limit = 9) => {
     enabled: !!user,
   });
 
-  // 3. Add Review Mutation
   const addMutation = useMutation({
     mutationFn: reviewService.addReview,
     onSuccess: () => {
@@ -38,7 +36,6 @@ export const useReviews = (bookId: string, page = 1, limit = 9) => {
     },
   });
 
-  // 4. Delete Review Mutation (Corrected to pass bookId)
   const deleteMutation = useMutation({
     mutationFn: (reviewId: string) =>
       reviewService.deleteReview(reviewId, bookId),

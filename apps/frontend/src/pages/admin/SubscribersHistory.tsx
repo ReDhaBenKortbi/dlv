@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { usePaymentHistory } from "../../hooks/payments/usePaymentHistory";
 import Pagination from "../../components/common/Pagination";
+import { EmptyState } from "../../components/common/EmptyState";
 import { getTotalPages } from "../../lib/pagination";
 
 const STATUS_OPTIONS = ["", "PENDING", "APPROVED", "REJECTED"] as const;
@@ -79,9 +80,12 @@ const SubscribersHistory = () => {
             Failed to load payment history.
           </div>
         ) : payments.length === 0 ? (
-          <div className="flex justify-center items-center py-20 opacity-50">
-            No payment records found.
-          </div>
+          <EmptyState
+            size="sm"
+            icon="payments"
+            title="No payment records found"
+            message="No payments match these filters yet."
+          />
         ) : (
           <table className="table table-zebra w-full">
             <thead>

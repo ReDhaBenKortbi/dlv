@@ -10,7 +10,6 @@ export const useBookMutations = () => {
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: ["books"] });
 
-  // 1. Mutations
   const addMutation = useMutation({
     mutationFn: createBook,
     onSuccess: invalidate,
@@ -29,9 +28,7 @@ export const useBookMutations = () => {
     onSuccess: invalidate,
   });
 
-  // 2. Wrapped Exports with Toasts
   return {
-    // Add Book
     add: async (bookData: Omit<Book, "id" | "createdAt">) => {
       return await notify.promise(addMutation.mutateAsync(bookData), {
         loading: "Adding new book to library...",
@@ -41,7 +38,6 @@ export const useBookMutations = () => {
       });
     },
 
-    // Edit Book
     edit: async (id: string, updates: Partial<Book>) => {
       return await notify.promise(editMutation.mutateAsync({ id, updates }), {
         loading: "Saving changes...",
@@ -56,7 +52,6 @@ export const useBookMutations = () => {
     editSilent: (id: string, updates: Partial<Book>) =>
       editMutation.mutateAsync({ id, updates }),
 
-    // Remove Book
     remove: async (id: string) => {
       return await notify.promise(deleteMutation.mutateAsync(id), {
         loading: "Deleting book from vault...",

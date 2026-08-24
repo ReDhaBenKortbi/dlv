@@ -16,7 +16,6 @@ import RouteError from "./pages/common/RouteError";
 import Signup from "./pages/auth/Signup";
 import Login from "./pages/auth/Login";
 import { Toaster } from "sonner";
-import AdminTicketList from "./pages/admin/AdminTicketList";
 
 // Lazy load client components
 const Library = lazy(() => import("./pages/client/Library"));
@@ -39,6 +38,7 @@ const UsersManager = lazy(() => import("./pages/admin/UsersManager"));
 const BooksManager = lazy(() => import("./pages/admin/BooksManager"));
 const EditBook = lazy(() => import("./pages/admin/EditBook"));
 const SubscribersHistory = lazy(() => import("./pages/admin/SubscribersHistory"));
+const AdminTicketList = lazy(() => import("./pages/admin/AdminTicketList"));
 
 /**
  * BROWSER ROUTER CONFIGURATION

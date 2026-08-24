@@ -26,7 +26,6 @@ export const useUsers = (params: UsersQuery = {}) => {
     },
   });
 
-  // Wrapped logic with Toast support
   const updateTier = async (userId: string, plan: SubscriptionPlan) => {
     return await notify.promise(mutation.mutateAsync({ userId, plan }), {
       loading: "Updating user permissions...",

@@ -32,18 +32,12 @@ const BooksManager = () => {
     setPage(totalPages);
   }
 
-  // 3. Use the "Writer" hook for the delete action
   const { remove, deletingId } = useBookMutations();
 
   const handleDelete = async (id: string, title: string) => {
-    // 1. Keep the native confirm for safety (toasts are for progress, confirm is for intent)
+    // Native confirm for intent; the toast covers progress and outcome.
     if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
-      // 2. We 'await' the remove call.
-      // The toast will show "Deleting book..." automatically!
       await remove(id);
-
-      // No need for alerts here!
-      // The toast will say "Book deleted permanently" on its own.
     }
   };
 
