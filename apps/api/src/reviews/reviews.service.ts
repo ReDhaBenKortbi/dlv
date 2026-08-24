@@ -18,7 +18,7 @@ export class ReviewsService {
       this.prisma.review.findMany({
         where: { bookId },
         include: { user: { select: { id: true, email: true } } },
-        orderBy: { createdAt: 'desc' },
+        orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
         skip,
         take: limit,
       }),

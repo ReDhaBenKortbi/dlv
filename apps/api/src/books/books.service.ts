@@ -12,6 +12,12 @@ import { BooksFilterDto } from './dto/books-filter.dto';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 
+// `id` breaks ties: createdAt is not unique (books seeded in one batch share a
+// timestamp), and without a total order Postgres may return tied rows in any
+// order. That order shifts whenever a row is UPDATEd — reviewing a book rewrites
+// its rating aggregates — and under skip/take it can duplicate or skip rows.
+const BOOK_ORDER = [{ createdAt: 'desc' as const }, { id: 'desc' as const }];
+
 @Injectable()
 export class BooksService {
   constructor(private prisma: PrismaService) {}
@@ -69,7 +75,7 @@ export class BooksService {
           where,
           skip,
           take: limit,
-          orderBy: { createdAt: 'desc' },
+          orderBy: BOOK_ORDER,
           select: this.bookListSelect,
         }),
         this.prisma.book.count({ where }),
@@ -82,7 +88,7 @@ export class BooksService {
     // title's edition ladder could be split across a page boundary. Two
     // queries share the same `orderBy` so the first-seen order in step 2
     // matches the row order in step 3 — keep them in sync if either changes.
-    const orderBy = { createdAt: 'desc' as const };
+    const orderBy = BOOK_ORDER;
 
     const matches = await this.prisma.book.findMany({
       where,
