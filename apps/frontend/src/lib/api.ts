@@ -82,8 +82,6 @@ export async function api<T = unknown>(path: string, options: RequestInit = {}):
     }
   }
 
-  if (res.status === 204) return null as T;
-
   if (!res.ok) {
     const err = await res.json().catch(() => null);
     // Nest sends a plain string for HttpExceptions but an array of strings for
@@ -97,5 +95,13 @@ export async function api<T = unknown>(path: string, options: RequestInit = {}):
     );
   }
 
-  return res.json() as Promise<T>;
+  // A handler that returns null/void (GET .../reviews/mine with no review,
+  // POST .../cancel-pending) sends an empty body with a 2xx — not the text
+  // "null". Calling res.json() on that throws a SyntaxError, which surfaced as
+  // a failed query that kept its previous data, so a deleted review still
+  // looked submitted. 204 arrives here as an empty body too.
+  const text = await res.text();
+  if (!text) return null as T;
+
+  return JSON.parse(text) as T;
 }
