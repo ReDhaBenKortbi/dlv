@@ -1,14 +1,10 @@
 import { api } from "../lib/api";
+import { buildQuery } from "../lib/qs";
+import type { Paginated } from "../types/pagination";
 import type { AuthUser } from "../context/AuthContext";
 import type { SubscriptionPlan } from "../constants/subscriptionPlans";
 
 export type UserProfile = AuthUser & { createdAt: string };
-
-export interface UsersMeta {
-  total: number;
-  page: number;
-  limit: number;
-}
 
 export interface UsersQuery {
   page?: number;
@@ -16,16 +12,8 @@ export interface UsersQuery {
   search?: string;
 }
 
-export const getUsers = (
-  query: UsersQuery = {},
-): Promise<{ data: UserProfile[]; meta: UsersMeta }> => {
-  const params = new URLSearchParams();
-  if (query.page) params.set("page", String(query.page));
-  if (query.limit) params.set("limit", String(query.limit));
-  if (query.search) params.set("search", query.search);
-  const qs = params.toString();
-  return api(`/users${qs ? `?${qs}` : ""}`);
-};
+export const getUsers = (query: UsersQuery = {}): Promise<Paginated<UserProfile>> =>
+  api(`/users${buildQuery(query)}`);
 
 export interface DashboardStats {
   users: number;

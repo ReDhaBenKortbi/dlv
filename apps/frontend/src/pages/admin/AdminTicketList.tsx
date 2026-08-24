@@ -4,11 +4,11 @@ import { LuCircleCheckBig, LuClock } from "react-icons/lu";
 import LoadingScreen from "../../components/common/LoadingScreen";
 import Pagination from "../../components/common/Pagination";
 import { getTotalPages } from "../../lib/pagination";
-import { useTicketService } from "../../services/useTicketService";
+import { useTickets } from "../../hooks/tickets/useTickets";
 
 const AdminTicketList = () => {
   const [page, setPage] = useState(1);
-  const { tickets, meta, isLoading, handleResolve } = useTicketService(page);
+  const { tickets, meta, isLoading, handleResolve } = useTickets(page);
   const totalPages = meta ? getTotalPages(meta.total, meta.limit) : 1;
 
   // Fall back to the last valid page if the total shrinks — adjusted

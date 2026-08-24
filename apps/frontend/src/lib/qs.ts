@@ -1,5 +1,3 @@
-export type QueryValue = string | number | boolean | string[] | undefined | null;
-
 /**
  * Builds a URL query string (including the leading `?`, or `""` when empty)
  * from a params object.
@@ -12,11 +10,16 @@ export type QueryValue = string | number | boolean | string[] | undefined | null
  *   filters straight through without pre-filtering.
  * - Arrays are joined with commas, matching what the API's `BooksFilterDto`
  *   splits on. Empty arrays are omitted.
+ * - Everything else is stringified.
+ *
+ * Takes `object` rather than `Record<string, ...>` because interfaces without
+ * an index signature are not assignable to a Record, which would force a
+ * `{ ...spread }` at every call site.
  */
-export function buildQuery(params: Record<string, QueryValue>): string {
+export function buildQuery(params: object): string {
   const search = new URLSearchParams();
 
-  for (const [key, value] of Object.entries(params)) {
+  for (const [key, value] of Object.entries(params) as [string, unknown][]) {
     if (value === undefined || value === null || value === "") continue;
 
     if (Array.isArray(value)) {

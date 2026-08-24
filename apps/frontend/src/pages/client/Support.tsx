@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { api } from "../../lib/api";
+import { createTicket } from "../../services/ticketService";
 import { notify } from "../../utils/toast";
 import { LuSend, LuCircleCheckBig, LuShieldAlert } from "react-icons/lu";
 
@@ -46,10 +46,7 @@ const SupportPage = () => {
 
     setIsSubmitting(true);
     try {
-      await api("/tickets", {
-        method: "POST",
-        body: JSON.stringify({ subject, message }),
-      });
+      await createTicket({ subject, message });
 
       // Set cooldown in localStorage
       localStorage.setItem(`last_ticket_${user?.id}`, Date.now().toString());

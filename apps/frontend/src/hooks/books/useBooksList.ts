@@ -3,10 +3,11 @@
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { getBooks } from "../../services/bookService";
 import type { BooksQuery } from "../../services/bookService";
+import { queryKeys } from "../../lib/queryKeys";
 
 export const useBooksList = (params: BooksQuery) => {
   const query = useQuery({
-    queryKey: ["books", "list", params],
+    queryKey: queryKeys.books.list(params),
     queryFn: () => getBooks(params),
     placeholderData: keepPreviousData,
   });
