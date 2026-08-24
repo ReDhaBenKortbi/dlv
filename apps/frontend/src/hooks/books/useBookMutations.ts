@@ -1,7 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateBook, deleteBook, createBook } from "../../services/bookService";
 import type { Book } from "../../types/book";
-import { notify } from "../../utils/toast"; // Our Adapter
+import { notify } from "../../utils/toast";
+import { toErrorMessage } from "../../lib/errorMessage";
 
 export const useBookMutations = () => {
   const queryClient = useQueryClient();
@@ -18,10 +19,9 @@ export const useBookMutations = () => {
   const editMutation = useMutation({
     mutationFn: ({ id, updates }: { id: string; updates: Partial<Book> }) =>
       updateBook(id, updates),
-    onSuccess: (_, variables) => {
-      invalidate();
-      queryClient.invalidateQueries({ queryKey: ["books", variables.id] });
-    },
+    // `invalidate()` already clears the whole "books" prefix, which covers the
+    // detail/editions/related queries too.
+    onSuccess: invalidate,
   });
 
   const deleteMutation = useMutation({
@@ -36,7 +36,8 @@ export const useBookMutations = () => {
       return await notify.promise(addMutation.mutateAsync(bookData), {
         loading: "Adding new book to library...",
         success: "Book created successfully! 📚",
-        error: "Failed to create book. Please check fields.",
+        error: (err) =>
+          toErrorMessage(err, "Failed to create book. Please check fields."),
       });
     },
 
@@ -45,7 +46,7 @@ export const useBookMutations = () => {
       return await notify.promise(editMutation.mutateAsync({ id, updates }), {
         loading: "Saving changes...",
         success: "Book updated successfully!",
-        error: "Failed to save changes.",
+        error: (err) => toErrorMessage(err, "Failed to save changes."),
       });
     },
 
@@ -60,7 +61,7 @@ export const useBookMutations = () => {
       return await notify.promise(deleteMutation.mutateAsync(id), {
         loading: "Deleting book from vault...",
         success: "Book deleted permanently.",
-        error: "Could not delete book.",
+        error: (err) => toErrorMessage(err, "Could not delete book."),
       });
     },
 

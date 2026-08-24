@@ -8,6 +8,8 @@ export interface BooksQuery {
   focusSkill?: string[];
   proficiencyLevel?: string[];
   search?: string;
+  /** Fetch every tier edition of one title. Always served ungrouped. */
+  groupKey?: string;
   /** Row-level (ungrouped) pagination — used by the admin book table. */
   raw?: boolean;
 }

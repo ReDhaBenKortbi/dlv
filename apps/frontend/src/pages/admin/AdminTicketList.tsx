@@ -6,14 +6,6 @@ import Pagination from "../../components/common/Pagination";
 import { getTotalPages } from "../../lib/pagination";
 import { useTicketService } from "../../services/useTicketService";
 
-// This tells TypeScript what a Ticket looks like
-interface Ticket {
-  id: string;
-  subject: string;
-  message: string;
-  status: "new" | "resolved";
-}
-
 const AdminTicketList = () => {
   const [page, setPage] = useState(1);
   const { tickets, meta, isLoading, handleResolve } = useTicketService(page);
@@ -35,7 +27,7 @@ const AdminTicketList = () => {
         {tickets.length === 0 ? (
           <p className="text-center opacity-50 py-10">No messages yet.</p>
         ) : (
-          (tickets as Ticket[]).map((ticket) => (
+          tickets.map((ticket) => (
             <div
               key={ticket.id}
               className={`p-4 rounded-lg border flex justify-between items-start gap-4 ${
