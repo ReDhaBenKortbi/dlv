@@ -6,6 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useBook } from "../../hooks/books/useBook";
 import LoadingScreen from "../../components/common/LoadingScreen";
 import { getAccessToken } from "../../lib/api";
+import { canAccessTier } from "../../lib/bookSeries";
 import { API_URL } from "../../config/env";
 
 const Reader = () => {
@@ -42,14 +43,9 @@ const Reader = () => {
 
   if (isLoading) return <LoadingScreen />;
   if (isError || !book) return <ErrorView onBack={() => navigate("/")} />;
-  const canAccess =
-    book.bookTier === "FREE" ||
-    isAdmin ||
-    (book.bookTier === "PRO" &&
-      (subscriptionPlan === "PRO" || subscriptionPlan === "GOLD")) ||
-    (book.bookTier === "GOLD" && subscriptionPlan === "GOLD");
-
-  if (!canAccess) return <Navigate to="/subscription" replace />;
+  if (!canAccessTier(book.bookTier, subscriptionPlan, isAdmin)) {
+    return <Navigate to="/subscription" replace />;
+  }
 
   return (
     <div className="h-screen w-full bg-base-100 flex flex-col overflow-hidden">

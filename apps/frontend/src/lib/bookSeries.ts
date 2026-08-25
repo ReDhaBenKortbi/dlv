@@ -1,7 +1,6 @@
 import type { Book, BookTier } from "../types/book";
 import type { SubscriptionPlan } from "../constants/subscriptionPlans";
-
-const TIER_RANK: Record<BookTier, number> = { FREE: 0, PRO: 1, GOLD: 2 };
+import { TIER_RANK } from "./tierStyles";
 
 export interface BookSeries {
   groupKey: string; // shared `groupKey`, or the book's own id when standalone
