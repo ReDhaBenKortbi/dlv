@@ -1,3 +1,12 @@
+/**
+ * Toast messages, as a thin layer over `sonner`.
+ *
+ * Everything goes through here rather than importing `sonner` directly, so
+ * wording and behaviour stay consistent and swapping the library later means
+ * changing one file. `notify.promise` in particular replaced the hand-rolled
+ * loading/success/error toast trios that had been written out at each
+ * mutation call site.
+ */
 import { toast as sonnerToast } from "sonner";
 import type { ExternalToast } from "sonner";
 
