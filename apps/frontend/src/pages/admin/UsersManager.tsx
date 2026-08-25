@@ -7,13 +7,10 @@ import { EmptyState } from "../../components/common/EmptyState";
 import { usePaginatedList } from "../../hooks/usePaginatedList";
 import { useDebouncedValue } from "../../hooks/useDebouncedValue";
 import { BOOK_TIERS } from "../../constants/bookOptions";
+import { tierStyles } from "../../lib/tierStyles";
 import type { SubscriptionPlan } from "../../constants/subscriptionPlans";
 
 const PAGE_SIZE = 20;
-
-const TIER_BADGE_COLOR = Object.fromEntries(
-  BOOK_TIERS.map((tier) => [tier.id, tier.color]),
-) as Record<SubscriptionPlan, string>;
 
 const UsersManager = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -87,7 +84,7 @@ const UsersManager = () => {
                     <td>
                       <span
                         className={`badge badge-soft badge-sm font-bold ${
-                          TIER_BADGE_COLOR[user.subscriptionPlan]
+                          tierStyles[user.subscriptionPlan].badge
                         }`}
                       >
                         {user.subscriptionPlan}

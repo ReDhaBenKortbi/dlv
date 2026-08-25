@@ -60,7 +60,7 @@ export const AccessCta = ({ book, hasAccess }: AccessCtaProps) => {
       <div>
         <div className="flex items-center gap-2 mb-2">
           <h4 className="text-lg font-bold">{tier.label} Access Required</h4>
-          <TierBadge plan={book.bookTier as "PRO" | "GOLD"} size="sm" />
+          <TierBadge plan={book.bookTier} size="sm" />
         </div>
         <p className="text-sm text-base-content/60 max-w-md">
           Unlock this book and 100+ premium titles by upgrading your plan.

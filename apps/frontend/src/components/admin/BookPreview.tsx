@@ -1,4 +1,5 @@
 import type { BookTier } from "../../constants/bookOptions";
+import { tierStyles } from "../../lib/tierStyles";
 
 export interface PreviewProps {
   title: string;
@@ -22,9 +23,9 @@ export const BookPreview = ({
 
         {/* COVER */}
         <div className="aspect-[3/4] bg-base-200 rounded-xl flex items-center justify-center relative overflow-hidden border border-base-300">
-          {bookTier !== "FREE" && (
+          {bookTier && bookTier !== "FREE" && (
             <div className="absolute top-3 right-3">
-              <span className={`badge text-[10px] px-3 py-3 font-bold shadow-sm ${bookTier === "GOLD" ? "badge-warning" : "badge-secondary"}`}>
+              <span className={`badge text-[10px] px-3 py-3 font-bold shadow-sm ${tierStyles[bookTier].badge}`}>
                 {bookTier}
               </span>
             </div>
