@@ -1,27 +1,25 @@
-import { useState } from "react";
 import { LuCircleCheckBig, LuClock } from "react-icons/lu";
 
 import LoadingScreen from "../../components/common/LoadingScreen";
 import Pagination from "../../components/common/Pagination";
-import { getTotalPages } from "../../lib/pagination";
+import { AdminPageHeader } from "../../components/admin/AdminPageHeader";
+import { usePaginatedList } from "../../hooks/usePaginatedList";
 import { useTickets } from "../../hooks/tickets/useTickets";
 
 const AdminTicketList = () => {
-  const [page, setPage] = useState(1);
+  const { page, setPage, syncMeta } = usePaginatedList();
   const { tickets, meta, isLoading, handleResolve } = useTickets(page);
-  const totalPages = meta ? getTotalPages(meta.total, meta.limit) : 1;
-
-  // Fall back to the last valid page if the total shrinks — adjusted
-  // during render rather than via an effect.
-  if (meta && page > totalPages) {
-    setPage(totalPages);
-  }
+  const totalPages = syncMeta(meta);
 
   if (isLoading) return <LoadingScreen />;
 
   return (
     <div className="p-6 max-w-4xl mx-auto min-h-screen bg-base-100">
-      <h1 className="text-2xl font-bold mb-6">Support Tickets</h1>
+      <AdminPageHeader
+        className="mb-6"
+        title="Support Tickets"
+        subtitle="Messages sent from the in-app support form."
+      />
 
       <div className="space-y-4">
         {tickets.length === 0 ? (

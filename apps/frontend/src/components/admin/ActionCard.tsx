@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { LuArrowRight } from "react-icons/lu";
  // Import Lucide icon
 
-interface ActionCardProps {
+export interface ActionCardConfig {
   title: string;
   description: string;
   linkText: string;
@@ -11,13 +11,14 @@ interface ActionCardProps {
   colorClass: string;
 }
 
-const ActionCard: React.FC<ActionCardProps> = ({
-  title,
-  description,
-  linkText,
-  to,
-  icon,
-  colorClass,
+/**
+ * Takes its config entry whole rather than as six separate props — every call
+ * site was spreading one object out only to reassemble it here.
+ */
+const ActionCard = ({
+  card: { title, description, linkText, to, icon, colorClass },
+}: {
+  card: ActionCardConfig;
 }) => {
   return (
     <Link

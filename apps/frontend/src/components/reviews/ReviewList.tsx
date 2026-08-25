@@ -1,7 +1,6 @@
-import { useState } from "react";
 import { useReviews } from "../../hooks/reviews/useReviews";
 import Pagination from "../common/Pagination";
-import { getTotalPages } from "../../lib/pagination";
+import { usePaginatedList } from "../../hooks/usePaginatedList";
 import ReviewItem from "./ReviewItem";
 import { EmptyState } from "../common/EmptyState";
 
@@ -10,17 +9,11 @@ interface ListProps {
 }
 
 const ReviewList = ({ bookId }: ListProps) => {
-  const [page, setPage] = useState(1);
+  const { page, setPage, syncMeta } = usePaginatedList();
   const { reviews, meta, isLoadingReviews, isDeleting, deleteReview } =
     useReviews(bookId, page);
 
-  const totalPages = meta ? getTotalPages(meta.total, meta.limit) : 1;
-
-  // Fall back to the last valid page if a deletion shrinks the total —
-  // adjusted during render rather than via an effect.
-  if (meta && page > totalPages) {
-    setPage(totalPages);
-  }
+  const totalPages = syncMeta(meta);
 
   const sortedReviews = [...reviews].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),

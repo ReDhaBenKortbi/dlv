@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { LuLanguages, LuGraduationCap, LuTarget } from "react-icons/lu";
 
 import { FOCUS_SKILLS } from "../../constants/bookOptions";
@@ -8,13 +7,14 @@ import { useBooksList } from "../../hooks/books/useBooksList";
 
 import LoadingScreen from "../../components/common/LoadingScreen";
 import Pagination from "../../components/common/Pagination";
-import { getTotalPages } from "../../lib/pagination";
+import { AdminPageHeader } from "../../components/admin/AdminPageHeader";
+import { usePaginatedList } from "../../hooks/usePaginatedList";
 import { Link } from "react-router-dom";
 
 const PAGE_SIZE = 15;
 
 const BooksManager = () => {
-  const [page, setPage] = useState(1);
+  const { page, setPage, syncMeta } = usePaginatedList();
 
   // Raw (ungrouped) mode: each tier edition is its own row, since admins
   // need to edit/delete a specific edition, not a collapsed series card.
@@ -23,14 +23,7 @@ const BooksManager = () => {
     page,
     limit: PAGE_SIZE,
   });
-  const totalPages = meta ? getTotalPages(meta.total, meta.limit) : 1;
-
-  // If a deletion shrinks the total and the current page no longer exists,
-  // fall back to the last valid page (adjusted during render, React's
-  // recommended pattern, rather than via an effect).
-  if (meta && page > totalPages) {
-    setPage(totalPages);
-  }
+  const totalPages = syncMeta(meta);
 
   const { remove, deletingId } = useBookMutations();
 
@@ -47,20 +40,16 @@ const BooksManager = () => {
     <div className="p-4 md:p-10 min-h-screen bg-base-100 text-base-content">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 md:mb-8 gap-4 md:gap-0">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold">Manage Books</h1>
-            <p className="text-sm md:text-base text-gray-500 dark:text-gray-400">
-              View, edit, or remove books from the library.
-            </p>
-          </div>
-          <Link
-            className="btn btn-primary btn-sm md:btn-md"
-            to="/admin/add-book"
-          >
-            + Add New Book
-          </Link>
-        </div>
+        <AdminPageHeader
+          className="mb-6 md:mb-8"
+          title="Manage Books"
+          subtitle="View, edit, or remove books from the library."
+          action={
+            <Link className="btn btn-primary btn-sm md:btn-md" to="/admin/add-book">
+              + Add New Book
+            </Link>
+          }
+        />
 
         {/* Table */}
         <div className="overflow-x-auto bg-base-200 rounded-lg shadow border border-base-300">

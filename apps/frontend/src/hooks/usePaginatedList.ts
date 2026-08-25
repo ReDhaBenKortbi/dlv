@@ -1,50 +1,58 @@
 import { useState } from "react";
 import { getTotalPages } from "@/lib/pagination";
-
-interface PaginationMeta {
-  total: number;
-  limit: number;
-}
-
-interface UsePaginatedListOptions {
-  /** Server pagination metadata; `undefined` while the first request is in flight. */
-  meta: PaginationMeta | undefined;
-  /**
-   * Serialised filter/search state. Whenever it changes, the list resets to
-   * page 1. Omit for lists that have no filters.
-   */
-  filterKey?: string;
-}
+import type { PageMeta } from "@/types/pagination";
 
 /**
- * Page state for a server-paginated list: the current page, the derived page
- * count, a reset when filters change, and a clamp when the data shrinks.
+ * Page state for a server-paginated list.
+ *
+ * Split across a hook call and a `syncMeta` call because the two halves sit on
+ * opposite sides of the query: `page` is an *input* to it, while `meta` only
+ * comes back as a *result*. So the filter reset has to happen before the query
+ * runs, and the clamp can only happen after it returns.
+ *
+ *   const { page, setPage, syncMeta } = usePaginatedList(filterKey);
+ *   const { rows, meta } = useSomeList({ page, limit });
+ *   const totalPages = syncMeta(meta);
  *
  * Replaces six near-identical copies of this logic (Library, BooksManager,
  * UsersManager, SubscribersHistory, AdminTicketList, ReviewList).
+ *
+ * @param filterKey Serialised filter/search state; any change resets to page 1.
+ *                  Omit for lists with no filters.
  */
-export function usePaginatedList({
-  meta,
-  filterKey = "",
-}: UsePaginatedListOptions) {
+export function usePaginatedList(filterKey = "") {
   const [page, setPage] = useState(1);
-  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  const [appliedFilterKey, setAppliedFilterKey] = useState(filterKey);
 
-  const totalPages = meta ? getTotalPages(meta.total, meta.limit) : 1;
-
-  // Both branches adjust state *during render* rather than in an effect —
-  // React's recommended pattern for deriving state from changed inputs, and it
-  // avoids the extra render-and-commit round trip an effect would cost.
-  if (filterKey !== prevFilterKey) {
-    // A filter/search change always takes priority over the clamp below:
-    // `meta` still describes the previous filter, so `totalPages` is stale here.
-    setPrevFilterKey(filterKey);
+  // Adjusting state during render rather than in an effect is React's
+  // recommended way to derive state from changed inputs, and avoids the extra
+  // render-and-commit round trip an effect would cost.
+  //
+  // Resetting *before* the query also means the request that follows a filter
+  // change already asks for page 1 — the previous inline version reset after
+  // the query had fired, so every filter change cost a wasted request.
+  if (filterKey !== appliedFilterKey) {
+    setAppliedFilterKey(filterKey);
     setPage(1);
-  } else if (meta && page > totalPages) {
-    // The data shrank (e.g. a deletion) and the current page no longer exists —
-    // fall back to the last valid page.
-    setPage(totalPages);
   }
 
-  return { page, setPage, totalPages };
+  /**
+   * Feed the response metadata back in; returns the page count.
+   *
+   * If the data shrank (a deletion, a narrower filter) and the current page no
+   * longer exists, falls back to the last valid page.
+   */
+  const syncMeta = (meta: PageMeta | undefined): number => {
+    const totalPages = meta ? getTotalPages(meta.total, meta.limit) : 1;
+
+    // Skip while a filter change is still settling: `meta` then describes the
+    // previous filter, so its page count is stale and would clamp against the
+    // wrong total.
+    if (meta && filterKey === appliedFilterKey && page > totalPages) {
+      setPage(totalPages);
+    }
+    return totalPages;
+  };
+
+  return { page, setPage, syncMeta };
 }

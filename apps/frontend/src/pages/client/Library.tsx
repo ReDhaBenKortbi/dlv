@@ -6,7 +6,7 @@ import { BookCard } from "../../components/library/BookCard";
 import LoadingScreen from "../../components/common/LoadingScreen";
 import Pagination from "../../components/common/Pagination";
 import { EmptyState } from "../../components/common/EmptyState";
-import { getTotalPages } from "../../lib/pagination";
+import { usePaginatedList } from "../../hooks/usePaginatedList";
 import { LuFilter } from "react-icons/lu";
 
 import { groupBooksIntoSeries } from "../../lib/bookSeries";
@@ -21,7 +21,9 @@ const Library = () => {
   const [selectedLanguage, setSelectedLanguage] = useState<string>("");
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
-  const [page, setPage] = useState(1);
+
+  const filterKey = `${selectedLanguage}|${selectedSkills.join(",")}|${selectedLevels.join(",")}|${searchTerm}`;
+  const { page, setPage, syncMeta } = usePaginatedList(filterKey);
 
   // Filters/search are sent to the backend, which also handles grouping
   // multi-tier editions of the same title into one series per page.
@@ -34,24 +36,7 @@ const Library = () => {
     search: searchTerm || undefined,
   });
 
-  // Any filter/search change invalidates the current page window — reset
-  // to page 1 during render (React's recommended pattern for adjusting
-  // state in response to a prop/derived-value change) rather than in an
-  // effect, which would cost an extra render-and-commit round trip.
-  const filterKey = `${selectedLanguage}|${selectedSkills.join(",")}|${selectedLevels.join(",")}|${searchTerm}`;
-  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
-  const totalPages = meta ? getTotalPages(meta.total, meta.limit) : 1;
-
-  if (filterKey !== prevFilterKey) {
-    // Filters/search just changed — always take priority over clamping,
-    // since `meta` still reflects the previous filter's stale totalPages.
-    setPrevFilterKey(filterKey);
-    setPage(1);
-  } else if (meta && page > totalPages) {
-    // Data shrank (e.g. a deletion) and the current page no longer exists —
-    // fall back to the last valid page.
-    setPage(totalPages);
-  }
+  const totalPages = syncMeta(meta);
 
   // Tier editions of the same title (linked via `groupKey`) collapse into a
   // single card — the backend already guarantees every edition of a series

@@ -4,21 +4,20 @@ import { LuArrowLeft } from "react-icons/lu";
 interface BackButtonProps {
   label?: string;
   className?: string;
-  destination?: string | -1;
+  /** Where to go. Omit to step back through history. */
+  to?: string;
 }
 
 export const BackButton = ({
   label = "Back",
   className = "",
-  destination = -1,
+  to,
 }: BackButtonProps) => {
   const navigate = useNavigate();
 
   return (
     <button
-      onClick={() =>
-        destination === -1 ? navigate(-1) : navigate(destination)
-      }
+      onClick={() => (to ? navigate(to) : navigate(-1))}
       className={`btn btn-ghost btn-sm gap-2 group hover:bg-transparent px-0 ${className}`}
     >
       <LuArrowLeft
