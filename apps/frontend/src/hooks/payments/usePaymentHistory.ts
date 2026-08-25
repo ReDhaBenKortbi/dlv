@@ -1,6 +1,6 @@
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { getPaymentHistory } from "../../services/paymentService";
-import { queryKeys } from "../../lib/queryKeys";
+import { getPaymentHistory } from "@/services/paymentService";
+import { queryKeys } from "@/lib/queryKeys";
 
 export const usePaymentHistory = (filters: {
   status?: string;

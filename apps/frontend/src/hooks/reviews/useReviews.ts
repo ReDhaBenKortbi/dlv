@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import * as reviewService from "../../services/reviewService";
-import { useAuth } from "../../context/AuthContext";
-import { queryKeys } from "../../lib/queryKeys";
+import * as reviewService from "@/services/reviewService";
+import { useAuth } from "@/context/AuthContext";
+import { queryKeys } from "@/lib/queryKeys";
 
 export const useReviews = (bookId: string, page = 1, limit = 9) => {
   const queryClient = useQueryClient();

@@ -1,10 +1,10 @@
 import { useMemo } from "react"; // Added for optimization
-import { tierStyles } from "../../lib/tierStyles";
-import { useAuth } from "../../context/AuthContext";
+import { tierStyles } from "@/lib/tierStyles";
+import { useAuth } from "@/context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 import { toast } from "sonner";
-import { TierBadge } from "../../components/common/TierBadge";
+import { TierBadge } from "@/components/common/TierBadge";
 
 const Profile = () => {
   const {

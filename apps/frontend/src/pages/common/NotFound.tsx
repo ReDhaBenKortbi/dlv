@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 import { StatusCard } from "@/components/common/StatusCard";
 
-const NotFound = () => (
+export const NotFound = () => (
   <StatusCard
     variant="bare"
     icon={<h1 className="text-9xl font-bold text-primary opacity-20">404</h1>}
@@ -15,5 +15,3 @@ const NotFound = () => (
     }
   />
 );
-
-export default NotFound;

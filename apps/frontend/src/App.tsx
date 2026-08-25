@@ -1,44 +1,44 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { lazy } from "react";
-import { useAuth } from "./context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 
 // Components
-import LoadingScreen from "./components/common/LoadingScreen";
-import { RootWrapper } from "./layouts/RootWrapper";
-import { PublicRoute } from "./routes/PublicRoute";
-import ProtectedRoute from "./routes/ProtectedRoute";
-import AdminRoute from "./routes/AdminRoute";
-import UserLayout from "./layouts/UserLayout";
-import AdminLayout from "./layouts/AdminLayout";
-import RouteError from "./pages/common/RouteError";
+import { LoadingScreen } from "@/components/common/LoadingScreen";
+import { RootWrapper } from "@/layouts/RootWrapper";
+import { PublicRoute } from "@/routes/PublicRoute";
+import { ProtectedRoute } from "@/routes/ProtectedRoute";
+import { AdminRoute } from "@/routes/AdminRoute";
+import { UserLayout } from "@/layouts/UserLayout";
+import { AdminLayout } from "@/layouts/AdminLayout";
+import { RouteError } from "@/pages/common/RouteError";
 
 // Eager load critical auth pages
-import Signup from "./pages/auth/Signup";
-import Login from "./pages/auth/Login";
+import { Signup } from "@/pages/auth/Signup";
+import { Login } from "@/pages/auth/Login";
 import { Toaster } from "sonner";
 
 // Lazy load client components
-const Library = lazy(() => import("./pages/client/Library"));
-const Subscription = lazy(() => import("./pages/client/Subscription"));
-const PaymentSuccess = lazy(() => import("./pages/client/PaymentSuccess"));
-const PaymentFailure = lazy(() => import("./pages/client/PaymentFailure"));
-const BookDetails = lazy(() => import("./pages/client/BookDetails"));
-const Reader = lazy(() => import("./pages/client/Reader"));
-const Profile = lazy(() => import("./pages/client/Profile"));
-const SupportPage = lazy(() => import("./pages/client/Support"));
-const Privacy = lazy(() => import("./pages/common/Privacy"));
-const Terms = lazy(() => import("./pages/common/Terms"));
-const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
-const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
+const Library = lazy(() => import("@/pages/client/Library"));
+const Subscription = lazy(() => import("@/pages/client/Subscription"));
+const PaymentSuccess = lazy(() => import("@/pages/client/PaymentSuccess"));
+const PaymentFailure = lazy(() => import("@/pages/client/PaymentFailure"));
+const BookDetails = lazy(() => import("@/pages/client/BookDetails"));
+const Reader = lazy(() => import("@/pages/client/Reader"));
+const Profile = lazy(() => import("@/pages/client/Profile"));
+const SupportPage = lazy(() => import("@/pages/client/Support"));
+const Privacy = lazy(() => import("@/pages/common/Privacy"));
+const Terms = lazy(() => import("@/pages/common/Terms"));
+const ForgotPassword = lazy(() => import("@/pages/auth/ForgotPassword"));
+const ResetPassword = lazy(() => import("@/pages/auth/ResetPassword"));
 
 // Lazy load Admin components
-const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
-const AddBook = lazy(() => import("./pages/admin/AddBook"));
-const UsersManager = lazy(() => import("./pages/admin/UsersManager"));
-const BooksManager = lazy(() => import("./pages/admin/BooksManager"));
-const EditBook = lazy(() => import("./pages/admin/EditBook"));
-const SubscribersHistory = lazy(() => import("./pages/admin/SubscribersHistory"));
-const AdminTicketList = lazy(() => import("./pages/admin/AdminTicketList"));
+const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
+const AddBook = lazy(() => import("@/pages/admin/AddBook"));
+const UsersManager = lazy(() => import("@/pages/admin/UsersManager"));
+const BooksManager = lazy(() => import("@/pages/admin/BooksManager"));
+const EditBook = lazy(() => import("@/pages/admin/EditBook"));
+const SubscribersHistory = lazy(() => import("@/pages/admin/SubscribersHistory"));
+const AdminTicketList = lazy(() => import("@/pages/admin/AdminTicketList"));
 
 /**
  * BROWSER ROUTER CONFIGURATION
@@ -133,7 +133,7 @@ const router = createBrowserRouter([
  * Implements a Top-Level Boot Guard to ensure Auth state is
  * resolved before the Router is initialized.
  */
-function App() {
+export function App() {
   const { loading } = useAuth();
 
   // PREVENT REDIRECT FLASH:
@@ -150,5 +150,3 @@ function App() {
     </>
   );
 }
-
-export default App;

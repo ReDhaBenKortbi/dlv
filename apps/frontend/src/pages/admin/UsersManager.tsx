@@ -1,14 +1,14 @@
 import { useState } from "react";
-import { useUsers } from "../../hooks/users/useUsers";
-import LoadingScreen from "../../components/common/LoadingScreen";
-import Pagination from "../../components/common/Pagination";
-import { AdminPageHeader } from "../../components/admin/AdminPageHeader";
-import { EmptyState } from "../../components/common/EmptyState";
-import { usePaginatedList } from "../../hooks/usePaginatedList";
-import { useDebouncedValue } from "../../hooks/useDebouncedValue";
-import { BOOK_TIERS } from "../../constants/bookOptions";
-import { tierStyles } from "../../lib/tierStyles";
-import type { SubscriptionPlan } from "../../constants/subscriptionPlans";
+import { useUsers } from "@/hooks/users/useUsers";
+import { LoadingScreen } from "@/components/common/LoadingScreen";
+import { Pagination } from "@/components/common/Pagination";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { EmptyState } from "@/components/common/EmptyState";
+import { usePaginatedList } from "@/hooks/usePaginatedList";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { BOOK_TIERS } from "@/constants/bookOptions";
+import { tierStyles } from "@/lib/tierStyles";
+import type { SubscriptionPlan } from "@/constants/subscriptionPlans";
 
 const PAGE_SIZE = 20;
 

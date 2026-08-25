@@ -11,7 +11,7 @@ import { PasswordVisibilityToggle } from "@/components/common/PasswordVisibility
 const PASSWORD_RULE =
   "Must be more than 8 characters, including number, lowercase letter, uppercase letter";
 
-const Signup = () => {
+export const Signup = () => {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -135,5 +135,3 @@ const Signup = () => {
     </AuthCard>
   );
 };
-
-export default Signup;

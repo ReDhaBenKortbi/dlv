@@ -1,7 +1,7 @@
 import { LuCrown, LuShield } from "react-icons/lu";
 
-import type { SubscriptionPlan } from "../../constants/subscriptionPlans";
-import { tierStyles } from "../../lib/tierStyles";
+import type { SubscriptionPlan } from "@/constants/subscriptionPlans";
+import { tierStyles } from "@/lib/tierStyles";
 
 /** FREE renders nothing, so only the paid tiers need an icon. */
 const TIER_ICON = { PRO: LuShield, GOLD: LuCrown } as const;

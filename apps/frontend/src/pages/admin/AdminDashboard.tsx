@@ -1,9 +1,9 @@
-import AdminMetricsGrid from "../../components/admin/AdminMetricsGrid";
-import ActionCard from "../../components/admin/ActionCard";
-import LoadingScreen from "../../components/common/LoadingScreen";
-import { AdminPageHeader } from "../../components/admin/AdminPageHeader";
-import { ACTION_CARDS_CONFIG } from "../../utils/AdminActions.config";
-import { useDashboardMetrics } from "../../hooks/admin_dashboard/useDashboardMetrics";
+import { AdminMetricsGrid } from "@/components/admin/AdminMetricsGrid";
+import { ActionCard } from "@/components/admin/ActionCard";
+import { LoadingScreen } from "@/components/common/LoadingScreen";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { ACTION_CARDS_CONFIG } from "@/constants/adminActions";
+import { useDashboardMetrics } from "@/hooks/dashboard/useDashboardMetrics";
 
 const AdminDashboard: React.FC = () => {
   const { data: stats, isLoading, isError } = useDashboardMetrics();

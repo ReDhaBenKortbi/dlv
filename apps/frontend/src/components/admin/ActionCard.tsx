@@ -15,7 +15,7 @@ export interface ActionCardConfig {
  * Takes its config entry whole rather than as six separate props — every call
  * site was spreading one object out only to reassemble it here.
  */
-const ActionCard = ({
+export const ActionCard = ({
   card: { title, description, linkText, to, icon, colorClass },
 }: {
   card: ActionCardConfig;
@@ -62,5 +62,3 @@ const ActionCard = ({
     </Link>
   );
 };
-
-export default ActionCard;

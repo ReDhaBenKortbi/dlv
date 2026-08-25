@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { BookForm } from "@/components/admin/BookForm";
-import LoadingScreen from "@/components/common/LoadingScreen";
+import { LoadingScreen } from "@/components/common/LoadingScreen";
 import { tierStyles } from "@/lib/tierStyles";
 import {
   bookToFormValues,

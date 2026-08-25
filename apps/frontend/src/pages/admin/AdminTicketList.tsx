@@ -1,10 +1,10 @@
 import { LuCircleCheckBig, LuClock } from "react-icons/lu";
 
-import LoadingScreen from "../../components/common/LoadingScreen";
-import Pagination from "../../components/common/Pagination";
-import { AdminPageHeader } from "../../components/admin/AdminPageHeader";
-import { usePaginatedList } from "../../hooks/usePaginatedList";
-import { useTickets } from "../../hooks/tickets/useTickets";
+import { LoadingScreen } from "@/components/common/LoadingScreen";
+import { Pagination } from "@/components/common/Pagination";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { usePaginatedList } from "@/hooks/usePaginatedList";
+import { useTickets } from "@/hooks/tickets/useTickets";
 
 const AdminTicketList = () => {
   const { page, setPage, syncMeta } = usePaginatedList();

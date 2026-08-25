@@ -1,6 +1,6 @@
-import type { Book, BookTier } from "../types/book";
-import type { SubscriptionPlan } from "../constants/subscriptionPlans";
-import { TIER_RANK } from "./tierStyles";
+import type { Book, BookTier } from "@/types/book";
+import type { SubscriptionPlan } from "@/constants/subscriptionPlans";
+import { TIER_RANK } from "@/lib/tierStyles";
 
 export interface BookSeries {
   groupKey: string; // shared `groupKey`, or the book's own id when standalone

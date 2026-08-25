@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { createChargilyCheckout } from "../../services/paymentService";
-import { notify } from "../../utils/toast";
-import type { SubscriptionPlan } from "../../constants/subscriptionPlans";
+import { createChargilyCheckout } from "@/services/paymentService";
+import { notify } from "@/lib/notify";
+import type { SubscriptionPlan } from "@/constants/subscriptionPlans";
 
 export const useChargilyCheckout = () => {
   const [loading, setLoading] = useState(false);

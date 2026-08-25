@@ -23,7 +23,7 @@ interface MetricDisplayCardProps {
  * badgeColor) were raw Tailwind strings — and badgeColor was the same constant
  * at every call site. They collapse into `tone`.
  */
-const MetricDisplayCard = ({
+export const MetricDisplayCard = ({
   title,
   value,
   desc,
@@ -52,5 +52,3 @@ const MetricDisplayCard = ({
     </div>
   </div>
 );
-
-export default MetricDisplayCard;

@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 
 import { useAuth } from "@/context/AuthContext";
-import LoadingScreen from "@/components/common/LoadingScreen";
+import { LoadingScreen } from "@/components/common/LoadingScreen";
 import { BackButton } from "@/components/common/BackButton";
 import { BookHero } from "@/components/book/BookHero";
 import {
@@ -15,8 +15,8 @@ import { useBookEditions } from "@/hooks/books/useBookEditions";
 import { useRelatedBooks } from "@/hooks/books/useRelatedBooks";
 import { canAccessTier } from "@/lib/bookSeries";
 
-import ReviewList from "@/components/reviews/ReviewList";
-import ReviewForm from "@/components/reviews/ReviewForm";
+import { ReviewList } from "@/components/reviews/ReviewList";
+import { ReviewForm } from "@/components/reviews/ReviewForm";
 
 const BookDetails = () => {
   const { id } = useParams();

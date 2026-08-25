@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { usePaymentHistory } from "../../hooks/payments/usePaymentHistory";
-import Pagination from "../../components/common/Pagination";
-import { AdminPageHeader } from "../../components/admin/AdminPageHeader";
-import { EmptyState } from "../../components/common/EmptyState";
-import { usePaginatedList } from "../../hooks/usePaginatedList";
+import { usePaymentHistory } from "@/hooks/payments/usePaymentHistory";
+import { Pagination } from "@/components/common/Pagination";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { EmptyState } from "@/components/common/EmptyState";
+import { usePaginatedList } from "@/hooks/usePaginatedList";
 
 const STATUS_OPTIONS = ["", "PENDING", "APPROVED", "REJECTED"] as const;
 const PLAN_OPTIONS = ["", "PRO", "GOLD"] as const;

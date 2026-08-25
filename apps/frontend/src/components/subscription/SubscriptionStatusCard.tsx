@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 import { useAuth } from "@/context/AuthContext";
 import { cancelPendingPayment } from "@/services/paymentService";
-import { notify } from "@/utils/toast";
+import { notify } from "@/lib/notify";
 import { StatusCard } from "@/components/common/StatusCard";
 
 // If a checkout has been PENDING longer than this, treat it as stale (the

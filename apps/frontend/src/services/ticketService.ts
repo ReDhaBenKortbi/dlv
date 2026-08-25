@@ -1,7 +1,7 @@
-import { api } from "../lib/api";
-import { buildQuery } from "../lib/qs";
-import type { Ticket, TicketStatus } from "../types/ticket";
-import type { Paginated } from "../types/pagination";
+import { api } from "@/lib/api";
+import { buildQuery } from "@/lib/qs";
+import type { Ticket, TicketStatus } from "@/types/ticket";
+import type { Paginated } from "@/types/pagination";
 
 export interface TicketsQuery {
   page?: number;

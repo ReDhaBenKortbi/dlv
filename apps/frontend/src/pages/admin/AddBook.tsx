@@ -12,7 +12,7 @@ import { useBook } from "@/hooks/books/useBook";
 import { useBookMutations } from "@/hooks/books/useBookMutations";
 import { useObjectUrl } from "@/hooks/useObjectUrl";
 import { uploadImageToCloudinary } from "@/services/cloudinaryService";
-import { notify } from "@/utils/toast";
+import { notify } from "@/lib/notify";
 import { BOOK_TIERS } from "@/constants/bookOptions";
 import type { BookTier } from "@/constants/bookOptions";
 

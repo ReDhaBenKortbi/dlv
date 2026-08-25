@@ -1,9 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateBook, deleteBook, createBook } from "../../services/bookService";
-import type { Book } from "../../types/book";
-import { notify } from "../../utils/toast";
-import { queryKeys } from "../../lib/queryKeys";
-import { toErrorMessage } from "../../lib/errorMessage";
+import { updateBook, deleteBook, createBook } from "@/services/bookService";
+import type { Book } from "@/types/book";
+import { notify } from "@/lib/notify";
+import { queryKeys } from "@/lib/queryKeys";
+import { toErrorMessage } from "@/lib/errorMessage";
 
 export const useBookMutations = () => {
   const queryClient = useQueryClient();

@@ -1,8 +1,8 @@
 import { LuUsers, LuBookOpen, LuCrown } from "react-icons/lu";
 
-import MetricDisplayCard from "./MetricDisplayCard";
-import type { MetricTone } from "./MetricDisplayCard";
-import type { DashboardStats } from "../../services/userService";
+import { MetricDisplayCard } from "@/components/admin/MetricDisplayCard";
+import type { MetricTone } from "@/components/admin/MetricDisplayCard";
+import type { DashboardStats } from "@/services/userService";
 
 interface Props {
   stats: DashboardStats;
@@ -48,7 +48,7 @@ const METRICS: {
   },
 ];
 
-const AdminMetricsGrid = ({ stats }: Props) => (
+export const AdminMetricsGrid = ({ stats }: Props) => (
   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-12">
     {METRICS.map(({ key, title, desc, icon: Icon, tone, badge, emptyBadge }) => {
       const value = stats[key];
@@ -66,5 +66,3 @@ const AdminMetricsGrid = ({ stats }: Props) => (
     })}
   </div>
 );
-
-export default AdminMetricsGrid;

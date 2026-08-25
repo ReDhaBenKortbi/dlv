@@ -1,6 +1,6 @@
 import { StatusCard } from "@/components/common/StatusCard";
 
-const CrashFallback = () => (
+export const CrashFallback = () => (
   <StatusCard
     variant="bare"
     title="Something went wrong"
@@ -15,5 +15,3 @@ const CrashFallback = () => (
     }
   />
 );
-
-export default CrashFallback;
