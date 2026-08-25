@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
-import { resetPassword } from "../../services/authService";
-import { notify } from "../../utils/toast";
-import { PASSWORD_RESET_ENABLED } from "../../constants/features";
-import logo from "../../assets/logo/logo.svg";
+import { resetPassword } from "@/services/authService";
+import { notify } from "@/utils/toast";
+import { PASSWORD_RESET_ENABLED } from "@/constants/features";
+import { AuthCard } from "@/components/auth/AuthCard";
+import { FormField } from "@/components/common/FormField";
+import { SubmitButton } from "@/components/common/SubmitButton";
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
@@ -51,103 +53,62 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-base-200 flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md">
-        <div className="card bg-base-100 shadow-2xl rounded-2xl border border-base-200">
-          <div className="card-body space-y-6">
-            <div className="flex justify-center">
-              <img
-                src={logo}
-                alt="DLV Logo"
-                className="h-32 md:h-34 w-auto bg-white rounded-full"
-              />
-            </div>
+    <AuthCard
+      title="Reset Password"
+      subtitle="Choose a new password"
+      error={
+        token ? (
+          error
+        ) : (
+          <>
+            This reset link is invalid. Request a new one from the{" "}
+            <Link to="/forgot-password" className="link">
+              forgot password
+            </Link>{" "}
+            page.
+          </>
+        )
+      }
+      footer={
+        <Link to="/login" className="text-primary font-medium hover:underline">
+          Back to Login
+        </Link>
+      }
+    >
+      {token && (
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <FormField label="New Password">
+            <input
+              type="password"
+              required
+              minLength={8}
+              placeholder="••••••••"
+              className="input input-bordered focus:input-primary w-full"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              disabled={isLoading}
+            />
+          </FormField>
 
-            <div className="text-center space-y-1">
-              <h2 className="text-2xl font-bold">Reset Password</h2>
-              <p className="text-sm opacity-60">Choose a new password</p>
-            </div>
+          <FormField label="Confirm New Password">
+            <input
+              type="password"
+              required
+              minLength={8}
+              placeholder="••••••••"
+              className="input input-bordered focus:input-primary w-full"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              disabled={isLoading}
+            />
+          </FormField>
 
-            {!token ? (
-              <div className="alert alert-error text-sm py-2">
-                <span>
-                  This reset link is invalid. Request a new one from the{" "}
-                  <Link to="/forgot-password" className="link">
-                    forgot password
-                  </Link>{" "}
-                  page.
-                </span>
-              </div>
-            ) : (
-              <>
-                {error && (
-                  <div className="alert alert-error text-sm py-2">
-                    <span>{error}</span>
-                  </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text text-xs uppercase tracking-wide opacity-70 font-semibold">
-                        New Password
-                      </span>
-                    </label>
-                    <input
-                      type="password"
-                      required
-                      minLength={8}
-                      placeholder="••••••••"
-                      className="input input-bordered focus:input-primary w-full"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      disabled={isLoading}
-                    />
-                  </div>
-
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text text-xs uppercase tracking-wide opacity-70 font-semibold">
-                        Confirm New Password
-                      </span>
-                    </label>
-                    <input
-                      type="password"
-                      required
-                      minLength={8}
-                      placeholder="••••••••"
-                      className="input input-bordered focus:input-primary w-full"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      disabled={isLoading}
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className={`btn btn-primary w-full font-semibold ${
-                      isLoading ? "loading loading-spinner" : ""
-                    }`}
-                  >
-                    {isLoading ? "Updating..." : "Update Password"}
-                  </button>
-                </form>
-              </>
-            )}
-
-            <div className="text-center text-sm pt-2">
-              <Link
-                to="/login"
-                className="text-primary font-medium hover:underline"
-              >
-                Back to Login
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+          <SubmitButton loading={isLoading} loadingText="Updating...">
+            Update Password
+          </SubmitButton>
+        </form>
+      )}
+    </AuthCard>
   );
 };
 
