@@ -37,7 +37,7 @@ from rate limiting entirely.
 
 | Method & Path | Access | What it does |
 |---|---|---|
-| `GET /books` | Optional login | Lists books. Query params: `search`, `targetLanguage`, `focusSkill` (comma-separated or repeated), `proficiencyLevel` (same), `page`, `limit` (max 50, default 20), `raw` (boolean — `true` returns individual tier editions as separate rows for the admin table; default `false` groups same-title editions into one card). Never includes `indexURL` (the real content URL). |
+| `GET /books` | Optional login | Lists books. Query params: `search`, `targetLanguage`, `focusSkill` (comma-separated or repeated), `proficiencyLevel` (same), `page`, `limit` (max 50, default 20), `groupKey` (every tier edition of one title — always returned ungrouped, since the caller wants the edition ladder), `raw` (boolean — `true` returns every tier edition as its own row; default `false` groups same-title editions into one entry, and keeps a title’s editions together on the same page). Never includes `indexURL` (the real content URL). |
 | `GET /books/:id` | Optional login | One book's details. `indexURL` is stripped out unless the caller is entitled to that book's tier (or is an admin). |
 | `GET /books/:id/read` | Logged in | Proxies the actual book content. Checks the `Referer` header matches the frontend origin, re-checks tier entitlement, then fetches and returns the book's HTML with anti-framing/anti-context-menu protections injected. This is what the in-app reader loads in an iframe. Not a download link — it's meant to be embedded, not linked to directly. |
 | `POST /books` | Admin | Creates a book. Body: `title`, `author`, `description`, `coverURL` (must be a URL), `indexURL` (must be a URL), and optionally `bookTier` (`FREE`\|`PRO`\|`GOLD`, defaults `FREE`), `groupKey` (links tier editions of the same title so they render as one card with an edition switcher), `targetLanguage`, `focusSkill`, `proficiencyLevel`. |
@@ -62,7 +62,7 @@ All routes require login.
 | `GET /users/me` | Logged in | The current user's profile — this is what `AuthContext` on the frontend hydrates from. |
 | `GET /users` | Admin | Paginated user list. Query: `search`, `page`, `limit`. |
 | `GET /users/stats` | Admin | Aggregate counts for the admin dashboard (e.g. totals by plan/status). |
-| `PATCH /users/:id/subscription` | Admin | Body: `{ isSubscribed: boolean }`. Manually flips a user's subscription flag. |
+| `PATCH /users/:id/subscription` | Admin | Body: `{ plan: "FREE" \| "PRO" \| "GOLD" }`. Sets a user's plan directly, without a payment — used by the admin user table. |
 
 ## Tickets (`/tickets`)
 

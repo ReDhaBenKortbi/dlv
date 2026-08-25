@@ -50,13 +50,22 @@ npm run prisma:generate  # Regenerate Prisma client
 - Token is read from the `Authorization` header **or** a `token` query param (the latter only for the `/books/:id/read` iframe).
 
 ### Tiered Access Control
-Books and users each carry a tier (`FREE | PRO | GOLD`). `canAccess(bookTier, userPlan)` in `books.service.ts` is the single gate:
+Books and users each carry a tier (`FREE | PRO | GOLD`). `canAccess(bookTier, userPlan)` in `books/access.util.ts` is the single gate:
 - `FREE` book → everyone
 - `PRO` book → `PRO` or `GOLD` user
 - `GOLD` book → `GOLD` user only
 - Admins bypass all tiers.
 
 `indexURL` (the real book content URL) is **never** returned by the list endpoint and is stripped from single-book responses when the user isn't entitled.
+
+### Tier Editions (`groupKey`)
+The same title can exist at several tiers (a FREE sample, a PRO edition, a GOLD edition). Those rows share a `groupKey`, and `GET /books` collapses them into one entry per title by default.
+
+- **Grouped (default)** — one entry per title. Pagination counts *titles*, and every edition of a series is kept on the same page in full, so an edition ladder is never split across a page boundary.
+- **`?raw=true`** — one entry per row, ungrouped.
+- **`?groupKey=<key>`** — every edition of one title. Always served ungrouped, since the caller is asking for the ladder itself.
+
+Both the public library and the admin book table use grouped mode. On the frontend, `lib/bookSeries.ts` turns the flat list into `{ groupKey, editions }` sorted `FREE → PRO → GOLD`.
 
 ### Book Reader
 `GET /books/:id/read` (JWT-guarded) proxies the book HTML server-side:
@@ -89,6 +98,17 @@ Webhook activation/rejection is idempotent: it no-ops unless the matching `Payme
 ```
 Pages/Components → src/hooks/** (TanStack Query) → src/services/*.ts (api() calls) → NestJS API
 ```
+A page never calls `api()` directly — it uses a hook, which uses a service. The only exception is `AuthContext`, which sits underneath the chain (`GET /users/me`, `POST /auth/logout`).
+
+Hooks are grouped by domain: `hooks/books/` (`useBook`, `useBooksList`, `useBookEditions`, `useRelatedBooks`, `useBookForm`, `useBookMutations`), plus `dashboard/`, `payments/`, `reviews/`, `tickets/`, `users/`. Cross-cutting hooks sit at the root: `usePaginatedList` (page state + clamp/reset for every server-paginated list), `useDebouncedValue`, `useObjectUrl`.
+
+Query keys all live in `src/lib/queryKeys.ts` — never inline — so `invalidateQueries({ queryKey: queryKeys.books.all })` reliably clears everything derived from books.
+
+### Conventions
+- **Imports**: `@/` alias only (declared in both `tsconfig.app.json` and `vite.config.ts`); no relative imports anywhere in `src`.
+- **Exports**: named for everything, *except* pages loaded via `React.lazy()` in `App.tsx`, which need a default. A default export therefore means "this is a lazy route page".
+- **Tier colours/labels**: `src/lib/tierStyles.ts` is the single source — no inline `tier === "GOLD" ? … : …`.
+- See `apps/frontend/README.md` for the directory map and where new code goes.
 
 ### Auth
 - The access token lives only in an in-memory variable (`src/lib/api.ts`, `getAccessToken`/`setAccessToken`) — never in `localStorage`/`sessionStorage`, so it isn't readable by injected scripts. It's lost on full page reload by design; `api()` transparently calls `POST /auth/refresh` (which relies on the `httpOnly` refresh cookie sent automatically by the browser) to get a new one.
