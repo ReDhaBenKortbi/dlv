@@ -1,4 +1,5 @@
-import { useMemo } from "react"; // Added for optimization
+import { useMemo } from "react"; // Added for optimization
+import { tierStyles } from "../../lib/tierStyles";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -65,7 +66,7 @@ const Profile = () => {
 
     return {
       label: "FREE PLAN",
-      class: "badge-ghost border-gray-100",
+      class: "badge-ghost border-base-300",
       text: "Upgrade to unlock all books",
     };
   }, [isAdmin, isSubscribed, subscriptionStatus]);
@@ -81,7 +82,7 @@ const Profile = () => {
               {/* Avatar */}
               <div className="avatar">
                 <div
-                  className={`w-20 rounded-full text-primary-content flex items-center justify-center text-2xl font-bold shadow-lg ring-offset-2 ${subscriptionPlan === "GOLD" ? "bg-gradient-to-br from-amber-400 to-amber-600 ring-4 ring-amber-400" : subscriptionPlan === "PRO" ? "bg-gradient-to-br from-secondary/90 to-secondary/60 ring-4 ring-secondary/60" : "bg-gradient-to-br from-primary/90 to-secondary/80 ring ring-base-100"}`}
+                  className={`w-20 rounded-full flex items-center justify-center text-2xl font-bold shadow-lg ring-offset-2 ${tierStyles[subscriptionPlan].solid} ${subscriptionPlan === "FREE" ? "ring" : "ring-4"} ${tierStyles[subscriptionPlan].ring}`}
                 >
                   {user?.email?.charAt(0).toUpperCase()}
                 </div>

@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { cancelPendingPayment } from "@/services/paymentService";
 import { notify } from "@/utils/toast";
+import { StatusCard } from "@/components/common/StatusCard";
 
 // If a checkout has been PENDING longer than this, treat it as stale (the
 // webhook likely never arrived — user abandoned checkout, network issue,
@@ -49,41 +50,40 @@ export const SubscriptionStatusCard = ({
   };
 
   return (
-    <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
-      <div className="card w-full max-w-md bg-base-100 shadow-2xl text-center p-10">
+    <StatusCard
+      icon={
         <div
-          className={`badge ${isWaiting ? "badge-warning" : "badge-success"} mb-4`}
+          className={`badge ${isWaiting ? "badge-warning" : "badge-success"} mx-auto`}
         >
           {isWaiting ? "Processing" : "Active"}
         </div>
-        <h2 className="text-2xl font-bold">
-          {isWaiting ? "Payment Processing" : "Subscription Active"}
-        </h2>
-        <p className="text-base-content/70 mt-2">
-          {isWaiting
-            ? "Your payment is being confirmed. This usually takes a few minutes."
-            : "You already have access to your plan's books!"}
-        </p>
-
-        {isStalePending && (
-          <div className="mt-6 space-y-2">
-            <p className="text-sm text-base-content/60">
-              Still stuck? The payment may not have gone through.
-            </p>
-            <button
-              className={`btn btn-outline btn-warning btn-sm w-full ${cancelling ? "loading" : ""}`}
-              disabled={cancelling}
-              onClick={() => void handleCancelPending()}
-            >
-              Cancel & Try Again
-            </button>
-          </div>
-        )}
-
-        <Link to="/" className="btn btn-primary mt-8">
+      }
+      title={isWaiting ? "Payment Processing" : "Subscription Active"}
+      body={
+        isWaiting
+          ? "Your payment is being confirmed. This usually takes a few minutes."
+          : "You already have access to your plan's books!"
+      }
+      action={
+        <Link to="/" className="btn btn-primary w-full">
           Return to Library
         </Link>
-      </div>
-    </div>
+      }
+    >
+      {isStalePending && (
+        <div className="space-y-2">
+          <p className="text-sm text-base-content/60">
+            Still stuck? The payment may not have gone through.
+          </p>
+          <button
+            className={`btn btn-outline btn-warning btn-sm w-full ${cancelling ? "loading" : ""}`}
+            disabled={cancelling}
+            onClick={() => void handleCancelPending()}
+          >
+            Cancel &amp; Try Again
+          </button>
+        </div>
+      )}
+    </StatusCard>
   );
 };

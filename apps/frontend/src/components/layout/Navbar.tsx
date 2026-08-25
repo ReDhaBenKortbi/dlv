@@ -8,7 +8,8 @@ import { useSearch } from "../../context/SearchContext";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "sonner";
-import { TierBadge } from "../common/TierBadge";
+import { TierBadge } from "../common/TierBadge";
+import { tierStyles } from "../../lib/tierStyles";
 
 const Navbar = () => {
   // Get search term and setter from context
@@ -72,11 +73,15 @@ const Navbar = () => {
           {user && (
             <div className="dropdown dropdown-end">
               <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
-                <div className={`relative w-8 rounded-full text-primary-content flex items-center justify-center text-sm font-semibold ${subscriptionPlan === "GOLD" ? "bg-amber-500 ring-2 ring-amber-400 ring-offset-1" : subscriptionPlan === "PRO" ? "bg-secondary ring-2 ring-secondary/60 ring-offset-1" : "bg-primary"}`}>
+                <div
+                  className={`relative w-8 rounded-full flex items-center justify-center text-sm font-semibold ${tierStyles[subscriptionPlan].solid} ${subscriptionPlan === "FREE" ? "" : `ring-2 ring-offset-1 ${tierStyles[subscriptionPlan].ring}`}`}
+                >
                   {user.email?.charAt(0).toUpperCase()}
                   {subscriptionPlan !== "FREE" && (
-                    <span className={`absolute -bottom-1 -right-1 rounded-full p-0.5 ${subscriptionPlan === "GOLD" ? "bg-amber-500" : "bg-secondary"}`}>
-                      {subscriptionPlan === "GOLD" ? <LuCrown size={8} className="text-white" /> : <LuCrown size={8} className="text-white" />}
+                    <span
+                      className={`absolute -bottom-1 -right-1 rounded-full p-0.5 ${tierStyles[subscriptionPlan].solid}`}
+                    >
+                      <LuCrown size={8} className="text-white" />
                     </span>
                   )}
                 </div>

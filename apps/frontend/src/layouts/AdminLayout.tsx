@@ -10,7 +10,7 @@ const AdminLayout = () => {
 
       <div className="drawer-content flex flex-col min-h-screen">
         {/* Mobile Header */}
-        <div className="lg:hidden flex items-center p-4 bg-base-100 dark:bg-base-200 shadow-md border-b border-base-300 dark:border-base-400">
+        <div className="lg:hidden flex items-center p-4 bg-base-100 dark:bg-base-200 shadow-md border-b border-base-300">
           <label htmlFor="my-drawer-2" className="btn btn-square btn-ghost">
             <svg
               xmlns="http://www.w3.org/2000/svg"

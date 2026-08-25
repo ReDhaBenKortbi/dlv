@@ -23,7 +23,7 @@ const ActionCard = ({
   return (
     <Link
       to={to}
-      className="card bg-base-100 dark:bg-base-200 border border-base-300 dark:border-base-400 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer p-3 group"
+      className="card bg-base-100 dark:bg-base-200 border border-base-300 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer p-3 group"
     >
       <div className="card-body flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
         {/* Icon Box */}
@@ -38,10 +38,10 @@ const ActionCard = ({
 
         {/* Text Content */}
         <div className="flex-1">
-          <h2 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-100 mb-1 leading-tight">
+          <h2 className="text-lg sm:text-xl font-bold text-base-content mb-1 leading-tight">
             {title}
           </h2>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mb-3">
+          <p className="text-base-content/60 text-sm mb-3">
             {description}
           </p>
 
@@ -54,7 +54,7 @@ const ActionCard = ({
             {/* Swapped SVG for Lucide ArrowRight */}
             <LuArrowRight
               size={16}
-              className="transform group-hover:translate-x-1 transition-transform text-gray-700 dark:text-gray-200"
+              className="transform group-hover:translate-x-1 transition-transform text-base-content/80"
             />
           </div>
         </div>
