@@ -65,7 +65,7 @@ const Profile = () => {
 
     return {
       label: "FREE PLAN",
-      class: "badge-ghost border-gray-100",
+      class: "badge-ghost border-base-300",
       text: "Upgrade to unlock all books",
     };
   }, [isAdmin, isSubscribed, subscriptionStatus]);

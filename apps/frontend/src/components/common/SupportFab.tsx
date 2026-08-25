@@ -22,7 +22,7 @@ const SupportFab = () => {
     {
       icon: <LuMail size={20} />,
       href: "mailto:digitallearningvault.dz@gmail.com",
-      color: "bg-gray-600",
+      color: "bg-neutral",
     },
   ];
 

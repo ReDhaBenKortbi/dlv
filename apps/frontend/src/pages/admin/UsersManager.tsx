@@ -58,7 +58,7 @@ const UsersManager = () => {
         ) : (
           <div className="overflow-x-auto bg-base-200 rounded-2xl shadow-sm border border-base-300">
             <table className="table table-compact w-full">
-              <thead className="bg-base-300 text-gray-500 uppercase text-xs font-bold">
+              <thead className="bg-base-300 text-base-content/60 uppercase text-xs font-bold">
                 <tr>
                   <th className="py-4 text-left">Email</th>
                   <th>Status</th>
@@ -72,7 +72,7 @@ const UsersManager = () => {
                     key={user.id}
                     className="hover:bg-base-100 transition-colors"
                   >
-                    <td className="font-medium text-gray-700">{user.email}</td>
+                    <td className="font-medium text-base-content/80">{user.email}</td>
                     <td>
                       {user.isSubscribed ? (
                         <span className="badge badge-soft badge-info badge-sm font-bold">
@@ -101,7 +101,7 @@ const UsersManager = () => {
                             {isRowUpdating && (
                               <span className="loading loading-spinner loading-xs"></span>
                             )}
-                            <label className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                            <label className="flex items-center gap-2 text-xs text-base-content/60">
                               Set tier
                               <select
                                 aria-label={`Change tier for ${user.email}`}

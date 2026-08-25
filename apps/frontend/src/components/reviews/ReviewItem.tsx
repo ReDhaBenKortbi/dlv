@@ -18,7 +18,7 @@ const ReviewItem = ({ review, onDelete, isDeleting }: ItemProps) => {
     : "Recently";
 
   return (
-    <div className="group relative bg-base-100 dark:bg-base-200/50 border border-base-300 dark:border-base-400/10 p-5 rounded-2xl transition-all hover:shadow-md mb-4">
+    <div className="group relative bg-base-100 dark:bg-base-200/50 border border-base-300 p-5 rounded-2xl transition-all hover:shadow-md mb-4">
       {/* Header: Avatar, Name, Stars, and Delete */}
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
