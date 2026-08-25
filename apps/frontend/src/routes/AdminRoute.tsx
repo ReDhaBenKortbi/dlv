@@ -1,8 +1,8 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import LoadingScreen from "../components/common/LoadingScreen";
+import { useAuth } from "@/context/AuthContext";
+import { LoadingScreen } from "@/components/common/LoadingScreen";
 
-const AdminRoute = () => {
+export const AdminRoute = () => {
   const { isAdmin, loading } = useAuth();
 
   // 1. Wait for the auth check to confirm whether the user is logged in
@@ -16,5 +16,3 @@ const AdminRoute = () => {
   // 3. If they are the admin, let them see the children (AdminDashboard)
   return <Outlet />;
 };
-
-export default AdminRoute;

@@ -1,7 +1,7 @@
-import { api } from "../lib/api";
-import { buildQuery } from "../lib/qs";
-import type { Review, NewReviewData } from "../types/Review";
-import type { Paginated } from "../types/pagination";
+import { api } from "@/lib/api";
+import { buildQuery } from "@/lib/qs";
+import type { Review, NewReviewData } from "@/types/review";
+import type { Paginated } from "@/types/pagination";
 
 export const getReviewsByBookId = (
   bookId: string,

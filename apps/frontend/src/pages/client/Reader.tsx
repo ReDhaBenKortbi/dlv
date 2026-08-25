@@ -2,12 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { LuArrowLeft, LuLock, LuLoaderCircle, LuShieldCheck } from "react-icons/lu";
 
-import { useAuth } from "../../context/AuthContext";
-import { useBook } from "../../hooks/books/useBook";
-import LoadingScreen from "../../components/common/LoadingScreen";
-import { getAccessToken } from "../../lib/api";
-import { canAccessTier } from "../../lib/bookSeries";
-import { API_URL } from "../../config/env";
+import { useAuth } from "@/context/AuthContext";
+import { useBook } from "@/hooks/books/useBook";
+import { LoadingScreen } from "@/components/common/LoadingScreen";
+import { getAccessToken } from "@/lib/api";
+import { canAccessTier } from "@/lib/bookSeries";
+import { API_URL } from "@/config/env";
 
 const Reader = () => {
   const { id } = useParams<{ id: string }>();

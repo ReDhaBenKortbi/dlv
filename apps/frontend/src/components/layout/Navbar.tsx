@@ -1,17 +1,17 @@
 // lucid icons
 import { LuSearch, LuUser, LuLogOut, LuCrown } from "react-icons/lu";
 
-import logo from "../../assets/logo/logo.svg";
+import logo from "@/assets/logo/logo.svg";
 // search context
-import { useSearch } from "../../context/SearchContext";
+import { useSearch } from "@/context/SearchContext";
 
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
-import { TierBadge } from "../common/TierBadge";
-import { tierStyles } from "../../lib/tierStyles";
+import { TierBadge } from "@/components/common/TierBadge";
+import { tierStyles } from "@/lib/tierStyles";
 
-const Navbar = () => {
+export const Navbar = () => {
   // Get search term and setter from context
   const { searchTerm, setSearchTerm } = useSearch();
 
@@ -138,5 +138,3 @@ const Navbar = () => {
     </div>
   );
 };
-
-export default Navbar;

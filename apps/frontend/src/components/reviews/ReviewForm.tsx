@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { LuStar, LuPenLine } from "react-icons/lu";
 
-import { useReviews } from "../../hooks/reviews/useReviews";
+import { useReviews } from "@/hooks/reviews/useReviews";
 
 interface Props {
   bookId: string;
 }
 
-const ReviewForm = ({ bookId }: Props) => {
+export const ReviewForm = ({ bookId }: Props) => {
   const { addReview, isAdding, userReview } = useReviews(bookId);
 
   const [rating, setRating] = useState(0);
@@ -100,5 +100,3 @@ const ReviewForm = ({ bookId }: Props) => {
     </div>
   );
 };
-
-export default ReviewForm;

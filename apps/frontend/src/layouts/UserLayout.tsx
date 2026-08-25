@@ -1,11 +1,11 @@
 import { Outlet } from "react-router-dom";
-import Navbar from "../components/layout/Navbar";
+import { Navbar } from "@/components/layout/Navbar";
 import { Suspense } from "react";
-import { TransitionLoader } from "../components/common/TransitionLoader";
-import { SubscriptionWatcher } from "../components/common/SubscriptionWatcher";
-import SupportFab from "../components/common/SupportFab";
+import { TransitionLoader } from "@/components/common/TransitionLoader";
+import { SubscriptionWatcher } from "@/components/common/SubscriptionWatcher";
+import { SupportFab } from "@/components/common/SupportFab";
 
-const UserLayout = () => {
+export const UserLayout = () => {
   return (
     <div className="min-h-screen bg-base-200 dark:bg-base-300 transition-colors duration-300">
       <Navbar />
@@ -21,5 +21,3 @@ const UserLayout = () => {
     </div>
   );
 };
-
-export default UserLayout;

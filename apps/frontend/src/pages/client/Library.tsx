@@ -1,15 +1,15 @@
 import { useMemo, useState } from "react";
-import { useBooksList } from "../../hooks/books/useBooksList";
-import { useSearch } from "../../context/SearchContext";
-import { LibrarySidebar } from "../../components/library/LibrarySidebar";
-import { BookCard } from "../../components/library/BookCard";
-import LoadingScreen from "../../components/common/LoadingScreen";
-import Pagination from "../../components/common/Pagination";
-import { EmptyState } from "../../components/common/EmptyState";
-import { usePaginatedList } from "../../hooks/usePaginatedList";
+import { useBooksList } from "@/hooks/books/useBooksList";
+import { useSearch } from "@/context/SearchContext";
+import { LibrarySidebar } from "@/components/library/LibrarySidebar";
+import { BookCard } from "@/components/library/BookCard";
+import { LoadingScreen } from "@/components/common/LoadingScreen";
+import { Pagination } from "@/components/common/Pagination";
+import { EmptyState } from "@/components/common/EmptyState";
+import { usePaginatedList } from "@/hooks/usePaginatedList";
 import { LuFilter } from "react-icons/lu";
 
-import { groupBooksIntoSeries } from "../../lib/bookSeries";
+import { groupBooksIntoSeries } from "@/lib/bookSeries";
 
 const PAGE_SIZE = 24;
 

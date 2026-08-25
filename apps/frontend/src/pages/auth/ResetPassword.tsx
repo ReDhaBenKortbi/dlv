@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { resetPassword } from "@/services/authService";
-import { notify } from "@/utils/toast";
+import { notify } from "@/lib/notify";
 import { PASSWORD_RESET_ENABLED } from "@/constants/features";
 import { AuthCard } from "@/components/auth/AuthCard";
 import { FormField } from "@/components/common/FormField";

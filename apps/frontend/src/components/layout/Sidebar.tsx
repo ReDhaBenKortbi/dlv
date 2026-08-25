@@ -2,10 +2,10 @@
 import { LuLayoutDashboard, LuCirclePlus, LuCreditCard, LuUsers, LuBookOpen, LuLogOut, LuCircleHelp } from "react-icons/lu";
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 
-const Sidebar = () => {
+export const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth(); // Get real user data and logout function
@@ -132,5 +132,3 @@ const Sidebar = () => {
     </div>
   );
 };
-
-export default Sidebar;

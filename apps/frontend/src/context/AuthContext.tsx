@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { api, setAccessToken } from "../lib/api";
-import type { SubscriptionPlan } from "../constants/subscriptionPlans";
+import { api, setAccessToken } from "@/lib/api";
+import type { SubscriptionPlan } from "@/constants/subscriptionPlans";
 
 export interface AuthUser {
   id: string;

@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "../../context/AuthContext";
-import { createTicket } from "../../services/ticketService";
-import { notify } from "../../utils/toast";
+import { useAuth } from "@/context/AuthContext";
+import { createTicket } from "@/services/ticketService";
+import { notify } from "@/lib/notify";
 import { LuSend, LuCircleCheckBig, LuShieldAlert } from "react-icons/lu";
 
-import { BackButton } from "../../components/common/BackButton";
+import { BackButton } from "@/components/common/BackButton";
 
 const SupportPage = () => {
   const { user } = useAuth();

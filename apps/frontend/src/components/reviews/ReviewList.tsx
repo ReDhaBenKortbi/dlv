@@ -1,14 +1,14 @@
-import { useReviews } from "../../hooks/reviews/useReviews";
-import Pagination from "../common/Pagination";
-import { usePaginatedList } from "../../hooks/usePaginatedList";
-import ReviewItem from "./ReviewItem";
-import { EmptyState } from "../common/EmptyState";
+import { useReviews } from "@/hooks/reviews/useReviews";
+import { Pagination } from "@/components/common/Pagination";
+import { usePaginatedList } from "@/hooks/usePaginatedList";
+import { ReviewItem } from "@/components/reviews/ReviewItem";
+import { EmptyState } from "@/components/common/EmptyState";
 
 interface ListProps {
   bookId: string;
 }
 
-const ReviewList = ({ bookId }: ListProps) => {
+export const ReviewList = ({ bookId }: ListProps) => {
   const { page, setPage, syncMeta } = usePaginatedList();
   const { reviews, meta, isLoadingReviews, isDeleting, deleteReview } =
     useReviews(bookId, page);
@@ -76,5 +76,3 @@ const ReviewList = ({ bookId }: ListProps) => {
     </div>
   );
 };
-
-export default ReviewList;

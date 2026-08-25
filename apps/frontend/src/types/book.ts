@@ -3,7 +3,7 @@ import type {
   TargetLanguageCode,
   FocusSkillCode,
   ProficiencyLevelCode,
-} from "../constants/bookOptions";
+} from "@/constants/bookOptions";
 
 export type { BookTier };
 

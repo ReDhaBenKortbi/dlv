@@ -4,12 +4,12 @@ import {
   useQueryClient,
   keepPreviousData,
 } from "@tanstack/react-query";
-import { getUsers, updateUserSubscription } from "../../services/userService";
-import type { UsersQuery } from "../../services/userService";
-import type { SubscriptionPlan } from "../../constants/subscriptionPlans";
-import { notify } from "../../utils/toast";
-import { queryKeys } from "../../lib/queryKeys";
-import { toErrorMessage } from "../../lib/errorMessage";
+import { getUsers, updateUserSubscription } from "@/services/userService";
+import type { UsersQuery } from "@/services/userService";
+import type { SubscriptionPlan } from "@/constants/subscriptionPlans";
+import { notify } from "@/lib/notify";
+import { queryKeys } from "@/lib/queryKeys";
+import { toErrorMessage } from "@/lib/errorMessage";
 
 export const useUsers = (params: UsersQuery = {}) => {
   const queryClient = useQueryClient();

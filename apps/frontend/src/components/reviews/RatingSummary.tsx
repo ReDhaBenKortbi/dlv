@@ -8,7 +8,7 @@ interface Props {
 // Reads the book's maintained aggregate fields rather than the (paginated)
 // reviews list, so the summary is always correct regardless of which page
 // of reviews happens to be loaded.
-const RatingSummary = ({ averageRating, totalReviews }: Props) => {
+export const RatingSummary = ({ averageRating, totalReviews }: Props) => {
   if (totalReviews === 0) return null;
 
   return (
@@ -31,5 +31,3 @@ const RatingSummary = ({ averageRating, totalReviews }: Props) => {
     </div>
   );
 };
-
-export default RatingSummary;

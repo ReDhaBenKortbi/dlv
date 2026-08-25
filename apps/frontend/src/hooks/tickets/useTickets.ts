@@ -8,10 +8,10 @@ import {
   getTickets,
   setTicketStatus,
   deleteTicket,
-} from "../../services/ticketService";
-import { queryKeys } from "../../lib/queryKeys";
-import { notify } from "../../utils/toast";
-import { toErrorMessage } from "../../lib/errorMessage";
+} from "@/services/ticketService";
+import { queryKeys } from "@/lib/queryKeys";
+import { notify } from "@/lib/notify";
+import { toErrorMessage } from "@/lib/errorMessage";
 
 export const useTickets = (page = 1, limit = 10) => {
   const queryClient = useQueryClient();

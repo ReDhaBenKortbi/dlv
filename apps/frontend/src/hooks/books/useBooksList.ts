@@ -1,9 +1,9 @@
 // src/hooks/books/useBooksList.ts
 
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
-import { getBooks } from "../../services/bookService";
-import type { BooksQuery } from "../../services/bookService";
-import { queryKeys } from "../../lib/queryKeys";
+import { getBooks } from "@/services/bookService";
+import type { BooksQuery } from "@/services/bookService";
+import { queryKeys } from "@/lib/queryKeys";
 
 export const useBooksList = (params: BooksQuery) => {
   const query = useQuery({

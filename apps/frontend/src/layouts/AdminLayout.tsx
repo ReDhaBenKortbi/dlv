@@ -1,9 +1,9 @@
 import { Outlet } from "react-router-dom";
-import Sidebar from "../components/layout/Sidebar";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { Suspense } from "react";
-import { TransitionLoader } from "../components/common/TransitionLoader";
+import { TransitionLoader } from "@/components/common/TransitionLoader";
 
-const AdminLayout = () => {
+export const AdminLayout = () => {
   return (
     <div className="drawer lg:drawer-open font-sans bg-base-200 dark:bg-base-300 text-base-content dark:text-base-content">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
@@ -41,5 +41,3 @@ const AdminLayout = () => {
     </div>
   );
 };
-
-export default AdminLayout;

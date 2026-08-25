@@ -1,7 +1,7 @@
 import { LuStar, LuTrash2, LuUser } from "react-icons/lu";
 
-import type { Review } from "../../types/Review";
-import { useAuth } from "../../context/AuthContext";
+import type { Review } from "@/types/review";
+import { useAuth } from "@/context/AuthContext";
 
 interface ItemProps {
   review: Review;
@@ -9,7 +9,7 @@ interface ItemProps {
   isDeleting?: boolean;
 }
 
-const ReviewItem = ({ review, onDelete, isDeleting }: ItemProps) => {
+export const ReviewItem = ({ review, onDelete, isDeleting }: ItemProps) => {
   const { user } = useAuth();
   const isOwner = user?.id === review.userId;
 
@@ -87,5 +87,3 @@ const ReviewItem = ({ review, onDelete, isDeleting }: ItemProps) => {
     </div>
   );
 };
-
-export default ReviewItem;

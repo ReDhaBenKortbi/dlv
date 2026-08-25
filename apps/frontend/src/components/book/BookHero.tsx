@@ -2,7 +2,7 @@ import { LuGraduationCap, LuLanguages, LuTarget } from "react-icons/lu";
 
 import { FOCUS_SKILLS, TARGET_LANGUAGES } from "@/constants/bookOptions";
 import { tierStyles } from "@/lib/tierStyles";
-import RatingSummary from "@/components/reviews/RatingSummary";
+import { RatingSummary } from "@/components/reviews/RatingSummary";
 import type { Book } from "@/types/book";
 
 const DESCRIPTION_FALLBACK =

@@ -1,8 +1,8 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import LoadingScreen from "../components/common/LoadingScreen";
+import { useAuth } from "@/context/AuthContext";
+import { LoadingScreen } from "@/components/common/LoadingScreen";
 
-const ProtectedRoute = () => {
+export const ProtectedRoute = () => {
   const { user, loading, isAdmin } = useAuth();
   const location = useLocation();
 
@@ -16,5 +16,3 @@ const ProtectedRoute = () => {
   // JUST the gatekeeper logic
   return <Outlet />;
 };
-
-export default ProtectedRoute;

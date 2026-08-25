@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { useAuth } from "../../context/AuthContext";
-import { notify } from "../../utils/toast";
+import { useAuth } from "@/context/AuthContext";
+import { notify } from "@/lib/notify";
 
 export const SubscriptionWatcher = () => {
   const { user, isSubscribed, loading } = useAuth();

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { SUPPORT_EMAIL } from "../../constants/contact";
+import { SUPPORT_EMAIL } from "@/constants/contact";
 
 const Section = ({
   title,

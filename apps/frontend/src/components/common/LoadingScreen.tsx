@@ -1,4 +1,4 @@
-const LoadingScreen = () => {
+export const LoadingScreen = () => {
   return (
     <div className="flex h-screen items-center justify-center bg-base-200">
       <div className="flex flex-col items-center gap-4">
@@ -10,5 +10,3 @@ const LoadingScreen = () => {
     </div>
   );
 };
-
-export default LoadingScreen;

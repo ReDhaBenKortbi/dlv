@@ -2,7 +2,7 @@ import {
   TARGET_LANGUAGES,
   FOCUS_SKILLS,
   PROFICIENCY_LEVELS,
-} from "../../constants/bookOptions";
+} from "@/constants/bookOptions";
 import { LuFilter, LuGraduationCap } from "react-icons/lu";
 
 interface LibrarySidebarProps {

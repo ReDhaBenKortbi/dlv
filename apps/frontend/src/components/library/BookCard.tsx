@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { LuStar, LuCrown, LuLanguages } from "react-icons/lu";
 
-import type { Book } from "../../types/book";
-import { FOCUS_SKILLS } from "../../constants/bookOptions";
-import { useAuth } from "../../context/AuthContext";
-import { getSeriesAccess } from "../../lib/bookSeries";
+import type { Book } from "@/types/book";
+import { FOCUS_SKILLS } from "@/constants/bookOptions";
+import { useAuth } from "@/context/AuthContext";
+import { getSeriesAccess } from "@/lib/bookSeries";
 
 interface BookCardProps {
   book: Book;

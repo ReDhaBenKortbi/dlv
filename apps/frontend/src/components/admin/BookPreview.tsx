@@ -1,5 +1,5 @@
-import type { BookTier } from "../../constants/bookOptions";
-import { tierStyles } from "../../lib/tierStyles";
+import type { BookTier } from "@/constants/bookOptions";
+import { tierStyles } from "@/lib/tierStyles";
 
 export interface PreviewProps {
   title: string;

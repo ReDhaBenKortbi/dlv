@@ -1,7 +1,7 @@
-import { api } from "../lib/api";
-import { buildQuery } from "../lib/qs";
-import type { Book } from "../types/book";
-import type { Paginated } from "../types/pagination";
+import { api } from "@/lib/api";
+import { buildQuery } from "@/lib/qs";
+import type { Book } from "@/types/book";
+import type { Paginated } from "@/types/pagination";
 
 export interface BooksQuery {
   page?: number;

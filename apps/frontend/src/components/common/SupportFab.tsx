@@ -3,7 +3,7 @@ import { LuMessageCircle, LuX, LuMail, LuCircleHelp } from "react-icons/lu";
 import { SiFacebook, SiWhatsapp } from "react-icons/si";
 import { Link } from "react-router-dom";
 
-const SupportFab = () => {
+export const SupportFab = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleOpen = () => setIsOpen(!isOpen);
@@ -71,5 +71,3 @@ const SupportFab = () => {
     </div>
   );
 };
-
-export default SupportFab;
