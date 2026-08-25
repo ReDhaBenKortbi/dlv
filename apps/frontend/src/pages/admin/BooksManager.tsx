@@ -1,57 +1,79 @@
-import { LuLanguages, LuGraduationCap, LuTarget } from "react-icons/lu";
-
-import { FOCUS_SKILLS } from "../../constants/bookOptions";
-
-import { useBookMutations } from "../../hooks/books/useBookMutations";
-import { useBooksList } from "../../hooks/books/useBooksList";
-
-import LoadingScreen from "../../components/common/LoadingScreen";
-import Pagination from "../../components/common/Pagination";
-import { AdminPageHeader } from "../../components/admin/AdminPageHeader";
-import { usePaginatedList } from "../../hooks/usePaginatedList";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+
+import { useBookMutations } from "@/hooks/books/useBookMutations";
+import { useBooksList } from "@/hooks/books/useBooksList";
+import { usePaginatedList } from "@/hooks/usePaginatedList";
+import { groupBooksIntoSeries } from "@/lib/bookSeries";
+import LoadingScreen from "@/components/common/LoadingScreen";
+import Pagination from "@/components/common/Pagination";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { BookSeriesRow } from "@/components/admin/BookSeriesRow";
+import type { Book } from "@/types/book";
 
 const PAGE_SIZE = 15;
 
 const BooksManager = () => {
   const { page, setPage, syncMeta } = usePaginatedList();
 
-  // Raw (ungrouped) mode: each tier edition is its own row, since admins
-  // need to edit/delete a specific edition, not a collapsed series card.
-  const { books, meta, isLoading: isFetching } = useBooksList({
-    raw: true,
-    page,
-    limit: PAGE_SIZE,
-  });
+  // Grouped mode: one row per *title*. The API guarantees every edition of a
+  // series lands on the same page, so a ladder is never split across a page
+  // boundary, and `meta.total` counts titles rather than rows.
+  const {
+    books,
+    meta,
+    isLoading: isFetching,
+  } = useBooksList({ page, limit: PAGE_SIZE });
   const totalPages = syncMeta(meta);
 
   const { remove, deletingId } = useBookMutations();
 
-  const handleDelete = async (id: string, title: string) => {
+  const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
+  const toggle = (groupKey: string) =>
+    setExpanded((current) => {
+      const next = new Set(current);
+      if (!next.delete(groupKey)) next.add(groupKey);
+      return next;
+    });
+
+  const handleDelete = async (edition: Book, editions: Book[]) => {
+    const survivors = editions.filter((e) => e.id !== edition.id);
+    // Deleting one edition of a series leaves the others behind, which isn't
+    // obvious from a bare title — so name what stays.
+    const message = survivors.length
+      ? `Delete the ${edition.bookTier} edition of "${editions[0].title}"?\n\n` +
+        `This is 1 of ${editions.length} editions — the ` +
+        `${survivors.map((e) => e.bookTier).join(" and ")} ` +
+        `edition${survivors.length > 1 ? "s" : ""} will remain.`
+      : `Are you sure you want to delete "${edition.title}"?`;
+
     // Native confirm for intent; the toast covers progress and outcome.
-    if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
-      await remove(id);
+    if (window.confirm(message)) {
+      await remove(edition.id);
     }
   };
 
   if (isFetching) return <LoadingScreen />;
 
+  const series = groupBooksIntoSeries(books);
+
   return (
     <div className="p-4 md:p-10 min-h-screen bg-base-100 text-base-content">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <AdminPageHeader
           className="mb-6 md:mb-8"
           title="Manage Books"
-          subtitle="View, edit, or remove books from the library."
+          subtitle="One row per title — expand a series to edit its tier editions."
           action={
-            <Link className="btn btn-primary btn-sm md:btn-md" to="/admin/add-book">
+            <Link
+              className="btn btn-primary btn-sm md:btn-md"
+              to="/admin/add-book"
+            >
               + Add New Book
             </Link>
           }
         />
 
-        {/* Table */}
         <div className="overflow-x-auto bg-base-200 rounded-lg shadow border border-base-300">
           <table className="table table-compact w-full">
             <thead className="bg-base-300">
@@ -59,98 +81,21 @@ const BooksManager = () => {
                 <th className="text-left">Book</th>
                 <th className="text-left">Details</th>
                 <th className="text-center">Level</th>
-                <th>Status</th>
+                <th>Editions</th>
                 <th className="text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {books.map((book) => {
-                const skillInfo = FOCUS_SKILLS.find(
-                  (s) => s.id === book.focusSkill,
-                );
-
-                return (
-                  <tr key={book.id} className="hover">
-                    <td>
-                      <div className="flex items-center gap-3">
-                        <div className="avatar">
-                          <div className="mask mask-squircle w-12 h-12">
-                            <img src={book.coverURL} alt={book.title} />
-                          </div>
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="font-bold text-sm leading-tight">
-                            {book.title}
-                          </span>
-                          <span className="text-[10px] opacity-60">
-                            by {book.author}
-                          </span>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td>
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-1 text-[10px] font-bold text-primary uppercase">
-                          <LuLanguages size={12} /> {book.targetLanguage || "N/A"}
-                        </div>
-                        {skillInfo && (
-                          <div
-                            className={`badge ${skillInfo.color} badge-xs text-[9px] border-none font-bold gap-1`}
-                          >
-                            <LuTarget size={10} />
-                            {skillInfo.label}
-                          </div>
-                        )}
-                      </div>
-                    </td>
-
-                    <td className="text-center">
-                      {book.proficiencyLevel ? (
-                        <div className="badge badge-ghost border-base-300 gap-1 font-bold">
-                          <LuGraduationCap size={12} className="opacity-60" />
-                          {book.proficiencyLevel}
-                        </div>
-                      ) : (
-                        <span className="opacity-20 text-xs">-</span>
-                      )}
-                    </td>
-
-                    <td>
-                      <div
-                        className={`badge badge-sm font-bold ${book.bookTier === "GOLD" ? "badge-warning" : book.bookTier === "PRO" ? "badge-secondary" : "badge-outline"}`}
-                      >
-                        {book.bookTier}
-                      </div>
-                    </td>
-
-                    <td className="text-right">
-                      <div className="flex gap-2 justify-end">
-                        <Link
-                          to={`/admin/add-book?fromId=${book.id}`}
-                          className="btn btn-xs btn-outline"
-                          title="Create another tier edition of this title, reusing its cover image"
-                        >
-                          + Edition
-                        </Link>
-                        <Link
-                          to={`/admin/edit-book/${book.id}`}
-                          className="btn btn-xs btn-outline btn-info"
-                        >
-                          Edit
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(book.id, book.title)}
-                          disabled={deletingId === book.id}
-                          className="btn btn-xs btn-outline btn-error"
-                        >
-                          {deletingId === book.id ? "..." : "Delete"}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+              {series.map(({ groupKey, editions }) => (
+                <BookSeriesRow
+                  key={groupKey}
+                  editions={editions}
+                  isExpanded={expanded.has(groupKey)}
+                  onToggle={() => toggle(groupKey)}
+                  onDelete={(edition) => void handleDelete(edition, editions)}
+                  deletingId={deletingId}
+                />
+              ))}
             </tbody>
           </table>
         </div>

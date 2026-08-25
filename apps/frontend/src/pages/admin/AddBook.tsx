@@ -13,6 +13,7 @@ import { useBookMutations } from "@/hooks/books/useBookMutations";
 import { useObjectUrl } from "@/hooks/useObjectUrl";
 import { uploadImageToCloudinary } from "@/services/cloudinaryService";
 import { notify } from "@/utils/toast";
+import { BOOK_TIERS } from "@/constants/bookOptions";
 import type { BookTier } from "@/constants/bookOptions";
 
 // Suggests the next tier up from the source edition, so cloning a FREE
@@ -28,6 +29,13 @@ const AddBook = () => {
   const [searchParams] = useSearchParams();
   const fromId = searchParams.get("fromId") || undefined;
   const isCloning = !!fromId;
+
+  // "+ Edition" in the admin table targets a specific gap in the tier ladder.
+  // Honour that when it is asked for, and fall back to the next tier up.
+  const tierParam = searchParams.get("tier");
+  const requestedTier = BOOK_TIERS.some((t) => t.id === tierParam)
+    ? (tierParam as BookTier)
+    : undefined;
 
   const { add, isProcessing } = useBookMutations();
   const { values, setField, reset } = useBookForm();
@@ -50,13 +58,13 @@ const AddBook = () => {
       // Anchor the new edition to the same series. If the source wasn't grouped
       // yet, its own id becomes the shared groupKey going forward.
       groupKey: sourceBook.groupKey || sourceBook.id,
-      bookTier: NEXT_TIER[sourceBook.bookTier],
+      bookTier: requestedTier ?? NEXT_TIER[sourceBook.bookTier],
       // The content URL is what must differ between editions.
       indexURL: "",
     });
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setReuseCover(true);
-  }, [sourceBook, reset]);
+  }, [sourceBook, requestedTier, reset]);
 
   const previewUrl =
     coverPreview || (reuseCover ? (sourceBook?.coverURL ?? "") : "");
