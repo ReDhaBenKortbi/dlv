@@ -1,9 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useUsers } from "../../hooks/users/useUsers";
 import LoadingScreen from "../../components/common/LoadingScreen";
 import Pagination from "../../components/common/Pagination";
+import { AdminPageHeader } from "../../components/admin/AdminPageHeader";
 import { EmptyState } from "../../components/common/EmptyState";
-import { getTotalPages } from "../../lib/pagination";
+import { usePaginatedList } from "../../hooks/usePaginatedList";
+import { useDebouncedValue } from "../../hooks/useDebouncedValue";
 import { BOOK_TIERS } from "../../constants/bookOptions";
 import type { SubscriptionPlan } from "../../constants/subscriptionPlans";
 
@@ -15,15 +17,10 @@ const TIER_BADGE_COLOR = Object.fromEntries(
 
 const UsersManager = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [page, setPage] = useState(1);
+  // Debounced so typing doesn't fire a request per keystroke.
+  const debouncedSearch = useDebouncedValue(searchTerm);
 
-  // Debounce the search box so we don't fire a request on every keystroke —
-  // a genuine effect (subscribing to a timer), unlike the state adjustments below.
-  useEffect(() => {
-    const timeout = setTimeout(() => setDebouncedSearch(searchTerm), 300);
-    return () => clearTimeout(timeout);
-  }, [searchTerm]);
+  const { page, setPage, syncMeta } = usePaginatedList(debouncedSearch);
 
   const { users, meta, isLoading, updateTier, pendingUserId } = useUsers({
     page,
@@ -31,18 +28,7 @@ const UsersManager = () => {
     search: debouncedSearch || undefined,
   });
 
-  const totalPages = meta ? getTotalPages(meta.total, meta.limit) : 1;
-
-  // Reset to page 1 when the (debounced) search changes, or fall back to
-  // the last valid page if the total shrinks — adjusted during render
-  // rather than via an effect.
-  const [prevSearch, setPrevSearch] = useState(debouncedSearch);
-  if (debouncedSearch !== prevSearch) {
-    setPrevSearch(debouncedSearch);
-    setPage(1);
-  } else if (meta && page > totalPages) {
-    setPage(totalPages);
-  }
+  const totalPages = syncMeta(meta);
 
   if (isLoading) return <LoadingScreen />;
 
@@ -50,24 +36,20 @@ const UsersManager = () => {
     <div className="min-h-screen bg-base-100 text-base-content p-4 md:p-10">
       <div className="max-w-6xl mx-auto w-full">
         {/* Header & Search */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold">User Management</h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">
-              Manage accounts and subscription access
-            </p>
-          </div>
-
-          <div className="form-control w-full md:w-80">
+        <AdminPageHeader
+          className="mb-6"
+          title="User Management"
+          subtitle="Manage accounts and subscription access"
+          action={
             <input
               type="text"
               placeholder="Search by email or name..."
-              className="input input-bordered bg-base-200 dark:bg-base-300 shadow-sm border-gray-200 dark:border-base-300"
+              className="input input-bordered bg-base-200 shadow-sm w-full md:w-80"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-          </div>
-        </div>
+          }
+        />
 
         {isLoading ? (
           <div className="flex justify-center py-20">

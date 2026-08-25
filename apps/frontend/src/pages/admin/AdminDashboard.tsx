@@ -1,6 +1,7 @@
 import AdminMetricsGrid from "../../components/admin/AdminMetricsGrid";
 import ActionCard from "../../components/admin/ActionCard";
 import LoadingScreen from "../../components/common/LoadingScreen";
+import { AdminPageHeader } from "../../components/admin/AdminPageHeader";
 import { ACTION_CARDS_CONFIG } from "../../utils/AdminActions.config";
 import { useDashboardMetrics } from "../../hooks/admin_dashboard/useDashboardMetrics";
 
@@ -14,34 +15,23 @@ const AdminDashboard: React.FC = () => {
       <main className="p-4 md:p-10">
         <div className="max-w-7xl mx-auto w-full">
           {/* Page Title */}
-          <div className="mb-8 md:mb-10">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-100">
-              Admin Command Center
-            </h1>
-            <p className="text-gray-500 dark:text-gray-400 mt-1">
-              Real-time overview of your library platform.
-            </p>
-          </div>
+          <AdminPageHeader
+            className="mb-8 md:mb-10"
+            title="Admin Command Center"
+            subtitle="Real-time overview of your library platform."
+          />
 
           {/* Stats Section */}
           <AdminMetricsGrid stats={stats} />
 
           {/* Management Section */}
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">
+          <h2 className="text-2xl font-bold text-base-content mb-6">
             Quick Management
           </h2>
           {/* Action Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {ACTION_CARDS_CONFIG.map((card) => (
-              <ActionCard
-                key={card.title}
-                title={card.title}
-                description={card.description}
-                linkText={card.linkText}
-                to={card.to}
-                icon={card.icon}
-                colorClass={card.colorClass}
-              />
+              <ActionCard key={card.title} card={card} />
             ))}
           </div>
         </div>
