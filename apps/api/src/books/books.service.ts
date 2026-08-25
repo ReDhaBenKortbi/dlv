@@ -151,9 +151,21 @@ export class BooksService {
     return book;
   }
 
+  /**
+   * The admin form clears Group Key by sending an empty string. Stored as-is
+   * that would be a real shared key: series grouping reads `groupKey ?? id`,
+   * which does not treat "" as absent, so every book "un-grouped" this way
+   * would collapse into one card together.
+   */
+  private normaliseGroupKey<T extends { groupKey?: string }>(dto: T) {
+    return dto.groupKey?.trim() === '' ? { ...dto, groupKey: null } : dto;
+  }
+
   async create(dto: CreateBookDto) {
     try {
-      return await this.prisma.book.create({ data: dto });
+      return await this.prisma.book.create({
+        data: this.normaliseGroupKey(dto),
+      });
     } catch (e) {
       if (
         e instanceof Prisma.PrismaClientKnownRequestError &&
@@ -169,7 +181,10 @@ export class BooksService {
 
   async update(id: string, dto: UpdateBookDto) {
     await this.findOne(id);
-    return this.prisma.book.update({ where: { id }, data: dto });
+    return this.prisma.book.update({
+      where: { id },
+      data: this.normaliseGroupKey(dto),
+    });
   }
 
   async remove(id: string) {
