@@ -26,7 +26,7 @@ export const AuthCard = ({
   note,
   children,
 }: AuthCardProps) => (
-  <div className="min-h-screen bg-base-200 flex items-center justify-center px-4 py-12">
+  <main className="min-h-screen bg-base-200 flex items-center justify-center px-4 py-12">
     <div className="w-full max-w-md">
       <div className="card bg-base-100 shadow-2xl rounded-2xl border border-base-200">
         <div className="card-body space-y-6">
@@ -34,6 +34,8 @@ export const AuthCard = ({
             <img
               src={logo}
               alt="DLV Logo"
+              width={128}
+              height={128}
               className="h-32 md:h-34 w-auto bg-white rounded-full"
             />
           </div>
@@ -53,9 +55,9 @@ export const AuthCard = ({
 
           {footer && <div className="text-center text-sm pt-2">{footer}</div>}
 
-          {note && <p className="text-center text-xs opacity-50">{note}</p>}
+          {note && <p className="text-center text-xs opacity-70">{note}</p>}
         </div>
       </div>
     </div>
-  </div>
+  </main>
 );

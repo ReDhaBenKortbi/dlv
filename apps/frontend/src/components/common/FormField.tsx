@@ -19,7 +19,7 @@ export const FormField = ({
 }: FormFieldProps) => (
   <div className="form-control">
     <label className={`label${labelAction ? " justify-between" : ""}`}>
-      <span className="label-text text-xs uppercase tracking-wide opacity-70 font-semibold">
+      <span className="label-text text-xs uppercase tracking-wide opacity-90 font-semibold">
         {label}
       </span>
       {labelAction}

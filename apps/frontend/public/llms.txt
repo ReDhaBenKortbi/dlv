@@ -1,0 +1,11 @@
+# Digital Learning Vault
+
+> A digital learning vault for storing and sharing educational resources.
+
+Digital Learning Vault (DLV) is an ebook library with tiered access (Free, Pro, Gold). Users browse and read books in the library; subscriptions unlock higher tiers.
+
+## Pages
+
+- [Home / Library](https://dlvdz.netlify.app/): Browse the public book library.
+- [Terms of Service](https://dlvdz.netlify.app/terms)
+- [Privacy Policy](https://dlvdz.netlify.app/privacy)
