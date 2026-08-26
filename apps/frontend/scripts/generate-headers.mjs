@@ -18,6 +18,11 @@ const csp = [
   "form-action 'self'",
   "frame-ancestors 'none'",
   "upgrade-insecure-requests",
+  // The app never writes to innerHTML/document.write/script.src etc. (no
+  // dangerouslySetInnerHTML anywhere), so no Trusted Types policy needs to
+  // be created — 'none' blocks any DOM XSS sink outright.
+  "require-trusted-types-for 'script'",
+  "trusted-types 'none'",
 ].join("; ");
 
 const permissionsPolicy = [
