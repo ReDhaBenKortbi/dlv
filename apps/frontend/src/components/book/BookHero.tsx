@@ -3,6 +3,7 @@ import { LuGraduationCap, LuLanguages, LuTarget } from "react-icons/lu";
 import { FOCUS_SKILLS, TARGET_LANGUAGES } from "@/constants/bookOptions";
 import { tierStyles } from "@/lib/tierStyles";
 import { RatingSummary } from "@/components/reviews/RatingSummary";
+import { optimizedCoverUrl } from "@/lib/cloudinary";
 import type { Book } from "@/types/book";
 
 const DESCRIPTION_FALLBACK =
@@ -39,8 +40,11 @@ export const BookHero = ({ book, action }: BookHeroProps) => {
           )}
 
           <img
-            src={book.coverURL}
+            src={optimizedCoverUrl(book.coverURL, 640)}
             alt={book.title}
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
             className="rounded-2xl shadow-xl w-full max-w-[320px] object-cover aspect-[2/3] border border-base-300"
           />
         </div>

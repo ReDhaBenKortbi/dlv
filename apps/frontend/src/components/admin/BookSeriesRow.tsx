@@ -4,6 +4,7 @@ import { LuChevronDown, LuChevronRight, LuGraduationCap, LuLanguages, LuTarget }
 import { BOOK_TIERS, FOCUS_SKILLS } from "@/constants/bookOptions";
 import { tierStyles } from "@/lib/tierStyles";
 import { TierLadder } from "@/components/admin/TierLadder";
+import { optimizedCoverUrl } from "@/lib/cloudinary";
 import type { Book } from "@/types/book";
 
 interface BookSeriesRowProps {
@@ -84,7 +85,12 @@ export const BookSeriesRow = ({
 
             <div className="avatar">
               <div className="mask mask-squircle w-12 h-12">
-                <img src={display.coverURL} alt={display.title} />
+                <img
+                  src={optimizedCoverUrl(display.coverURL, 96)}
+                  alt={display.title}
+                  loading="lazy"
+                  decoding="async"
+                />
               </div>
             </div>
 

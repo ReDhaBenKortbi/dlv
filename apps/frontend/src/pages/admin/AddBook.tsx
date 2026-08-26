@@ -12,6 +12,7 @@ import { useBook } from "@/hooks/books/useBook";
 import { useBookMutations } from "@/hooks/books/useBookMutations";
 import { useObjectUrl } from "@/hooks/useObjectUrl";
 import { uploadImageToCloudinary } from "@/services/cloudinaryService";
+import { optimizedCoverUrl } from "@/lib/cloudinary";
 import { notify } from "@/lib/notify";
 import { BOOK_TIERS } from "@/constants/bookOptions";
 import type { BookTier } from "@/constants/bookOptions";
@@ -99,7 +100,7 @@ const AddBook = () => {
     isCloning && sourceBook && reuseCover ? (
       <div className="flex items-center gap-3 bg-base-100 border border-base-300 rounded-lg p-3">
         <img
-          src={sourceBook.coverURL}
+          src={optimizedCoverUrl(sourceBook.coverURL, 96)}
           alt="Reused cover"
           className="w-12 h-16 object-cover rounded-md flex-none"
         />

@@ -27,7 +27,7 @@ const Library = () => {
 
   // Filters/search are sent to the backend, which also handles grouping
   // multi-tier editions of the same title into one series per page.
-  const { books, meta, isLoading } = useBooksList({
+  const { books, meta, isLoading, isFetching } = useBooksList({
     page,
     limit: PAGE_SIZE,
     targetLanguage: selectedLanguage || undefined,
@@ -107,9 +107,19 @@ const Library = () => {
 
             {/* The Grid */}
             {series.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 min-h-full py-4 ">
-                {series.map(({ groupKey, editions }) => (
-                  <BookCard key={groupKey} book={editions[0]} editions={editions} />
+              <div
+                aria-busy={isFetching}
+                className={`grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 min-h-full py-4 transition-opacity duration-200 ${
+                  isFetching ? "opacity-50 pointer-events-none" : ""
+                }`}
+              >
+                {series.map(({ groupKey, editions }, index) => (
+                  <BookCard
+                    key={groupKey}
+                    book={editions[0]}
+                    editions={editions}
+                    priority={index < 4}
+                  />
                 ))}
               </div>
             ) : (
@@ -131,6 +141,7 @@ const Library = () => {
                 onPageChange={setPage}
                 total={meta.total}
                 limit={meta.limit}
+                disabled={isFetching}
               />
             )}
           </div>

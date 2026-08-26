@@ -8,6 +8,8 @@ interface PaginationProps {
   total?: number;
   limit?: number;
   className?: string;
+  /** Disables all page buttons, e.g. while a page transition is still fetching. */
+  disabled?: boolean;
 }
 
 const ELLIPSIS = "…" as const;
@@ -32,6 +34,7 @@ export const Pagination = ({
   total,
   limit,
   className = "",
+  disabled = false,
 }: PaginationProps) => {
   if (totalPages <= 1) return null;
 
@@ -55,7 +58,7 @@ export const Pagination = ({
         <button
           type="button"
           className="join-item btn btn-sm"
-          disabled={page <= 1}
+          disabled={page <= 1 || disabled}
           onClick={() => onPageChange(page - 1)}
           aria-label="Previous page"
         >
@@ -78,6 +81,7 @@ export const Pagination = ({
               type="button"
               className={`join-item btn btn-sm ${p === page ? "btn-active btn-primary" : ""}`}
               onClick={() => onPageChange(p)}
+              disabled={disabled}
               aria-current={p === page ? "page" : undefined}
             >
               {p}
@@ -88,7 +92,7 @@ export const Pagination = ({
         <button
           type="button"
           className="join-item btn btn-sm"
-          disabled={page >= totalPages}
+          disabled={page >= totalPages || disabled}
           onClick={() => onPageChange(page + 1)}
           aria-label="Next page"
         >

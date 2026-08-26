@@ -5,14 +5,17 @@ import type { Book } from "@/types/book";
 import { FOCUS_SKILLS } from "@/constants/bookOptions";
 import { useAuth } from "@/context/AuthContext";
 import { getSeriesAccess } from "@/lib/bookSeries";
+import { optimizedCoverUrl } from "@/lib/cloudinary";
 
 interface BookCardProps {
   book: Book;
   /** Sibling tier editions of the same title, including `book` itself. Defaults to `[book]` for a standalone title. */
   editions?: Book[];
+  /** Set for cards rendered above the fold so the browser fetches the cover eagerly, at high priority, instead of the lazy default. */
+  priority?: boolean;
 }
 
-export const BookCard = ({ book, editions }: BookCardProps) => {
+export const BookCard = ({ book, editions, priority = false }: BookCardProps) => {
   const navigate = useNavigate();
   const { subscriptionPlan, isAdmin } = useAuth();
 
@@ -38,8 +41,11 @@ export const BookCard = ({ book, editions }: BookCardProps) => {
       {/* --- IMAGE CONTAINER --- */}
       <div className="relative aspect-[2/3] w-full max-h-[320px] overflow-hidden rounded-xl bg-base-200 shadow-sm transition-all duration-300 group-hover:shadow-lg">
         <img
-          src={display.coverURL}
+          src={optimizedCoverUrl(display.coverURL, 400)}
           alt={display.title}
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
+          decoding="async"
           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
 
