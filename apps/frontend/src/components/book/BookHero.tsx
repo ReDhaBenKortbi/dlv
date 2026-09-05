@@ -1,7 +1,6 @@
 import { LuGraduationCap, LuLanguages, LuTarget } from "react-icons/lu";
 
 import { FOCUS_SKILLS, TARGET_LANGUAGES } from "@/constants/bookOptions";
-import { tierStyles } from "@/lib/tierStyles";
 import { RatingSummary } from "@/components/reviews/RatingSummary";
 import { optimizedCoverUrl } from "@/lib/cloudinary";
 import type { Book } from "@/types/book";
@@ -28,17 +27,6 @@ export const BookHero = ({ book, action }: BookHeroProps) => {
     <div className="grid grid-cols-1 md:grid-cols-12 gap-12 items-start">
       {/* LEFT — COVER */}
       <div className="md:col-span-4 flex justify-center">
-        <div className="relative">
-          {book.bookTier !== "FREE" && (
-            <div className="absolute top-3 right-3 z-10">
-              <span
-                className={`badge font-bold uppercase tracking-wider text-[10px] px-3 py-3 ${tierStyles[book.bookTier].badge}`}
-              >
-                {book.bookTier}
-              </span>
-            </div>
-          )}
-
           <img
             src={optimizedCoverUrl(book.coverURL, 640)}
             alt={book.title}
@@ -47,7 +35,6 @@ export const BookHero = ({ book, action }: BookHeroProps) => {
             decoding="async"
             className="rounded-2xl shadow-xl w-full max-w-[320px] object-cover aspect-[2/3] border border-base-300"
           />
-        </div>
       </div>
 
       {/* RIGHT — CONTENT */}
