@@ -8,5 +8,9 @@
     "frontend:dev": "npm run dev --workspace=apps/frontend",
     "api:dev": "npm run start:dev --workspace=apps/api",
     "build": "npm run build --workspace=apps/frontend"
+  },
+  "overrides": {
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
   }
 }
