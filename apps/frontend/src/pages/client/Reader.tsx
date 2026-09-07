@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
-import { LuArrowLeft, LuLock, LuLoaderCircle, LuShieldCheck } from "react-icons/lu";
+import {
+  LuArrowLeft,
+  LuLock,
+  LuLoaderCircle,
+  LuShieldCheck,
+  LuClipboard,
+} from "react-icons/lu";
 
 import { useAuth } from "@/context/AuthContext";
 import { useBook } from "@/hooks/books/useBook";
@@ -8,6 +14,9 @@ import { LoadingScreen } from "@/components/common/LoadingScreen";
 import { getAccessToken } from "@/lib/api";
 import { canAccessTier } from "@/lib/bookSeries";
 import { API_URL } from "@/config/env";
+
+import { Excalidraw } from "@excalidraw/excalidraw";
+import "@excalidraw/excalidraw/index.css";
 
 const Reader = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,6 +26,7 @@ const Reader = () => {
 
   // Increments every 14 min to re-derive proxyUrl with a fresh access token
   const [tick, setTick] = useState(0);
+  const [toggleWhiteboard, setToggleWhiteboard] = useState(false);
   useEffect(() => {
     const interval = setInterval(() => setTick((t) => t + 1), 14 * 60 * 1000);
     return () => clearInterval(interval);
@@ -41,6 +51,12 @@ const Reader = () => {
     return () => document.removeEventListener("contextmenu", preventAction);
   }, []);
 
+  const initialData = useMemo(() => {
+    if (!id) return null;
+    const saved = localStorage.getItem(`whiteboard_book_${id}`);
+    return saved ? { elements: JSON.parse(saved) } : null;
+  }, [id]);
+
   if (isLoading) return <LoadingScreen />;
   if (isError || !book) return <ErrorView onBack={() => navigate("/")} />;
   if (!canAccessTier(book.bookTier, subscriptionPlan, isAdmin)) {
@@ -50,16 +66,20 @@ const Reader = () => {
   return (
     <div className="h-screen w-full bg-base-100 flex flex-col overflow-hidden">
       {/* Top Bar */}
-      <header className="px-4 bg-base-200/70 backdrop-blur-md flex justify-between items-center border-b border-base-300 z-20">
-        <button
-          onClick={() => navigate("/")}
-          className="btn btn-sm btn-ghost gap-2 normal-case"
-        >
-          <LuArrowLeft className="w-4 h-4" />
-          <span className="hidden sm:inline">Library</span>
-        </button>
+      <header className="h-14 px-4 bg-base-200/70 backdrop-blur-md grid grid-cols-[1fr_auto_1fr] items-center border-b border-base-300 z-20">
+        {/* Left */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate("/")}
+            className="btn btn-sm btn-ghost gap-2 normal-case"
+          >
+            <LuArrowLeft className="w-4 h-4" />
+            <span className="hidden sm:inline">Library</span>
+          </button>
+        </div>
 
-        <div className="flex flex-col items-center text-center px-2">
+        {/* Center */}
+        <div className="flex flex-col items-center text-center px-2 min-w-0">
           <span className="text-[10px] uppercase tracking-widest opacity-50 font-bold">
             Currently Reading
           </span>
@@ -68,16 +88,35 @@ const Reader = () => {
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Right */}
+        <div className="flex items-center justify-end gap-2">
+          {subscriptionPlan === "GOLD" ? (
+            <button
+              className="btn btn-sm btn-ghost gap-2 normal-case"
+              onClick={() => setToggleWhiteboard(!toggleWhiteboard)}
+            >
+              <LuClipboard className="w-4 h-4" />
+              <span className="hidden sm:inline">
+                {toggleWhiteboard ? "Close" : "Open"} Whiteboard
+              </span>
+            </button>
+          ) : (
+            <button
+              className="btn btn-sm btn-ghost gap-2 normal-case"
+              onClick={() => navigate("/subscription")}
+            >
+              <LuLock className="w-4 h-4" />
+              <span className="hidden sm:inline">Unlock Whiteboard</span>
+            </button>
+          )}
+
           <div className="hidden sm:flex badge badge-outline gap-1.5 py-3 opacity-70">
             <LuShieldCheck className="w-3 h-3 text-success" />
             <span className="text-[10px] uppercase font-bold">
               Secure Reader
             </span>
           </div>
-          <div className="sm:hidden">
-            <LuLock className="w-4 h-4 opacity-50" />
-          </div>
+          <LuLock className="w-4 h-4 opacity-50 sm:hidden" />
         </div>
       </header>
 
@@ -105,6 +144,23 @@ const Reader = () => {
             allowFullScreen
           />
         )}
+        <div
+          className={`absolute inset-0 z-15 ${
+            toggleWhiteboard ? "block" : "hidden"
+          }`}
+        >
+          <Excalidraw
+            initialData={initialData}
+            onChange={(elements) => {
+              if (id) {
+                localStorage.setItem(
+                  `whiteboard_book_${id}`,
+                  JSON.stringify(elements),
+                );
+              }
+            }}
+          />
+        </div>
       </main>
     </div>
   );
