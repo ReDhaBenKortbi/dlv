@@ -51,6 +51,12 @@ const Reader = () => {
     return () => document.removeEventListener("contextmenu", preventAction);
   }, []);
 
+  const initialData = useMemo(() => {
+    if (!id) return null;
+    const saved = localStorage.getItem(`whiteboard_book_${id}`);
+    return saved ? { elements: JSON.parse(saved) } : null;
+  }, [id]);
+
   if (isLoading) return <LoadingScreen />;
   if (isError || !book) return <ErrorView onBack={() => navigate("/")} />;
   if (!canAccessTier(book.bookTier, subscriptionPlan, isAdmin)) {
@@ -84,15 +90,25 @@ const Reader = () => {
 
         {/* Right */}
         <div className="flex items-center justify-end gap-2">
-          <button
-            className="btn btn-sm btn-ghost gap-2 normal-case"
-            onClick={() => setToggleWhiteboard(!toggleWhiteboard)}
-          >
-            <LuClipboard className="w-4 h-4" />
-            <span className="hidden sm:inline">
-              {toggleWhiteboard ? "Close" : "Open"} Whiteboard
-            </span>
-          </button>
+          {subscriptionPlan === "GOLD" ? (
+            <button
+              className="btn btn-sm btn-ghost gap-2 normal-case"
+              onClick={() => setToggleWhiteboard(!toggleWhiteboard)}
+            >
+              <LuClipboard className="w-4 h-4" />
+              <span className="hidden sm:inline">
+                {toggleWhiteboard ? "Close" : "Open"} Whiteboard
+              </span>
+            </button>
+          ) : (
+            <button
+              className="btn btn-sm btn-ghost gap-2 normal-case"
+              onClick={() => navigate("/subscription")}
+            >
+              <LuLock className="w-4 h-4" />
+              <span className="hidden sm:inline">Unlock Whiteboard</span>
+            </button>
+          )}
 
           <div className="hidden sm:flex badge badge-outline gap-1.5 py-3 opacity-70">
             <LuShieldCheck className="w-3 h-3 text-success" />
@@ -128,11 +144,23 @@ const Reader = () => {
             allowFullScreen
           />
         )}
-        {toggleWhiteboard && (
-          <div className="absolute inset-0 z-15">
-            <Excalidraw />
-          </div>
-        )}
+        <div
+          className={`absolute inset-0 z-15 ${
+            toggleWhiteboard ? "block" : "hidden"
+          }`}
+        >
+          <Excalidraw
+            initialData={initialData}
+            onChange={(elements) => {
+              if (id) {
+                localStorage.setItem(
+                  `whiteboard_book_${id}`,
+                  JSON.stringify(elements),
+                );
+              }
+            }}
+          />
+        </div>
       </main>
     </div>
   );
